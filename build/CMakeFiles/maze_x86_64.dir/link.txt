@@ -1,1 +1,0 @@
-/usr/bin/clang-14 -g CMakeFiles/maze_x86_64.dir/projects/maze/local/src/main.c.o CMakeFiles/maze_x86_64.dir/projects/maze/local/src/maze.c.o CMakeFiles/maze_x86_64.dir/projects/maze/local/src/option_handler.c.o -o maze_x86_64  libCommon.a libMath.a libDSA.a libThreading.a libNetworking.a libThreading.a libDSA.a libMath.a libCommon.a -lpthread 

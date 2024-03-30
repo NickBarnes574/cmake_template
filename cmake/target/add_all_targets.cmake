@@ -5,16 +5,27 @@
 # based on the specified target type.
 # -----------------------------------------------------------------------------
 
-# function(add_all_targets)
+function(add_all_targets)
+    # add_target(hello_world LOCAL EXE projects/pointers/simple/hello_world pointers/simple Common Math)
+    add_target(
+        TARGET_NAME         ex_1
+        ENDPOINT            LOCAL
+        TARGET_TYPE         EXE
+        SOURCE_DIR          projects/pointers/simple/ex_1
+        DESTINATION_DIR     pointers/simple
+        LIBRARIES           Common
+    )
+    # add_target(hello_again LOCAL EXE projects/pointers/simple/hello_again pointers/simple Common Math)
 
-#     # Remote Target 1
-#     set(PROJECT_DIR ${CMAKE_SOURCE_DIR}/project)
-#     set(PROJECT_SOURCES ${PROJECT_DIR}/remote/src/hello.c)
-#     set(PROJECT_INCLUDES ${PROJECT_DIR}/remote/include)
-#     set(PROJECT_LIBRARIES Common Math DSA Threading Networking)
+    add_target(
+        TARGET_NAME         ex_2
+        ENDPOINT            LOCAL
+        TARGET_TYPE         EXE
+        SOURCE_DIR          projects/pointers/simple/ex_2
+        DESTINATION_DIR     pointers/simple
+        LIBRARIES           Common
+    )
 
-#     add_exe(hello_world "${PROJECT_SOURCES}" "${PROJECT_INCLUDES}" "${PROJECT_LIBRARIES}")
-
-# endfunction()
+endfunction()
 
 # *** end of file ***

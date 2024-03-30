@@ -1,2 +1,0 @@
-/usr/bin/llvm-ar-14 qc libThreading.a CMakeFiles/Threading.dir/libraries/3_Threading/src/threadpool.c.o
-/usr/bin/llvm-ranlib-14 libThreading.a

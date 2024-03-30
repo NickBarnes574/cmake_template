@@ -1,2 +1,0 @@
-/usr/bin/llvm-ar-14 qc libNetworking.a CMakeFiles/Networking.dir/libraries/4_Networking/src/socket_io.c.o CMakeFiles/Networking.dir/libraries/4_Networking/src/tcp_server.c.o
-/usr/bin/llvm-ranlib-14 libNetworking.a

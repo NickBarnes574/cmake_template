@@ -3,21 +3,25 @@
 # DESCRIPTION: Adds a target to the target list
 # -----------------------------------------------------------------------------
 
-function(add_target TARGET_NAME ENDPOINT TARGET_TYPE SOURCE_DIR DESTINATION_DIR)
-    set(SOURCE "${CMAKE_SOURCE_DIR}/${SOURCE_DIR}")
-    # Determine the endpoint directory
+function(add_target)
+    set(options "")
+    set(oneValueArgs TARGET_NAME ENDPOINT TARGET_TYPE SOURCE_DIR DESTINATION_DIR)
+    set(multiValueArgs LIBRARIES)
+    cmake_parse_arguments(ADD_TARGET "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-    # Use ARGN to capture all additional arguments, which include libraries
-    set(LIBRARIES ${ARGN})
-    message(STATUS "add_target() Libraries: ${LIBRARIES}")
+    message(STATUS "add_target() source directory: ${SOURCE_DIR}")
+    set(SOURCE "${CMAKE_SOURCE_DIR}/${ADD_TARGET_SOURCE_DIR}")
+
+    message(STATUS "add_target() Libraries: ${ADD_TARGET_LIBRARIES}")
 
     # Local endpoint
-    if(ENDPOINT STREQUAL "LOCAL")
+    if(ADD_TARGET_ENDPOINT STREQUAL "LOCAL")
         file(GLOB SOURCES "${SOURCE}/local/src/*.c")
+        message(STATUS "add_target() message: ${SOURCES}")
         set(INCLUDES ${SOURCE}/local/include)
     
     # Remote endpoint
-    elseif(ENDPOINT STREQUAL "REMOTE")
+    elseif(ADD_TARGET_ENDPOINT STREQUAL "REMOTE")
         file(GLOB SOURCES "${SOURCE}/remote/src/*.c")
         set(INCLUDES ${SOURCE}/remote/include)
     else()
@@ -27,8 +31,8 @@ function(add_target TARGET_NAME ENDPOINT TARGET_TYPE SOURCE_DIR DESTINATION_DIR)
     # Determine the target type
 
     # Executable program
-    if(TARGET_TYPE STREQUAL "EXE")
-        add_exe("${TARGET_NAME}" "${ENDPOINT}" "${SOURCES}" "${INCLUDES}" "${DESTINATION_DIR}" ${LIBRARIES})
+    if(ADD_TARGET_TARGET_TYPE STREQUAL "EXE")
+        add_exe("${ADD_TARGET_TARGET_NAME}" "${ADD_TARGET_ENDPOINT}" "${SOURCES}" "${INCLUDES}" "${ADD_TARGET_DESTINATION_DIR}" ${ADD_TARGET_LIBRARIES})
     
     # Shared object library
     elseif(TARGET_TYPE STREQUAL "LIB")

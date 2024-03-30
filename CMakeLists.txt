@@ -10,13 +10,18 @@ project(CMakeBuildSystem
 # Utilities
 include(${CMAKE_SOURCE_DIR}/cmake/utilities.cmake)
 
+include_cmake_modules("checks")     # Clang-Tidy checks
+include_cmake_modules("options")    # Debug and Release options
+include_cmake_modules("libraries")  # Custom user-made libraries
+include_cmake_modules("target")     # Target management
+include_cmake_modules("install")    # Installation configuration
+include_cmake_modules("testing")    # GTest configuration
+
 #Define _GNU_SOURCE for GNU extensions
 add_definitions(-D_GNU_SOURCE)
 
-include(cmake/buildsystem.cmake)
-
 add_all_libraries()
 
-# add_all_tests()
+add_all_targets()
 
 # *** end of file ***

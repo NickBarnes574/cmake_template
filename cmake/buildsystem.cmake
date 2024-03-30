@@ -4,23 +4,23 @@
 # process, and defines different build configurations.
 # -----------------------------------------------------------------------------
 
-# Build destination
-set(DEST_BUILD "${CMAKE_SOURCE_DIR}/build")
+# # Build destination
+# set(DEST_BUILD "${CMAKE_SOURCE_DIR}/build")
 
-# Local destinations
-set(DEST_RELEASE_LOCAL "/release/local")
-set(DEST_DEBUG_LOCAL "/debug/local")
+# # Local destinations
+# set(DEST_RELEASE_LOCAL "/release/local")
+# set(DEST_DEBUG_LOCAL "/debug/local")
 
-# Remote destinations
-set(DEST_RELEASE_REMOTE "/release/remote")
-set(DEST_DEBUG_REMOTE "/debug/remote")
+# # Remote destinations
+# set(DEST_RELEASE_REMOTE "/release/remote")
+# set(DEST_DEBUG_REMOTE "/debug/remote")
 
-include_cmake_modules("checks")     # Clang-Tidy checks
-include_cmake_modules("options")    # Debug and Release options
-include_cmake_modules("libraries")  # Custom user-made libraries
-include_cmake_modules("target")     # Target management
-include_cmake_modules("install")    # Installation configuration
-include_cmake_modules("testing")    # GTest configuration
+# include_cmake_modules("checks")     # Clang-Tidy checks
+# include_cmake_modules("options")    # Debug and Release options
+# include_cmake_modules("libraries")  # Custom user-made libraries
+# include_cmake_modules("target")     # Target management
+# include_cmake_modules("install")    # Installation configuration
+# include_cmake_modules("testing")    # GTest configuration
 
 # Create target 1
 configure_target(
