@@ -1,16 +1,24 @@
 #!/bin/bash
 
-# Initialize a flag to track the "-r" option
+# Initialize flags to track the "-r" and "-d" options
 create_remote=false
+create_docs=false
+create_tests=false
 
 # Process command-line options
-while getopts ":r" opt; do
+while getopts ":rdt" opt; do
   case ${opt} in
     r )
       create_remote=true
       ;;
+    d )
+      create_docs=true
+      ;;
+    t )
+      create_tests=true
+      ;;
     \? )
-      echo "Usage: $0 [-r] project_name"
+      echo "Usage: $0 [-r] [-d] [-t] project_name"
       exit 1
       ;;
   esac
@@ -19,20 +27,31 @@ shift $((OPTIND -1))
 
 # Check if a directory name was provided
 if [ $# -eq 0 ]; then
-    echo "Usage: $0 [-r] project_name"
+    echo "Usage: $0 [-r] [-d] [-t] project_name"
     exit 1
 fi
 
 project_name=$1
 base_path="projects/$project_name"
 
-# Create the common directory structure
-mkdir -p "$base_path"/docs
+# Create the docs directory structure if "-d" option is set
+if $create_docs; then
+    mkdir -p "$base_path"/docs
+    touch "$base_path"/docs/.gitkeep
+fi
+
+# Create the local directory structure
 mkdir -p "$base_path"/local/include
 mkdir -p "$base_path"/local/src
 
-# Add .gitkeep files
-touch "$base_path"/docs/.gitkeep
+# Create the tests directory structure if "-t" option is set
+if $create_tests; then
+    mkdir -p "$base_path"/local/tests
+    touch "$base_path"/local/tests/.gitkeep
+fi
+
+
+# Add .gitkeep files in local directories
 touch "$base_path"/local/include/.gitkeep
 touch "$base_path"/local/src/.gitkeep
 
@@ -44,8 +63,7 @@ if $create_remote; then
     # Add .gitkeep files in remote directories
     touch "$base_path"/remote/include/.gitkeep
     touch "$base_path"/remote/src/.gitkeep
-
-    echo "Project structure with local and remote directories created under $base_path"
-else
-    echo "Project structure with local directory created under $base_path"
 fi
+
+# Output message based on created directories
+echo "Successfully created directory structure under $base_path"
