@@ -1,0 +1,2 @@
+/usr/bin/ar qc libCommon.a CMakeFiles/Common.dir/libraries/0_Common/src/comparisons.c.o CMakeFiles/Common.dir/libraries/0_Common/src/file_io.c.o CMakeFiles/Common.dir/libraries/0_Common/src/signal_handler.c.o CMakeFiles/Common.dir/libraries/0_Common/src/string_operations.c.o CMakeFiles/Common.dir/libraries/0_Common/src/utilities.c.o
+/usr/bin/ranlib libCommon.a

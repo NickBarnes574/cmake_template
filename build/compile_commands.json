@@ -1,0 +1,102 @@
+[
+{
+  "directory": "/home/nick/Programming/CMake_Build_System/build",
+  "command": "/usr/bin/clang-14 -DDEBUG -D_GNU_SOURCE -I/home/nick/Programming/CMake_Build_System/libraries/0_Common/include -g -std=c17 -Wall -Wextra -pedantic -Werror -g -o CMakeFiles/Common.dir/libraries/0_Common/src/comparisons.c.o -c /home/nick/Programming/CMake_Build_System/libraries/0_Common/src/comparisons.c",
+  "file": "/home/nick/Programming/CMake_Build_System/libraries/0_Common/src/comparisons.c"
+},
+{
+  "directory": "/home/nick/Programming/CMake_Build_System/build",
+  "command": "/usr/bin/clang-14 -DDEBUG -D_GNU_SOURCE -I/home/nick/Programming/CMake_Build_System/libraries/0_Common/include -g -std=c17 -Wall -Wextra -pedantic -Werror -g -o CMakeFiles/Common.dir/libraries/0_Common/src/file_io.c.o -c /home/nick/Programming/CMake_Build_System/libraries/0_Common/src/file_io.c",
+  "file": "/home/nick/Programming/CMake_Build_System/libraries/0_Common/src/file_io.c"
+},
+{
+  "directory": "/home/nick/Programming/CMake_Build_System/build",
+  "command": "/usr/bin/clang-14 -DDEBUG -D_GNU_SOURCE -I/home/nick/Programming/CMake_Build_System/libraries/0_Common/include -g -std=c17 -Wall -Wextra -pedantic -Werror -g -o CMakeFiles/Common.dir/libraries/0_Common/src/signal_handler.c.o -c /home/nick/Programming/CMake_Build_System/libraries/0_Common/src/signal_handler.c",
+  "file": "/home/nick/Programming/CMake_Build_System/libraries/0_Common/src/signal_handler.c"
+},
+{
+  "directory": "/home/nick/Programming/CMake_Build_System/build",
+  "command": "/usr/bin/clang-14 -DDEBUG -D_GNU_SOURCE -I/home/nick/Programming/CMake_Build_System/libraries/0_Common/include -g -std=c17 -Wall -Wextra -pedantic -Werror -g -o CMakeFiles/Common.dir/libraries/0_Common/src/string_operations.c.o -c /home/nick/Programming/CMake_Build_System/libraries/0_Common/src/string_operations.c",
+  "file": "/home/nick/Programming/CMake_Build_System/libraries/0_Common/src/string_operations.c"
+},
+{
+  "directory": "/home/nick/Programming/CMake_Build_System/build",
+  "command": "/usr/bin/clang-14 -DDEBUG -D_GNU_SOURCE -I/home/nick/Programming/CMake_Build_System/libraries/0_Common/include -g -std=c17 -Wall -Wextra -pedantic -Werror -g -o CMakeFiles/Common.dir/libraries/0_Common/src/utilities.c.o -c /home/nick/Programming/CMake_Build_System/libraries/0_Common/src/utilities.c",
+  "file": "/home/nick/Programming/CMake_Build_System/libraries/0_Common/src/utilities.c"
+},
+{
+  "directory": "/home/nick/Programming/CMake_Build_System/build",
+  "command": "/usr/bin/clang-14 -DDEBUG -D_GNU_SOURCE -I/home/nick/Programming/CMake_Build_System/libraries/1_Math/include -I/home/nick/Programming/CMake_Build_System/libraries/0_Common/include -g -std=c17 -Wall -Wextra -pedantic -Werror -g -o CMakeFiles/Math.dir/libraries/1_Math/src/number_converter.c.o -c /home/nick/Programming/CMake_Build_System/libraries/1_Math/src/number_converter.c",
+  "file": "/home/nick/Programming/CMake_Build_System/libraries/1_Math/src/number_converter.c"
+},
+{
+  "directory": "/home/nick/Programming/CMake_Build_System/build",
+  "command": "/usr/bin/clang-14 -DDEBUG -D_GNU_SOURCE -I/home/nick/Programming/CMake_Build_System/libraries/1_Math/include -I/home/nick/Programming/CMake_Build_System/libraries/0_Common/include -g -std=c17 -Wall -Wextra -pedantic -Werror -g -o CMakeFiles/Math.dir/libraries/1_Math/src/number_generator.c.o -c /home/nick/Programming/CMake_Build_System/libraries/1_Math/src/number_generator.c",
+  "file": "/home/nick/Programming/CMake_Build_System/libraries/1_Math/src/number_generator.c"
+},
+{
+  "directory": "/home/nick/Programming/CMake_Build_System/build",
+  "command": "/usr/bin/clang-14 -DDEBUG -D_GNU_SOURCE -I/home/nick/Programming/CMake_Build_System/libraries/2_DataStructures/include -I/home/nick/Programming/CMake_Build_System/libraries/0_Common/include -I/home/nick/Programming/CMake_Build_System/libraries/1_Math/include -g -std=c17 -Wall -Wextra -pedantic -Werror -g -o CMakeFiles/DSA.dir/libraries/2_DataStructures/src/adjacency_list.c.o -c /home/nick/Programming/CMake_Build_System/libraries/2_DataStructures/src/adjacency_list.c",
+  "file": "/home/nick/Programming/CMake_Build_System/libraries/2_DataStructures/src/adjacency_list.c"
+},
+{
+  "directory": "/home/nick/Programming/CMake_Build_System/build",
+  "command": "/usr/bin/clang-14 -DDEBUG -D_GNU_SOURCE -I/home/nick/Programming/CMake_Build_System/libraries/2_DataStructures/include -I/home/nick/Programming/CMake_Build_System/libraries/0_Common/include -I/home/nick/Programming/CMake_Build_System/libraries/1_Math/include -g -std=c17 -Wall -Wextra -pedantic -Werror -g -o CMakeFiles/DSA.dir/libraries/2_DataStructures/src/adjacency_matrix.c.o -c /home/nick/Programming/CMake_Build_System/libraries/2_DataStructures/src/adjacency_matrix.c",
+  "file": "/home/nick/Programming/CMake_Build_System/libraries/2_DataStructures/src/adjacency_matrix.c"
+},
+{
+  "directory": "/home/nick/Programming/CMake_Build_System/build",
+  "command": "/usr/bin/clang-14 -DDEBUG -D_GNU_SOURCE -I/home/nick/Programming/CMake_Build_System/libraries/2_DataStructures/include -I/home/nick/Programming/CMake_Build_System/libraries/0_Common/include -I/home/nick/Programming/CMake_Build_System/libraries/1_Math/include -g -std=c17 -Wall -Wextra -pedantic -Werror -g -o CMakeFiles/DSA.dir/libraries/2_DataStructures/src/hash_table.c.o -c /home/nick/Programming/CMake_Build_System/libraries/2_DataStructures/src/hash_table.c",
+  "file": "/home/nick/Programming/CMake_Build_System/libraries/2_DataStructures/src/hash_table.c"
+},
+{
+  "directory": "/home/nick/Programming/CMake_Build_System/build",
+  "command": "/usr/bin/clang-14 -DDEBUG -D_GNU_SOURCE -I/home/nick/Programming/CMake_Build_System/libraries/2_DataStructures/include -I/home/nick/Programming/CMake_Build_System/libraries/0_Common/include -I/home/nick/Programming/CMake_Build_System/libraries/1_Math/include -g -std=c17 -Wall -Wextra -pedantic -Werror -g -o CMakeFiles/DSA.dir/libraries/2_DataStructures/src/linked_list.c.o -c /home/nick/Programming/CMake_Build_System/libraries/2_DataStructures/src/linked_list.c",
+  "file": "/home/nick/Programming/CMake_Build_System/libraries/2_DataStructures/src/linked_list.c"
+},
+{
+  "directory": "/home/nick/Programming/CMake_Build_System/build",
+  "command": "/usr/bin/clang-14 -DDEBUG -D_GNU_SOURCE -I/home/nick/Programming/CMake_Build_System/libraries/2_DataStructures/include -I/home/nick/Programming/CMake_Build_System/libraries/0_Common/include -I/home/nick/Programming/CMake_Build_System/libraries/1_Math/include -g -std=c17 -Wall -Wextra -pedantic -Werror -g -o CMakeFiles/DSA.dir/libraries/2_DataStructures/src/queue.c.o -c /home/nick/Programming/CMake_Build_System/libraries/2_DataStructures/src/queue.c",
+  "file": "/home/nick/Programming/CMake_Build_System/libraries/2_DataStructures/src/queue.c"
+},
+{
+  "directory": "/home/nick/Programming/CMake_Build_System/build",
+  "command": "/usr/bin/clang-14 -DDEBUG -D_GNU_SOURCE -I/home/nick/Programming/CMake_Build_System/libraries/2_DataStructures/include -I/home/nick/Programming/CMake_Build_System/libraries/0_Common/include -I/home/nick/Programming/CMake_Build_System/libraries/1_Math/include -g -std=c17 -Wall -Wextra -pedantic -Werror -g -o CMakeFiles/DSA.dir/libraries/2_DataStructures/src/stack.c.o -c /home/nick/Programming/CMake_Build_System/libraries/2_DataStructures/src/stack.c",
+  "file": "/home/nick/Programming/CMake_Build_System/libraries/2_DataStructures/src/stack.c"
+},
+{
+  "directory": "/home/nick/Programming/CMake_Build_System/build",
+  "command": "/usr/bin/clang-14 -DDEBUG -D_GNU_SOURCE -I/home/nick/Programming/CMake_Build_System/libraries/2_DataStructures/include -I/home/nick/Programming/CMake_Build_System/libraries/0_Common/include -I/home/nick/Programming/CMake_Build_System/libraries/1_Math/include -g -std=c17 -Wall -Wextra -pedantic -Werror -g -o CMakeFiles/DSA.dir/libraries/2_DataStructures/src/vector.c.o -c /home/nick/Programming/CMake_Build_System/libraries/2_DataStructures/src/vector.c",
+  "file": "/home/nick/Programming/CMake_Build_System/libraries/2_DataStructures/src/vector.c"
+},
+{
+  "directory": "/home/nick/Programming/CMake_Build_System/build",
+  "command": "/usr/bin/clang-14 -DDEBUG -D_GNU_SOURCE -I/home/nick/Programming/CMake_Build_System/libraries/3_Threading/include -I/home/nick/Programming/CMake_Build_System/libraries/0_Common/include -I/home/nick/Programming/CMake_Build_System/libraries/2_DataStructures/include -I/home/nick/Programming/CMake_Build_System/libraries/1_Math/include -g -std=c17 -Wall -Wextra -pedantic -Werror -g -o CMakeFiles/Threading.dir/libraries/3_Threading/src/threadpool.c.o -c /home/nick/Programming/CMake_Build_System/libraries/3_Threading/src/threadpool.c",
+  "file": "/home/nick/Programming/CMake_Build_System/libraries/3_Threading/src/threadpool.c"
+},
+{
+  "directory": "/home/nick/Programming/CMake_Build_System/build",
+  "command": "/usr/bin/clang-14 -DDEBUG -D_GNU_SOURCE -I/home/nick/Programming/CMake_Build_System/libraries/4_Networking/include -I/home/nick/Programming/CMake_Build_System/libraries/0_Common/include -I/home/nick/Programming/CMake_Build_System/libraries/3_Threading/include -I/home/nick/Programming/CMake_Build_System/libraries/2_DataStructures/include -I/home/nick/Programming/CMake_Build_System/libraries/1_Math/include -g -std=c17 -Wall -Wextra -pedantic -Werror -g -o CMakeFiles/Networking.dir/libraries/4_Networking/src/socket_io.c.o -c /home/nick/Programming/CMake_Build_System/libraries/4_Networking/src/socket_io.c",
+  "file": "/home/nick/Programming/CMake_Build_System/libraries/4_Networking/src/socket_io.c"
+},
+{
+  "directory": "/home/nick/Programming/CMake_Build_System/build",
+  "command": "/usr/bin/clang-14 -DDEBUG -D_GNU_SOURCE -I/home/nick/Programming/CMake_Build_System/libraries/4_Networking/include -I/home/nick/Programming/CMake_Build_System/libraries/0_Common/include -I/home/nick/Programming/CMake_Build_System/libraries/3_Threading/include -I/home/nick/Programming/CMake_Build_System/libraries/2_DataStructures/include -I/home/nick/Programming/CMake_Build_System/libraries/1_Math/include -g -std=c17 -Wall -Wextra -pedantic -Werror -g -o CMakeFiles/Networking.dir/libraries/4_Networking/src/tcp_server.c.o -c /home/nick/Programming/CMake_Build_System/libraries/4_Networking/src/tcp_server.c",
+  "file": "/home/nick/Programming/CMake_Build_System/libraries/4_Networking/src/tcp_server.c"
+},
+{
+  "directory": "/home/nick/Programming/CMake_Build_System/build",
+  "command": "/usr/bin/clang-14 -DDEBUG -D_GNU_SOURCE -I/home/nick/Programming/CMake_Build_System/projects/maze/local/include -I/home/nick/Programming/CMake_Build_System/libraries/0_Common/include -I/home/nick/Programming/CMake_Build_System/libraries/1_Math/include -I/home/nick/Programming/CMake_Build_System/libraries/2_DataStructures/include -I/home/nick/Programming/CMake_Build_System/libraries/3_Threading/include -I/home/nick/Programming/CMake_Build_System/libraries/4_Networking/include -g -o CMakeFiles/maze_x86_64.dir/projects/maze/local/src/main.c.o -c /home/nick/Programming/CMake_Build_System/projects/maze/local/src/main.c",
+  "file": "/home/nick/Programming/CMake_Build_System/projects/maze/local/src/main.c"
+},
+{
+  "directory": "/home/nick/Programming/CMake_Build_System/build",
+  "command": "/usr/bin/clang-14 -DDEBUG -D_GNU_SOURCE -I/home/nick/Programming/CMake_Build_System/projects/maze/local/include -I/home/nick/Programming/CMake_Build_System/libraries/0_Common/include -I/home/nick/Programming/CMake_Build_System/libraries/1_Math/include -I/home/nick/Programming/CMake_Build_System/libraries/2_DataStructures/include -I/home/nick/Programming/CMake_Build_System/libraries/3_Threading/include -I/home/nick/Programming/CMake_Build_System/libraries/4_Networking/include -g -o CMakeFiles/maze_x86_64.dir/projects/maze/local/src/maze.c.o -c /home/nick/Programming/CMake_Build_System/projects/maze/local/src/maze.c",
+  "file": "/home/nick/Programming/CMake_Build_System/projects/maze/local/src/maze.c"
+},
+{
+  "directory": "/home/nick/Programming/CMake_Build_System/build",
+  "command": "/usr/bin/clang-14 -DDEBUG -D_GNU_SOURCE -I/home/nick/Programming/CMake_Build_System/projects/maze/local/include -I/home/nick/Programming/CMake_Build_System/libraries/0_Common/include -I/home/nick/Programming/CMake_Build_System/libraries/1_Math/include -I/home/nick/Programming/CMake_Build_System/libraries/2_DataStructures/include -I/home/nick/Programming/CMake_Build_System/libraries/3_Threading/include -I/home/nick/Programming/CMake_Build_System/libraries/4_Networking/include -g -o CMakeFiles/maze_x86_64.dir/projects/maze/local/src/option_handler.c.o -c /home/nick/Programming/CMake_Build_System/projects/maze/local/src/option_handler.c",
+  "file": "/home/nick/Programming/CMake_Build_System/projects/maze/local/src/option_handler.c"
+}
+]

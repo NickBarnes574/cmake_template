@@ -1,0 +1,2 @@
+/usr/bin/ar qc libMath.a CMakeFiles/Math.dir/libraries/1_Math/src/number_converter.c.o CMakeFiles/Math.dir/libraries/1_Math/src/number_generator.c.o
+/usr/bin/ranlib libMath.a

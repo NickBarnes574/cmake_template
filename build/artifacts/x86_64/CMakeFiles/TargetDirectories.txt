@@ -1,0 +1,12 @@
+/home/nick/Programming/CMake_Build_System/build/artifacts/x86_64/CMakeFiles/maze_x86_64.dir
+/home/nick/Programming/CMake_Build_System/build/artifacts/x86_64/CMakeFiles/Common.dir
+/home/nick/Programming/CMake_Build_System/build/artifacts/x86_64/CMakeFiles/Math.dir
+/home/nick/Programming/CMake_Build_System/build/artifacts/x86_64/CMakeFiles/DSA.dir
+/home/nick/Programming/CMake_Build_System/build/artifacts/x86_64/CMakeFiles/Threading.dir
+/home/nick/Programming/CMake_Build_System/build/artifacts/x86_64/CMakeFiles/Networking.dir
+/home/nick/Programming/CMake_Build_System/build/artifacts/x86_64/CMakeFiles/edit_cache.dir
+/home/nick/Programming/CMake_Build_System/build/artifacts/x86_64/CMakeFiles/rebuild_cache.dir
+/home/nick/Programming/CMake_Build_System/build/artifacts/x86_64/CMakeFiles/list_install_components.dir
+/home/nick/Programming/CMake_Build_System/build/artifacts/x86_64/CMakeFiles/install.dir
+/home/nick/Programming/CMake_Build_System/build/artifacts/x86_64/CMakeFiles/install/local.dir
+/home/nick/Programming/CMake_Build_System/build/artifacts/x86_64/CMakeFiles/install/strip.dir

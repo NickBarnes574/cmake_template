@@ -1,0 +1,2 @@
+/usr/bin/ar qc libThreading.a CMakeFiles/Threading.dir/libraries/3_Threading/src/threadpool.c.o
+/usr/bin/ranlib libThreading.a
