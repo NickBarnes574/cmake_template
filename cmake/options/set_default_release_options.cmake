@@ -9,3 +9,5 @@ function(set_default_release_options)
     add_compile_options(-std=c17 -Wall -Wextra -pedantic)
     add_compile_definitions(NDEBUG)
 endfunction()
+
+# *** end of file ***

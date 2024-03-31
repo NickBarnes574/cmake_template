@@ -52,7 +52,7 @@ build:
 	@rm -rf $(BUILD_DIR)
 
 clean:
-	@rm -rf build .vscode
+	@rm -rf build tests .vscode
 
 .PHONY: release debug clean aarch64 all build
 
