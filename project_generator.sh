@@ -32,7 +32,7 @@ if [ $# -eq 0 ]; then
 fi
 
 project_name=$1
-base_path="projects/$project_name"
+base_path="$project_name"
 
 # Create the docs directory structure if "-d" option is set
 if $create_docs; then
