@@ -19,7 +19,7 @@ function(add_exe TARGET_NAME ENDPOINT SRC_FILES INCLUDE_FILES DESTINATION_DIR)
             target_link_libraries(${FULL_TARGET_NAME} PRIVATE ${LIB})
         endforeach()
     endif()
-    
+
     if(CMAKE_BUILD_TYPE MATCHES "Release")
         set_default_release_options(${FULL_TARGET_NAME})
         strip_target(${FULL_TARGET_NAME})

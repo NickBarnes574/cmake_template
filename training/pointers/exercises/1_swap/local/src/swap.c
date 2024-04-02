@@ -2,20 +2,21 @@
 
 #include "utilities.h"
 
-int swap(int *num_1, int *num_2)
+int swap(int *p_num_1, int *p_num_2)
 {
     int exit_code = E_FAILURE;
     int temp = 0;
 
-    if ((NULL == num_1) || (NULL == num_2))
+    if ((NULL == p_num_1) || (NULL == p_num_2))
     {
         print_error("swap(): NULL argument passed.");
+        exit_code = E_NULL_ARGUMENT;
         goto END;
     }
 
-    temp = *num_1;
-    *num_1 = *num_2;
-    *num_2 = temp;
+    temp = *p_num_1;
+    *p_num_1 = *p_num_2;
+    *p_num_2 = temp;
 
     exit_code = E_SUCCESS;
 END:

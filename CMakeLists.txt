@@ -26,6 +26,8 @@ add_all_libraries()
 
 add_all_targets()
 
+install_all_files()
+
 add_all_tests()
 
 # *** end of file ***

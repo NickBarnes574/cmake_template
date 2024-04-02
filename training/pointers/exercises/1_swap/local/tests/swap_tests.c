@@ -12,7 +12,7 @@ void swap_first_parameter_null(void)
     int num_2 = 30;
 
     exit_code = swap(NULL, &num_2);
-    CU_ASSERT_NOT_EQUAL(exit_code, E_SUCCESS);
+    CU_ASSERT_EQUAL(exit_code, E_NULL_ARGUMENT);
 }
 
 void swap_second_parameter_null(void)
@@ -21,7 +21,7 @@ void swap_second_parameter_null(void)
     int num_1 = 10;
 
     exit_code = swap(&num_1, NULL);
-    CU_ASSERT_NOT_EQUAL(exit_code, E_SUCCESS);
+    CU_ASSERT_EQUAL(exit_code, E_NULL_ARGUMENT);
 }
 
 void swap_10_and_30(void)

@@ -4,8 +4,8 @@
 
 struct node
 {
-    void * data;  // Data for the node
-    char * label; // Node label
+    void *data;  // Data for the node
+    char *label; // Node label
 };
 
 struct edge
@@ -15,15 +15,15 @@ struct edge
 
 struct matrix
 {
-    edge_t ** edges;          // 2D array to represent the graph's edges
-    node_t *  nodes;          // Array of nodes
-    size_t    num_nodes;      // Number of nodes in the graph
-    bool      is_directed;    // Flag indicating whether the graph is directed
-    CMP_F     custom_compare; // A custom function to compare node data
-    FREE_F    custom_free;    // A custom function to free node data
+    edge_t **edges;       // 2D array to represent the graph's edges
+    node_t *nodes;        // Array of nodes
+    size_t num_nodes;     // Number of nodes in the graph
+    bool is_directed;     // Flag indicating whether the graph is directed
+    CMP_F custom_compare; // A custom function to compare node data
+    FREE_F custom_free;   // A custom function to free node data
 };
 
-static void graph_cleanup(matrix_t ** graph)
+static void graph_cleanup(matrix_t **graph)
 {
     if (NULL == graph)
     {
@@ -55,12 +55,12 @@ END:
     return;
 }
 
-matrix_t * matrix_init(size_t num_nodes,
-                       bool   is_directed,
-                       CMP_F  custom_compare,
-                       FREE_F custom_free)
+matrix_t *matrix_init(size_t num_nodes,
+                      bool is_directed,
+                      CMP_F custom_compare,
+                      FREE_F custom_free)
 {
-    matrix_t * graph = NULL;
+    matrix_t *graph = NULL;
 
     if ((NULL == custom_compare) || (NULL == custom_free))
     {
@@ -105,22 +105,22 @@ matrix_t * matrix_init(size_t num_nodes,
         goto END;
     }
 
-    graph->num_nodes      = num_nodes;
-    graph->is_directed    = is_directed;
+    graph->num_nodes = num_nodes;
+    graph->is_directed = is_directed;
     graph->custom_compare = custom_compare;
-    graph->custom_free    = custom_free;
+    graph->custom_free = custom_free;
 
 END:
     return graph;
 }
 
-int matrix_populate_node(matrix_t *   graph,
-                         size_t       index,
-                         const void * data,
-                         const char * label)
+int matrix_populate_node(matrix_t *graph,
+                         size_t index,
+                         void *data,
+                         char *label)
 {
-    int    exit_code  = E_FAILURE;
-    char * label_copy = NULL;
+    int exit_code = E_FAILURE;
+    char *label_copy = NULL;
 
     if ((NULL == graph) || (NULL == data) || (NULL == label))
     {
@@ -135,7 +135,7 @@ int matrix_populate_node(matrix_t *   graph,
     //     goto END;
     // }
 
-    graph->nodes[index].data  = data;
+    graph->nodes[index].data = data;
     graph->nodes[index].label = label_copy;
 
     exit_code = E_SUCCESS;
@@ -143,7 +143,7 @@ END:
     return exit_code;
 }
 
-int matrix_depopulate_node(matrix_t * graph, size_t index)
+int matrix_depopulate_node(matrix_t *graph, size_t index)
 {
     int exit_code = E_FAILURE;
 
