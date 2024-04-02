@@ -7,8 +7,6 @@
 
 function(add_all_targets)
 
-    add_demos() # Add all of the demos for training
-
     add_target(
     #   [ FIELD ]-----------[ VALUE ]
         TARGET_NAME         bsle_server
