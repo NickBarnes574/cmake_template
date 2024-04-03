@@ -29,7 +29,7 @@ function(add_remote_executables)
     add_target(
     #   [ FIELD ]-----------[ VALUE ]
         TARGET_NAME         bsle_server
-        ENDPOINT            REMOTE
+        ENDPOINT            remote
         TARGET_TYPE         EXE
         SOURCE_DIR          projects/BSLE
         DESTINATION_DIR     projects/BSLE

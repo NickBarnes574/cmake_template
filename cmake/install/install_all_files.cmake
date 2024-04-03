@@ -1,6 +1,4 @@
 function(install_all_files)
-
-    install_file(projects/BSLE/local/client.py "${CMAKE_SOURCE_DIR}/build/projects/BSLE" "LOCAL")
-    install_file(docs/build_system.md "${CMAKE_SOURCE_DIR}/build/projects/BSLE" "DOCS")
-
+    install_file("${CMAKE_SOURCE_DIR}/projects/BSLE/local/client.py" "projects/BSLE" "local")
+    install_file("${CMAKE_SOURCE_DIR}/docs/build_system.md" "projects/BSLE" "docs")
 endfunction(install_all_files)

@@ -4,44 +4,19 @@
 # the project.
 # -----------------------------------------------------------------------------
 
-function(add_exe TARGET_NAME ENDPOINT SRC_FILES INCLUDE_FILES DESTINATION_DIR)
-    # Use ARGN to capture all additional arguments, which include libraries
-    set(LINK_LIBRARIES ${ARGN})
-    set(FULL_TARGET_NAME "${TARGET_NAME}_${CMAKE_SYSTEM_PROCESSOR}")
-    add_executable(${FULL_TARGET_NAME} ${SRC_FILES})
-    target_include_directories(${FULL_TARGET_NAME} PRIVATE ${INCLUDE_FILES})
+function(add_exe target_name endpoint src_files include_dirs destination_dir)
+    set(link_libraries ${ARGN}) # Libraries to link with
+    set(full_target_name "${target_name}_${CMAKE_SYSTEM_PROCESSOR}")
 
-    # Link libraries if any are passed in
-    if(NOT LINK_LIBRARIES STREQUAL "NONE")
-        foreach(LIB IN LISTS LINK_LIBRARIES)
-            message(STATUS "Linking library ${LIB} to ${FULL_TARGET_NAME}")
-            message(STATUS "Linking libraries: ${LINK_LIBRARIES}")
-            target_link_libraries(${FULL_TARGET_NAME} PRIVATE ${LIB})
-        endforeach()
+    add_executable(${full_target_name} ${src_files})
+    target_include_directories(${full_target_name} PRIVATE ${include_dirs})
+
+    if(link_libraries)
+        target_link_libraries(${full_target_name} PRIVATE ${link_libraries})
     endif()
 
-    if(CMAKE_BUILD_TYPE MATCHES "Release")
-        set_default_release_options(${FULL_TARGET_NAME})
-        strip_target(${FULL_TARGET_NAME})
-        if (ENDPOINT STREQUAL "LOCAL")
-            install_target(${FULL_TARGET_NAME} "${DEST_BUILD}/${DESTINATION_DIR}/${RELEASE_LOCAL}")
-        elseif(ENDPOINT STREQUAL "REMOTE")
-            install_target(${FULL_TARGET_NAME} "${DEST_BUILD}/${DESTINATION_DIR}/${RELEASE_REMOTE}")
-        else()
-            message(FATAL_ERROR "Invalid Endpoint.")
-        endif()
-
-    elseif(CMAKE_BUILD_TYPE MATCHES "Debug")
-        set_default_debug_options(${FULL_TARGET_NAME})
-        if (ENDPOINT STREQUAL "LOCAL")
-            install_target(${FULL_TARGET_NAME} "${DEST_BUILD}/${DESTINATION_DIR}/${DEBUG_LOCAL}")
-        elseif(ENDPOINT STREQUAL "REMOTE")
-            install_target(${FULL_TARGET_NAME} "${DEST_BUILD}/${DESTINATION_DIR}/${DEBUG_REMOTE}")
-        else()
-            message(FATAL_ERROR "Invalid Endpoint.")
-        endif()
-    endif()
-
+    set(target_destination "${destination_dir}/${CMAKE_BUILD_TYPE}/${endpoint}")
+    install(TARGETS ${full_target_name} DESTINATION ${target_destination})
 endfunction()
 
 # *** end of file ***
