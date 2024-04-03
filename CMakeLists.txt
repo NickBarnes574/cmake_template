@@ -9,13 +9,13 @@ project(CMakeBuildSystem
 
 enable_testing()
 
-# Utilities
-include(${CMAKE_SOURCE_DIR}/cmake/utilities.cmake)
+# Common utility functions
+include(${CMAKE_SOURCE_DIR}/cmake/common.cmake)
 
 include_cmake_modules("checks")     # Clang-Tidy checks
 include_cmake_modules("options")    # Debug and Release options
 include_cmake_modules("libraries")  # Custom user-made libraries
-include_cmake_modules("target")     # Target management
+include_cmake_modules("targets")     # Target management
 include_cmake_modules("install")    # Installation configuration
 include_cmake_modules("testing")    # Test configuration
 
@@ -26,8 +26,9 @@ add_all_libraries()
 
 add_all_targets()
 
+add_all_tests()
+
 install_all_files()
 
-add_all_tests()
 
 # *** end of file ***

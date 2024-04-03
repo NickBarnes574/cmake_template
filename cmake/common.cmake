@@ -18,7 +18,7 @@ set(RELEASE_LOCAL "/release/local")
 set(RELEASE_REMOTE "/release/remote")
 
 function(include_cmake_modules subdir)
-    file(GLOB MODULE_FILES "${CMAKE_SOURCE_DIR}/cmake/${subdir}/*.cmake")
+    file(GLOB_RECURSE MODULE_FILES "${CMAKE_SOURCE_DIR}/cmake/${subdir}/*.cmake")
     foreach(MODULE_FILE IN LISTS MODULE_FILES)
         include(${MODULE_FILE})
     endforeach()
