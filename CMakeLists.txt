@@ -12,7 +12,7 @@ enable_testing()
 # Common utility functions
 include(${CMAKE_SOURCE_DIR}/cmake/common.cmake)
 
-set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/build")
+set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/build/${CMAKE_SYSTEM_PROCESSOR}")
 
 include_cmake_modules("checks")     # Clang-Tidy checks
 include_cmake_modules("options")    # Debug and Release options

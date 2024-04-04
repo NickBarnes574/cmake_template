@@ -49,7 +49,7 @@ aarch64: build
 build:
 	@cmake -S . -B $(BUILD_DIR)/$(ARCH) -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) $(TOOLCHAIN)
 	@cmake --build $(BUILD_DIR)/$(ARCH) --target install
-	@rm -rf $(BUILD_DIR)
+	@rm -rf $(BUILD_DIR) # Remove artifacts temporarily
 
 clean:
 	@rm -rf build tests .vscode
