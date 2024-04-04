@@ -10,7 +10,7 @@ function(add_all_tests)
         TARGET_NAME             test_swap
         PROJECT_DIRECTORY       ${CMAKE_SOURCE_DIR}/training/pointers/exercises/1_swap/local
         TEST_DIRECTORY          ${CMAKE_SOURCE_DIR}/training/pointers/exercises/1_swap/local/tests
-        OUTPUT_DIRECTORY        /training/pointers/exercises/1_swap
+        OUTPUT_DIRECTORY        tests/training_tests/pointers/exercises/1_swap
         ADDITIONAL_LIBRARIES    Common # Specify additional libraries as needed
     )
 
@@ -18,7 +18,15 @@ function(add_all_tests)
         TARGET_NAME             test_reverse_array
         PROJECT_DIRECTORY       ${CMAKE_SOURCE_DIR}/training/pointers/exercises/2_reverse_array/local
         TEST_DIRECTORY          ${CMAKE_SOURCE_DIR}/training/pointers/exercises/2_reverse_array/local/tests
-        OUTPUT_DIRECTORY        /training/pointers/exercises/2_reverse_array
+        OUTPUT_DIRECTORY        tests/training_tests/pointers/exercises/2_reverse_array
+        ADDITIONAL_LIBRARIES    Common # Specify additional libraries as needed
+    )
+
+    add_cunit_test(
+        TARGET_NAME             test_stack
+        PROJECT_DIRECTORY       ${CMAKE_SOURCE_DIR}/libraries/DSA/stack
+        TEST_DIRECTORY          ${CMAKE_SOURCE_DIR}/libraries/DSA/stack/tests
+        OUTPUT_DIRECTORY        /tests/library_tests/${CMAKE_BUILD_TYPE}/DSA
         ADDITIONAL_LIBRARIES    Common # Specify additional libraries as needed
     )
 

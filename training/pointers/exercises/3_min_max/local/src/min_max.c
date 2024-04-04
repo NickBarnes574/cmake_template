@@ -11,6 +11,7 @@ int find_min_max(const int *p_arr, int length, int *p_min, int *p_max)
     if ((NULL == p_arr) || (length <= 0) || (NULL == p_min) || (NULL == p_max))
     {
         print_error("find_min_max(): Invalid argument passed.");
+        exit_code = E_NULL_POINTER;
         goto END;
     }
 

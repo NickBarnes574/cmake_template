@@ -32,5 +32,5 @@ function(add_cunit_test)
     target_include_directories(${ARG_TARGET_NAME} PRIVATE ${CUNIT_INCLUDE_DIRS})
     add_test(NAME ${ARG_TARGET_NAME} COMMAND ${ARG_TARGET_NAME})
 
-    set_target_properties(${ARG_TARGET_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/tests/${ARG_OUTPUT_DIRECTORY}")
+    set_target_properties(${ARG_TARGET_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/build/${ARG_OUTPUT_DIRECTORY}")
 endfunction()

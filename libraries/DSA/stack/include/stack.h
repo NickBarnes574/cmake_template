@@ -12,7 +12,7 @@
  */
 typedef struct stack_node_t
 {
-    void * data;
+    void *data;
 } stack_node_t;
 
 /**
@@ -37,10 +37,10 @@ typedef void (*FREE_F)(void *);
  */
 typedef struct stack_t
 {
-    uint32_t        capacity;
-    uint32_t        currentsz;
-    stack_node_t ** arr;
-    FREE_F          customfree;
+    uint32_t capacity;
+    uint32_t currentsz;
+    stack_node_t **arr;
+    FREE_F customfree;
 } stack_t;
 
 /**
@@ -50,7 +50,7 @@ typedef struct stack_t
  * @param customfree pointer to the free function to be used with that list
  * @returns pointer to allocated stack on SUCCESS, NULL on failure
  */
-stack_t * stack_init(uint32_t capacity, FREE_F customfree);
+stack_t *stack_init(uint32_t capacity, FREE_F customfree);
 
 /**
  * @brief verifies that stack isn't full
@@ -58,7 +58,7 @@ stack_t * stack_init(uint32_t capacity, FREE_F customfree);
  * @param stack pointer stack object
  * @return int exit code of the function
  */
-int stack_fullcheck(stack_t * stack);
+int stack_is_full(stack_t *stack);
 
 /**
  * @brief verifies that stack isn't empty
@@ -66,7 +66,7 @@ int stack_fullcheck(stack_t * stack);
  * @param stack pointer stack object
  * @return int exit code of the function
  */
-int stack_emptycheck(stack_t * stack);
+int stack_is_empty(stack_t *stack);
 
 /**
  * @brief pushes a new node into the stack
@@ -75,7 +75,7 @@ int stack_emptycheck(stack_t * stack);
  * @param data data to be pushed into node
  * @return 0 on success, non-zero value on failure
  */
-int stack_push(stack_t * stack, void * data);
+int stack_push(stack_t *stack, void *data);
 
 /**
  * @brief pops the front node out of the stack
@@ -83,7 +83,7 @@ int stack_push(stack_t * stack, void * data);
  * @param stack pointer to stack pointer to pop the node off of
  * @return pointer to popped node on SUCCESS, NULL on failure
  */
-void * stack_pop(stack_t * stack);
+void *stack_pop(stack_t *stack);
 
 /**
  * @brief get the data from the node at the front of the stack without popping
@@ -91,7 +91,7 @@ void * stack_pop(stack_t * stack);
  * @param stack pointer to stack pointer to peek
  * @return pointer to peeked node on SUCCESS, NULL on failure
  */
-void * stack_peek(stack_t * stack);
+void *stack_peek(stack_t *stack);
 
 /**
  * @brief clear all nodes out of a stack
@@ -99,7 +99,7 @@ void * stack_peek(stack_t * stack);
  * @param stack pointer to stack pointer to clear out
  * @return 0 on success, non-zero value on failure
  */
-int stack_clear(stack_t * stack);
+int stack_clear(stack_t *stack);
 
 /**
  * @brief delete a stack
@@ -107,6 +107,6 @@ int stack_clear(stack_t * stack);
  * @param stack pointer to stack pointer to be destroyed
  * @return 0 on success, non-zero value on failure
  */
-int stack_destroy(stack_t ** stack);
+int stack_destroy(stack_t **stack);
 
 #endif

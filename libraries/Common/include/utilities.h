@@ -14,7 +14,7 @@
 #define E_SUCCESS 0
 #define E_FAILURE -1
 #define E_EOF -2
-#define E_NULL_ARGUMENT -3
+#define E_NULL_POINTER -3
 
 // Color codes
 typedef enum

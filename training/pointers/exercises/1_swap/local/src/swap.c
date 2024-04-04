@@ -10,7 +10,7 @@ int swap(int *p_num_1, int *p_num_2)
     if ((NULL == p_num_1) || (NULL == p_num_2))
     {
         print_error("swap(): NULL argument passed.");
-        exit_code = E_NULL_ARGUMENT;
+        exit_code = E_NULL_POINTER;
         goto END;
     }
 

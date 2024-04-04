@@ -13,7 +13,7 @@ void reverse_array_arr_null(void)
     int exit_code = E_FAILURE;
 
     exit_code = reverse_array(NULL, ARR_LENGTH);
-    CU_ASSERT_EQUAL(exit_code, E_NULL_ARGUMENT);
+    CU_ASSERT_EQUAL(exit_code, E_NULL_POINTER);
 }
 
 void reverse_array_0_length(void)

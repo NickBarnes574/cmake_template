@@ -15,7 +15,7 @@ int reverse_array(int *arr, size_t length)
     if (NULL == arr)
     {
         print_error("reverse_array(): NULL argument passed.");
-        exit_code = E_NULL_ARGUMENT;
+        exit_code = E_NULL_POINTER;
         goto END;
     }
 
