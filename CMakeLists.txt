@@ -32,5 +32,4 @@ add_all_tests()
 
 install_all_files()
 
-
 # *** end of file ***
