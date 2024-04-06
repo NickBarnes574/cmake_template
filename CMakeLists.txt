@@ -24,7 +24,7 @@ include_cmake_modules("testing")    # Test configuration
 #Define _GNU_SOURCE for GNU extensions
 add_definitions(-D_GNU_SOURCE)
 
-add_all_libraries()
+add_all_libs()
 
 add_all_targets()
 

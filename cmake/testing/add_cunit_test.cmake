@@ -20,7 +20,7 @@ function(add_cunit_test)
     file(GLOB SRC_FILES "${ARG_PROJECT_DIRECTORY}/src/*.c")
     set(INCLUDE_DIR ${ARG_PROJECT_DIRECTORY}/include)
     # Assuming create_library is a function you've defined elsewhere
-    create_library(${LIB_NAME} "${SRC_FILES}" ${INCLUDE_DIR})
+    create_lib(${LIB_NAME} "${SRC_FILES}" ${INCLUDE_DIR})
 
     foreach(LIB IN LISTS ARG_ADDITIONAL_LIBRARIES)
         target_link_libraries(${LIB_NAME} ${LIB})
