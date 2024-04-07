@@ -25,9 +25,6 @@ function(add_lib LIB_NAME)
         # Collect include directories
         list(APPEND LIB_INCLUDE_DIRS "${DIR}/include")
     endforeach()
-
-    message(STATUS "Found sources for ${LIB_NAME}: ${LIB_SOURCES}")
-    message(STATUS "Include directories for ${LIB_NAME}: ${LIB_INCLUDE_DIRS}")
     
     if(LIB_SOURCES)
         create_lib(${LIB_NAME} "${LIB_SOURCES}" "${LIB_INCLUDE_DIRS}")

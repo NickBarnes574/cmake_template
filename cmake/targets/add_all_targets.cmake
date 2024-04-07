@@ -33,7 +33,7 @@ function(add_remote_executables)
         TARGET_TYPE         EXE
         SOURCE_DIR          projects/BSLE
         DESTINATION_DIR     projects/BSLE
-        LIBRARIES           # No custom libraries added
+        LIBRARIES           Common Math DSA Threading Networking
     )
 
 endfunction()

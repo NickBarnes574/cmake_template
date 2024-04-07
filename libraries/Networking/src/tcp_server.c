@@ -11,8 +11,8 @@
 #include "tcp_server.h"
 #include "utilities.h"
 
-#define INVALID_SOCKET (-1)         // Indicates an invalid socket descriptor
-#define BACKLOG_SIZE 10             // Maximum number of pending client connections
+#define INVALID_SOCKET          (-1) // Indicates an invalid socket descriptor
+#define BACKLOG_SIZE            10 // Maximum number of pending client connections
 #define MAX_CLIENT_ADDRESS_SIZE 100 // Size for storing client address strings
 
 /**
@@ -25,14 +25,14 @@
  */
 struct config
 {
-    struct addrinfo hints;         // Specifies criteria for address selection
-    struct addrinfo *address_list; // Pointer to linked list of address info
+    struct addrinfo   hints;        // Specifies criteria for address selection
+    struct addrinfo * address_list; // Pointer to linked list of address info
     struct addrinfo *
-        current_address;                    // Pointer used to traverse 'address_list'
-    int listening_socket;                   // Listening socket for the server
+        current_address;  // Pointer used to traverse 'address_list'
+    int listening_socket; // Listening socket for the server
     struct sockaddr_storage client_address; // Stores client address
-    int client_fd;                          // Socket for accepting connections
-    socklen_t client_len;                   // Length of client address structure
+    int                     client_fd;      // Socket for accepting connections
+    socklen_t               client_len; // Length of client address structure
 };
 
 /**
@@ -50,7 +50,7 @@ struct config
  * @return Returns E_SUCCESS if the server address is configured and the socket
  *         is bound successfully, or E_FAILURE on error.
  */
-static int configure_server_address(config_t *config_p, char *port_p);
+static int configure_server_address(config_t * config_p, char * port_p);
 
 /**
  * @brief Creates a listening socket for the server.
@@ -66,7 +66,7 @@ static int configure_server_address(config_t *config_p, char *port_p);
  * @return Returns E_SUCCESS if the socket is created and configured
  * successfully, or E_FAILURE on error.
  */
-static int create_listening_socket(config_t *config_p);
+static int create_listening_socket(config_t * config_p);
 
 /**
  * @brief Accepts a new client connection on the server's listening socket.
@@ -82,7 +82,7 @@ static int create_listening_socket(config_t *config_p);
  * @return Returns E_SUCCESS if a new connection is successfully accepted,
  *         SIG_SHUTDOWN if a shutdown signal is received, or E_FAILURE on error.
  */
-static int accept_new_connection(config_t *config_p);
+static int accept_new_connection(config_t * config_p);
 
 /**
  * @brief Prints the address of a connected client.
@@ -95,7 +95,7 @@ static int accept_new_connection(config_t *config_p);
  * @param config_p Pointer to the config_t structure containing the client's
  *        address information.
  */
-static void print_client_address(config_t *config_p);
+static void print_client_address(config_t * config_p);
 
 /**
  * @brief Handles a client request in a server application.
@@ -112,7 +112,7 @@ static void print_client_address(config_t *config_p);
  * @return Returns the result from executing the client's request handling
  * function, or NULL in case of an error or if there is no return value.
  */
-static void *handle_client_request(void *args_p);
+static void * handle_client_request(void * args_p);
 
 /**
  * @brief Initializes a server with specified configuration.
@@ -135,10 +135,10 @@ static void *handle_client_request(void *args_p);
  * @return On success, returns a pointer to the initialized server_t structure.
  * On failure, returns NULL.
  */
-static server_t *init_server(char *port_p,
-                             size_t max_connections,
-                             client_request_handler_t client_request_handler,
-                             client_data_free_func_t client_data_free_func);
+static server_t * init_server(char *                   port_p,
+                              size_t                   max_connections,
+                              client_request_handler_t client_request_handler,
+                              client_data_free_func_t  client_data_free_func);
 
 /**
  * @brief Destroys the server and releases allocated resources.
@@ -153,17 +153,17 @@ static server_t *init_server(char *port_p,
  * @return Returns E_SUCCESS after successful cleanup or E_FAILURE if an error
  * occurs.
  */
-static int destroy_server(server_t **server_p);
+static int destroy_server(server_t ** server_p);
 
-static server_t *init_server(char *port_p,
-                             size_t max_connections,
-                             client_request_handler_t client_request_handler,
-                             client_data_free_func_t client_data_free_func)
+static server_t * init_server(char *                   port_p,
+                              size_t                   max_connections,
+                              client_request_handler_t client_request_handler,
+                              client_data_free_func_t  client_data_free_func)
 {
-    int exit_code = E_FAILURE;
-    threadpool_t *threadpool_p = NULL;
-    config_t *config_p = NULL;
-    server_t *server_p = NULL;
+    int            exit_code    = E_FAILURE;
+    threadpool_t * threadpool_p = NULL;
+    config_t *     config_p     = NULL;
+    server_t *     server_p     = NULL;
 
     if ((NULL == port_p) || (NULL == client_request_handler))
     {
@@ -200,7 +200,7 @@ static server_t *init_server(char *port_p,
 
     // Activate listening mode for the server's socket, allowing it to queue up
     // to 'BACKLOG_SIZE' connection requests at a time.
-    errno = 0;
+    errno     = 0;
     exit_code = listen(config_p->listening_socket, BACKLOG_SIZE);
     if (E_SUCCESS != exit_code)
     {
@@ -216,11 +216,11 @@ static server_t *init_server(char *port_p,
         goto END;
     }
 
-    server_p->listening_socket = config_p->listening_socket;
-    server_p->threadpool_p = threadpool_p;
+    server_p->listening_socket       = config_p->listening_socket;
+    server_p->threadpool_p           = threadpool_p;
     server_p->client_request_handler = client_request_handler;
-    server_p->client_data_free_func = client_data_free_func;
-    server_p->settings_p = config_p;
+    server_p->client_data_free_func  = client_data_free_func;
+    server_p->settings_p             = config_p;
 
 END:
     if (E_SUCCESS != exit_code)
@@ -238,16 +238,16 @@ END:
     return server_p;
 }
 
-int start_tcp_server(char *port_p,
-                     size_t max_connections,
+int start_tcp_server(char *                   port_p,
+                     size_t                   max_connections,
                      client_request_handler_t client_request_handler,
-                     client_data_free_func_t client_data_free_func,
-                     void *user_data_p)
+                     client_data_free_func_t  client_data_free_func,
+                     void *                   user_data_p)
 {
-    int exit_code = E_FAILURE;
-    server_t *server_p = NULL;
-    client_data_t *client_data_p = NULL;
-    tcp_server_job_t *new_job_p = NULL;
+    int                exit_code     = E_FAILURE;
+    server_t *         server_p      = NULL;
+    client_data_t *    client_data_p = NULL;
+    tcp_server_job_t * new_job_p     = NULL;
 
     if ((NULL == port_p) || (NULL == client_request_handler) ||
         (NULL == user_data_p))
@@ -296,7 +296,7 @@ int start_tcp_server(char *port_p,
         }
 
         // Set up client data
-        client_data_p->client_fd = server_p->settings_p->client_fd;
+        client_data_p->client_fd   = server_p->settings_p->client_fd;
         client_data_p->user_data_p = user_data_p;
 
         new_job_p = calloc(1, sizeof(tcp_server_job_t));
@@ -310,8 +310,8 @@ int start_tcp_server(char *port_p,
 
         // Initialize the new job
         new_job_p->client_function = client_request_handler;
-        new_job_p->free_function = client_data_free_func;
-        new_job_p->args_p = client_data_p;
+        new_job_p->free_function   = client_data_free_func;
+        new_job_p->args_p          = client_data_p;
 
         // Add new job to the thread pool
         exit_code = threadpool_add_job(
@@ -338,7 +338,7 @@ END:
     return exit_code;
 }
 
-static int destroy_server(server_t **server_p)
+static int destroy_server(server_t ** server_p)
 {
     int exit_code = E_FAILURE;
     if ((NULL == server_p) || (NULL == (*server_p)))
@@ -366,15 +366,15 @@ END:
     return exit_code;
 }
 
-static int accept_new_connection(config_t *config_p)
+static int accept_new_connection(config_t * config_p)
 {
-    int exit_code = E_FAILURE;
+    int exit_code        = E_FAILURE;
     config_p->client_len = sizeof(config_p->client_address);
 
     // Attempt to accept a new client connection using the listening socket.
     // If the accept() function returns an invalid client fd, check for shutdown
     // signals (SIGINT or SIGUSR1).
-    errno = 0;
+    errno               = 0;
     config_p->client_fd = accept(config_p->listening_socket,
                                  (struct sockaddr *)&config_p->client_address,
                                  &config_p->client_len);
@@ -397,7 +397,7 @@ END:
     return exit_code;
 }
 
-static int configure_server_address(config_t *config_p, char *port_p)
+static int configure_server_address(config_t * config_p, char * port_p)
 {
     int exit_code = E_FAILURE;
 
@@ -408,13 +408,13 @@ static int configure_server_address(config_t *config_p, char *port_p)
     }
 
     // Setup a TCP server address using IPV4
-    config_p->hints = (struct addrinfo){.ai_family = AF_INET,       // IPV4
-                                        .ai_socktype = SOCK_STREAM, // TCP
-                                        .ai_flags = AI_PASSIVE,     // For binding
-                                        .ai_protocol = 0,
-                                        .ai_canonname = NULL,
-                                        .ai_addr = NULL,
-                                        .ai_next = NULL};
+    config_p->hints = (struct addrinfo) { .ai_family   = AF_INET,     // IPV4
+                                          .ai_socktype = SOCK_STREAM, // TCP
+                                          .ai_flags = AI_PASSIVE, // For binding
+                                          .ai_protocol  = 0,
+                                          .ai_canonname = NULL,
+                                          .ai_addr      = NULL,
+                                          .ai_next      = NULL };
 
     // Get a list of address structures and store them in 'config->address_list'
     exit_code =
@@ -446,7 +446,7 @@ static int configure_server_address(config_t *config_p, char *port_p)
             continue;
         }
 
-        errno = 0;
+        errno     = 0;
         exit_code = bind(config_p->listening_socket,
                          config_p->current_address->ai_addr,
                          config_p->current_address->ai_addrlen);
@@ -475,11 +475,11 @@ END:
     return exit_code;
 }
 
-static int create_listening_socket(config_t *config_p)
+static int create_listening_socket(config_t * config_p)
 {
-    int exit_code = E_FAILURE;
+    int exit_code      = E_FAILURE;
     int sock_opt_check = 0; // To check the return value of setsockopt
-    int optval = 1;         // Enable SO_REUSEADDR
+    int optval         = 1; // Enable SO_REUSEADDR
 
     if (NULL == config_p)
     {
@@ -488,7 +488,7 @@ static int create_listening_socket(config_t *config_p)
     }
 
     // Create a new socket
-    errno = 0;
+    errno                      = 0;
     config_p->listening_socket = socket(config_p->current_address->ai_family,
                                         config_p->current_address->ai_socktype,
                                         config_p->current_address->ai_protocol);
@@ -517,7 +517,7 @@ END:
     return exit_code;
 }
 
-static void print_client_address(config_t *config_p)
+static void print_client_address(config_t * config_p)
 {
     char address_buffer[MAX_CLIENT_ADDRESS_SIZE];
 
@@ -534,11 +534,11 @@ static void print_client_address(config_t *config_p)
     printf("Connection established - [%s]\n", address_buffer);
 }
 
-static void *handle_client_request(void *args_p)
+static void * handle_client_request(void * args_p)
 {
-    tcp_server_job_t *job_p = NULL;
-    client_data_t *data_p = NULL;
-    void *result_p = NULL;
+    tcp_server_job_t * job_p    = NULL;
+    client_data_t *    data_p   = NULL;
+    void *             result_p = NULL;
 
     if (NULL == args_p)
     {
