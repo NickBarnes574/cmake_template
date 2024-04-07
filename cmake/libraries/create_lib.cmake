@@ -1,4 +1,4 @@
-# FILENAME: create_library.cmake
+# FILENAME: create_lib.cmake
 # -----------------------------------------------------------------------------
 # DESCRIPTION: Defines a function to create a static library with the specified 
 # name, source files, and include directory. This script simplifies the library 
@@ -6,11 +6,14 @@
 # making them reusable for any given library within the project.
 # -----------------------------------------------------------------------------
 
-function(create_library LIB_NAME LIB_SOURCES LIB_INCLUDE_DIR)
+function(create_lib LIB_NAME LIB_SOURCES LIB_INCLUDE_DIRS)
     message(STATUS "Creating library: ${LIB_NAME}")
-    message(STATUS "Library sources: ${LIB_SOURCES}")
     add_library(${LIB_NAME} STATIC ${LIB_SOURCES})
-    target_include_directories(${LIB_NAME} PUBLIC ${LIB_INCLUDE_DIR})
-endfunction(create_library)
+    
+    # Include all specified directories
+    foreach(INCLUDE_DIR IN LISTS LIB_INCLUDE_DIRS)
+        target_include_directories(${LIB_NAME} PUBLIC ${INCLUDE_DIR})
+    endforeach()
+endfunction(create_lib)
 
 # *** end of file ***
