@@ -76,8 +76,8 @@ list_t * list_new(FREE_F free_func, CMP_F comp_func)
     new_list->size         = 0;
     new_list->head         = NULL;
     new_list->tail         = NULL;
-    new_list->custom_free  = (NULL == free_func) ? free : free_func;
-    new_list->compare_func = (NULL == comp_func) ? int_comp : comp_func;
+    new_list->custom_free  = free_func;
+    new_list->compare_func = comp_func;
 
 END:
     return new_list;
@@ -91,6 +91,7 @@ int list_push_head(list_t * list, void * data)
     if ((NULL == list) || (NULL == data))
     {
         print_error("NULL argument passed.");
+        exit_code = E_NULL_POINTER;
         goto END;
     }
 
@@ -134,6 +135,7 @@ int list_push_tail(list_t * list, void * data)
     if ((NULL == list) || (NULL == data))
     {
         print_error("NULL argument passed.");
+        exit_code = E_NULL_POINTER;
         goto END;
     }
 
@@ -170,13 +172,14 @@ END:
 
 int list_push_position(list_t * list, void * data, uint32_t position)
 {
-    int           exit_code    = E_FAILURE;
-    list_node_t * new_node     = NULL;
-    list_node_t * current_node = NULL;
+    int           exit_code = E_FAILURE;
+    list_node_t * new_node  = NULL;
+    list_node_t * current   = NULL;
 
     if ((NULL == list) || (NULL == data))
     {
         print_error("NULL argument passed.");
+        exit_code = E_NULL_POINTER;
         goto END;
     }
 
@@ -192,7 +195,7 @@ int list_push_position(list_t * list, void * data, uint32_t position)
         exit_code = list_push_head(list, data);
         goto END;
     }
-    if (position == list->size - 1)
+    if (position == list->size)
     {
         exit_code = list_push_tail(list, data);
         goto END;
@@ -206,17 +209,20 @@ int list_push_position(list_t * list, void * data, uint32_t position)
     }
 
     // Navigate to the specified position
-    current_node = list->head;
+    current = list->head;
     for (uint32_t idx = 0; idx < position - 1; idx++)
     {
-        current_node = current_node->next;
+        current = current->next;
     }
 
     // Insert the new node at the specified position
-    new_node->next           = current_node->next;
-    new_node->prev           = current_node;
-    current_node->next->prev = new_node;
-    current_node->next       = new_node;
+    new_node->next = current->next;
+    new_node->prev = current;
+    if (NULL != current->next)
+    {
+        current->next->prev = new_node;
+    }
+    current->next = new_node;
 
     list->size += 1;
 
@@ -225,7 +231,7 @@ END:
     return exit_code;
 }
 
-int list_emptycheck(list_t * list)
+int list_is_empty(list_t * list)
 {
     int exit_code = E_FAILURE;
 
@@ -246,7 +252,8 @@ END:
 
 void * list_pop_head(list_t * list)
 {
-    list_node_t * head_node = NULL;
+    list_node_t * head = NULL;
+    void *        data = NULL;
 
     if ((NULL == list) || (NULL == list->head))
     {
@@ -254,7 +261,8 @@ void * list_pop_head(list_t * list)
         goto END;
     }
 
-    head_node = list->head;
+    head = list->head;
+    data = list->head->data;
 
     if (list->head == list->tail)
     {
@@ -269,13 +277,17 @@ void * list_pop_head(list_t * list)
 
     list->size--;
 
+    free(head);
+    head = NULL;
+
 END:
-    return head_node->data;
+    return data;
 }
 
 void * list_pop_tail(list_t * list)
 {
-    list_node_t * tail_node = NULL;
+    list_node_t * tail = NULL;
+    void *        data = NULL;
 
     if ((NULL == list) || (NULL == list->tail))
     {
@@ -283,7 +295,8 @@ void * list_pop_tail(list_t * list)
         goto END;
     }
 
-    tail_node = list->tail;
+    tail = list->tail;
+    data = list->tail->data;
 
     if (list->head == list->tail)
     {
@@ -298,14 +311,18 @@ void * list_pop_tail(list_t * list)
 
     list->size--;
 
+    free(tail);
+    tail = NULL;
+
 END:
-    return tail_node->data;
+    return data;
 }
 
 void * list_pop_position(list_t * list, uint32_t position)
 {
-    list_node_t * current     = NULL;
-    list_node_t * node_to_pop = NULL;
+    list_node_t * current = NULL;
+    list_node_t * temp    = NULL;
+    void *        data    = NULL;
 
     if (NULL == list)
     {
@@ -319,38 +336,45 @@ void * list_pop_position(list_t * list, uint32_t position)
         goto END;
     }
 
+    // Handle special cases for head and tail
     if (0 == position)
     {
-        node_to_pop = list_pop_head(list);
+        temp = list_pop_head(list);
         goto END;
     }
-
-    if (position == list->size - 1)
+    if (position == list->size)
     {
-        node_to_pop = list_pop_tail(list);
+        temp = list_pop_tail(list);
         goto END;
     }
 
+    // Navigate to the specified position
     current = list->head;
-    for (uint32_t idx = 0; idx < position; idx++)
+    for (uint32_t idx = 0; idx < position - 1; idx++)
     {
         current = current->next;
     }
 
-    node_to_pop         = current;
+    // Pop the node at the specified position
+    temp = current;
+    data = temp->data;
+
     current->prev->next = current->next;
     if (NULL != current->next)
     {
         current->next->prev = current->prev;
     }
 
-    node_to_pop->prev = NULL;
-    node_to_pop->next = NULL;
+    temp->prev = NULL;
+    temp->next = NULL;
 
     list->size--;
 
+    free(temp);
+    temp = NULL;
+
 END:
-    return node_to_pop->data;
+    return data;
 }
 
 int list_remove_head(list_t * list)
@@ -696,24 +720,20 @@ int list_clear(list_t * list)
     if (NULL == list)
     {
         print_error("list_clear(): NULL argument passed.");
+        exit_code = E_NULL_POINTER;
         goto END;
     }
 
     current_node = list->head;
-    if (NULL == current_node)
-    {
-        print_error("list_clear(): Empty list.");
-        goto END;
-    }
-
-    for (size_t idx = 0; idx < list->size; idx++)
+    while (NULL != current_node)
     {
         next_node = current_node->next;
-
-        list->custom_free(current_node->data);
-        current_node->data = NULL;
+        if (list->custom_free != NULL)
+        {
+            list->custom_free(current_node->data);
+            current_node->data = NULL;
+        }
         free(current_node);
-        current_node = NULL;
         current_node = next_node;
     }
 
@@ -730,10 +750,10 @@ int list_delete(list_t ** list_address)
 {
     int exit_code = E_FAILURE;
 
-    if (NULL == *list_address)
+    if ((list_address == NULL) || (*list_address == NULL))
     {
         print_error("list_delete(): NULL argument passed.");
-        goto END;
+        return E_NULL_POINTER;
     }
 
     exit_code = list_clear(*list_address);
@@ -746,15 +766,8 @@ int list_delete(list_t ** list_address)
     free(*list_address);
     *list_address = NULL;
 
-    exit_code = E_SUCCESS;
 END:
     return exit_code;
-}
-
-void custom_free(void * mem_addr)
-{
-    free(mem_addr);
-    mem_addr = NULL;
 }
 
 /***********************************************************************

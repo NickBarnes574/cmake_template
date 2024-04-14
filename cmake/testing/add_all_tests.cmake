@@ -20,6 +20,14 @@ function(library_tests)
         ADDITIONAL_LIBRARIES    Common # Specify additional libraries as needed
     )
 
+    add_cunit_test(
+        TARGET_NAME             test_linked_list
+        PROJECT_DIRECTORY       ${CMAKE_SOURCE_DIR}/libraries/DSA/linked_list
+        TEST_DIRECTORY          ${CMAKE_SOURCE_DIR}/libraries/DSA/linked_list/tests
+        OUTPUT_DIRECTORY        ${CMAKE_SYSTEM_PROCESSOR}/tests/library_tests/${CMAKE_BUILD_TYPE}/DSA
+        ADDITIONAL_LIBRARIES    Common Math# Specify additional libraries as needed
+    )
+
 endfunction()
 
 function(training_tests)

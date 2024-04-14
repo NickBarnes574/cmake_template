@@ -113,7 +113,7 @@ int list_push_position(list_t * list, void * data, uint32_t position);
  * @param list pointer to linked list object to be checked
  * @returns non-zero if list is empty, 0 value if not empty
  */
-int list_emptycheck(list_t * list);
+int list_is_empty(list_t * list);
 
 /**
  * @brief pops the head node out of the list
@@ -262,12 +262,5 @@ int list_clear(list_t * list);
  * @return 0 on success, non-zero value on failure
  */
 int list_delete(list_t ** list_address);
-
-/**
- * @brief frees an item and its associated memory
- *
- * @param mem_addr pointer of the item to be free'd
- */
-void custom_free(void * mem_addr);
 
 #endif

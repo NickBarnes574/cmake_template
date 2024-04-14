@@ -1,8 +1,11 @@
 # Common Library TODOs
+
 ## File I/O
+
 ### Function Prototypes
 
 #### write_line()
+
 ```c
 /**
  * @brief Writes a line to a file.
@@ -21,6 +24,7 @@ int write_line(FILE * write_fd, const char * line);
 ```
 
 #### open_file()
+
 ```c
 /**
  * @brief Opens a file with the specified mode.
@@ -41,6 +45,7 @@ int open_file(const char * filepath, const char * mode, FILE ** file);
 ```
 
 #### close_file()
+
 ```c
 /**
  * @brief Closes a file.
@@ -57,6 +62,7 @@ int close_file(FILE * file_fd);
 ```
 
 #### read_file_into_buffer()
+
 ```c
 /**
  * @brief Reads an entire file into a buffer.
@@ -79,6 +85,7 @@ int read_file_into_buffer(FILE * read_fd, char ** buffer, size_t * size);
 ```
 
 #### delete_file()
+
 ```c
 /**
  * @brief Deletes a file at the specified path.
@@ -94,6 +101,7 @@ int delete_file(const char * filepath);
 ```
 
 #### get_file_size()
+
 ```c
 /**
  * @brief Gets the size of a file.
@@ -111,6 +119,7 @@ int get_file_size(FILE * file_fd, size_t * size);
 ```
 
 #### copy_file()
+
 ```c
 /**
  * @brief Copies a file from source to destination path.
