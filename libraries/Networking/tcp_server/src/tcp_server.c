@@ -1,3 +1,5 @@
+#define _POSIX_C_SOURCE 200112L
+
 #include <arpa/inet.h> // bind(), accept()
 #include <errno.h>     // Access 'errno' global variable
 #include <netdb.h>     // getaddrinfo() struct

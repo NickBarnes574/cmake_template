@@ -19,7 +19,10 @@ function(add_all_libs)
         libraries/DSA/vector
     )
     add_lib(Threading DIRS libraries/Threading)
-    add_lib(Networking DIRS libraries/Networking)
+    add_lib(Networking DIRS
+        libraries/Networking/common
+        libraries/Networking/tcp_server
+    )
     
     # Setup inter-library dependencies
     target_link_libraries(Math PUBLIC Common)

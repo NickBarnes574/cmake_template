@@ -2,6 +2,7 @@
 #define _SOCKET_IO_H
 
 #include <stdint.h>
+#include <stdlib.h>
 
 #define MIN_SOCKET 3 // The lowest allowable user-defined socket
 #define MAX_BYTES \
