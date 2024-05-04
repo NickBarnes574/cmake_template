@@ -6,7 +6,6 @@
 #include <poll.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h> //memset()
 
 #include "threadpool.h"
 #include "utilities.h"
@@ -56,20 +55,18 @@ int start_tcp_server(char * port, size_t max_connections)
     if (NULL == threadpool)
     {
         print_error("start_tcp_server(): Unable to create threadpool.");
-        goto CLEANUP;
+        goto END;
     }
 
     // Implement main server loop and event handling here
 
     exit_code = E_SUCCESS;
 
-CLEANUP:
+END:
     threadpool_destroy(&threadpool);
     threadpool = NULL;
     free(fd_array);
     fd_array = NULL;
-
-END:
     return exit_code;
 }
 
