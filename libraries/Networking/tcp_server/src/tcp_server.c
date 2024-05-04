@@ -3,15 +3,106 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <netdb.h>
+#include <poll.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h> //memset()
 
 #include "threadpool.h"
 #include "utilities.h"
 
 #define MAX_CLIENT_ADDRESS_SIZE 100 // Size for storing client address strings
+#define MAX_FD_COUNT            50
 
 static int create_listening_socket(int * server_fd, struct addrinfo * addr);
+static int initialize_server(int * server_fd, const char * port);
+static int setup_poll(struct pollfd * fd_array, int max_fds, int server_fd);
+
+int start_tcp_server(char * port, size_t max_connections)
+{
+    int             exit_code  = E_FAILURE;
+    int             server_fd  = 0;
+    struct pollfd * fd_array   = NULL;
+    threadpool_t *  threadpool = NULL;
+
+    if (NULL == port)
+    {
+        print_error("start_tcp_server(): NULL argument passed.");
+        goto END;
+    }
+
+    fd_array = calloc(MAX_FD_COUNT, sizeof(struct pollfd));
+    if (NULL == fd_array)
+    {
+        print_error("start_tcp_server(): CMR failure - 'fd_array'.");
+        goto END;
+    }
+
+    exit_code = initialize_server(&server_fd, port);
+    if (E_SUCCESS != exit_code)
+    {
+        print_error("start_tcp_server(): Unable to initialize server.");
+        goto END;
+    }
+
+    exit_code = setup_poll(fd_array, MAX_FD_COUNT, server_fd);
+    if (E_SUCCESS != exit_code)
+    {
+        print_error("start_tcp_server(): Unable to setup poll.");
+        goto END;
+    }
+
+    threadpool = threadpool_create(max_connections);
+    if (NULL == threadpool)
+    {
+        print_error("start_tcp_server(): Unable to create threadpool.");
+        goto CLEANUP;
+    }
+
+    // Implement main server loop and event handling here
+
+    exit_code = E_SUCCESS;
+
+CLEANUP:
+    threadpool_destroy(&threadpool);
+    threadpool = NULL;
+    free(fd_array);
+    fd_array = NULL;
+
+END:
+    return exit_code;
+}
+
+static int setup_poll(struct pollfd * fd_array, int max_fds, int server_fd)
+{
+    int exit_code = E_FAILURE;
+
+    if (NULL == fd_array)
+    {
+        print_error("setup_poll(): NULL argument passed.");
+        goto END;
+    }
+
+    if (0 >= max_fds)
+    {
+        print_error("setup_poll(): 'max_fds' must be greater than 0");
+        goto END;
+    }
+
+    fd_array[0].fd     = server_fd; // Set up the first fd for the server socket
+    fd_array[0].events = POLLIN;    // Check for read events
+
+    // Initialize the rest of the array
+    for (int idx = 1; idx < max_fds; idx++)
+    {
+        fd_array[idx].fd     = -1; // Unused slots are set to `-1`
+        fd_array[idx].events = 0;
+    }
+
+    exit_code = E_SUCCESS;
+END:
+    return exit_code;
+}
 
 static int create_listening_socket(int * server_fd, struct addrinfo * addr)
 {
@@ -27,7 +118,7 @@ static int create_listening_socket(int * server_fd, struct addrinfo * addr)
 
     errno   = 0;
     sock_fd = socket(addr->ai_family, addr->ai_socktype, addr->ai_protocol);
-    if (-1 >= sock_fd)
+    if (-1 == sock_fd)
     {
         perror("create_listening_socket(): socket() failed.");
         goto END;
