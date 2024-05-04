@@ -11,9 +11,10 @@
 #include "utilities.h"
 
 #define MAX_CLIENT_ADDRESS_SIZE 100 // Size for storing client address strings
+#define BACKLOG_SIZE            10 // Maximum number of pending client connections
 #define MAX_FD_COUNT            50
 
-static int create_listening_socket(int * server_fd, struct addrinfo * addr);
+static int create_socket(int * server_fd, struct addrinfo * addr);
 static int initialize_server(int * server_fd, const char * port);
 static int setup_poll(struct pollfd * fd_array, int max_fds, int server_fd);
 
@@ -101,7 +102,7 @@ END:
     return exit_code;
 }
 
-static int create_listening_socket(int * server_fd, struct addrinfo * addr)
+static int create_socket(int * server_fd, struct addrinfo * addr)
 {
     int exit_code = E_FAILURE;
     int optval    = 1; // Enable SO_REUSEADDR
@@ -109,7 +110,7 @@ static int create_listening_socket(int * server_fd, struct addrinfo * addr)
 
     if (NULL == addr)
     {
-        print_error("create_listening_socket(): NULL argument passed.");
+        print_error("create_socket(): NULL argument passed.");
         goto END;
     }
 
@@ -117,7 +118,7 @@ static int create_listening_socket(int * server_fd, struct addrinfo * addr)
     sock_fd = socket(addr->ai_family, addr->ai_socktype, addr->ai_protocol);
     if (-1 == sock_fd)
     {
-        perror("create_listening_socket(): socket() failed.");
+        perror("create_socket(): socket() failed.");
         goto END;
     }
 
@@ -126,7 +127,7 @@ static int create_listening_socket(int * server_fd, struct addrinfo * addr)
         setsockopt(sock_fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
     if (E_SUCCESS != exit_code)
     {
-        perror("create_listening_socket(): setsockopt() failed.");
+        perror("create_socket(): setsockopt() failed.");
         close(sock_fd);
         goto END;
     }
@@ -170,13 +171,12 @@ static int initialize_server(int * server_fd, const char * port)
     // Try each address, attempting to create a socket and bind
     for (current = addr_list; NULL != current; current = current->ai_next)
     {
-        exit_code = create_listening_socket(server_fd, current);
+        exit_code = create_socket(server_fd, current);
         if (E_SUCCESS != exit_code)
         {
             continue;
         }
 
-        errno     = 0;
         exit_code = bind(*server_fd, current->ai_addr, current->ai_addrlen);
         if (E_SUCCESS == exit_code)
         {
@@ -190,6 +190,14 @@ static int initialize_server(int * server_fd, const char * port)
     {
         // None of the addresses succeeded
         exit_code = E_FAILURE;
+        goto END;
+    }
+
+    errno     = 0;
+    exit_code = listen(*server_fd, BACKLOG_SIZE);
+    if (E_SUCCESS != exit_code)
+    {
+        perror("initialize_server(): listen() failed.");
         goto END;
     }
 
