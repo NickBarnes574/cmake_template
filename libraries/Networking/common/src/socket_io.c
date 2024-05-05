@@ -21,9 +21,77 @@
  */
 static size_t calculate_chunk(size_t bytes_to_process, size_t bytes_processed);
 
-// Covers [4.1.13] - send()
-// Covers [4.8.1] - Handle partial reads and writes
-int send_data(int socket, void * buffer_p, size_t bytes_to_send)
+int send_data(int socket, void * buffer_p)
+{
+    int     exit_code   = E_FAILURE;
+    ssize_t byte_result = 0;
+
+    if (NULL == buffer_p)
+    {
+        print_error("send_data(): NULL argument passed.");
+        goto END;
+    }
+
+    if (MIN_SOCKET > socket)
+    {
+        print_error("send_data(): Invalid socket.");
+        goto END;
+    }
+
+    byte_result = send(socket, buffer_p, sizeof(buffer_p), 0);
+    if (E_FAILURE == byte_result)
+    {
+        print_error("send_data(): Error sending data.");
+        goto END;
+    }
+
+    if (0 == byte_result)
+    {
+        fprintf(stderr, "send_data(): socket %d hung up.\n", socket);
+        goto END;
+    }
+
+    exit_code = E_SUCCESS;
+END:
+    return exit_code;
+}
+
+int recv_data(int socket, void * buffer_p)
+{
+    int     exit_code   = E_FAILURE;
+    ssize_t byte_result = 0;
+
+    if (NULL == buffer_p)
+    {
+        print_error("recv_data(): NULL argument passed.");
+        goto END;
+    }
+
+    if (MIN_SOCKET > socket)
+    {
+        print_error("recv_data(): Invalid socket.");
+        goto END;
+    }
+
+    byte_result = recv(socket, buffer_p, sizeof(buffer_p), 0);
+    if (E_FAILURE == byte_result)
+    {
+        print_error("recv_data(): Error receiving data.");
+        goto END;
+    }
+
+    if (0 == byte_result)
+    {
+        fprintf(stderr, "recv_data(): socket %d hung up.\n", socket);
+        goto END;
+    }
+
+    exit_code = E_SUCCESS;
+END:
+    return exit_code;
+}
+
+int send_all_data(int socket, void * buffer_p, size_t bytes_to_send)
 {
     int       exit_code        = E_FAILURE;
     size_t    chunk            = 0;
@@ -86,8 +154,7 @@ END:
     return exit_code;
 }
 
-// Covers [4.1.13] - recv()
-int recv_data(int socket, void * buffer_p, size_t bytes_to_recv)
+int recv_all_data(int socket, void * buffer_p, size_t bytes_to_recv)
 {
     int       exit_code            = E_FAILURE;
     size_t    chunk                = 0;

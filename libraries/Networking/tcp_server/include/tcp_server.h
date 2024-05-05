@@ -15,7 +15,7 @@
  * @param max_connections
  * @return int
  */
-int start_tcp_server(char * port, size_t max_connections);
+int start_tcp_server(char * port);
 
 #endif /* _TCP_SERVER_H */
 

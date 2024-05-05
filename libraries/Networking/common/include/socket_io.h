@@ -8,6 +8,9 @@
 #define MAX_BYTES \
     (size_t)1400 // Max number of bytes to send or received at once
 
+int send_data(int socket, void * buffer_p);
+int recv_data(int socket, void * buffer_p);
+
 /**
  * @brief Sends the specified number of bytes to a given socket.
  *
@@ -21,7 +24,7 @@
  * @return E_SUCCESS on successful completion of the send operation or E_FAILURE
  * in case of an error.
  */
-int send_data(int socket, void * buffer_p, size_t bytes_to_send);
+int send_all_data(int socket, void * buffer_p, size_t bytes_to_send);
 
 /**
  * @brief Receives the specified number of bytes from a given socket.
@@ -38,6 +41,6 @@ int send_data(int socket, void * buffer_p, size_t bytes_to_send);
  * @return E_SUCCESS on successful completion of the receive operation or
  * E_FAILURE in case of an error.
  */
-int recv_data(int socket, void * buffer_p, size_t bytes_to_recv);
+int recv_all_data(int socket, void * buffer_p, size_t bytes_to_recv);
 
 #endif

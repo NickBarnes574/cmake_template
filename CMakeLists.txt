@@ -24,6 +24,14 @@ include_cmake_modules("testing")    # Test configuration
 #Define _GNU_SOURCE for GNU extensions
 add_definitions(-D_GNU_SOURCE)
 
+if(CMAKE_BUILD_TYPE MATCHES Debug)
+    message(STATUS "*** building in DEBUG mode ***")
+    set_default_debug_options()
+else()
+    message(STATUS "*** building in RELEASE mode ***")
+    set_default_release_options()
+endif()
+
 add_all_libs()
 
 add_all_targets()
