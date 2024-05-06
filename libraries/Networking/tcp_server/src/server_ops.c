@@ -6,6 +6,7 @@
 #include "connection_manager.h"
 #include "server_ops.h"
 #include "signal_handler.h"
+#include "socket_manager.h"
 #include "utilities.h"
 
 #define BACKLOG_SIZE 10 // Maximum number of pending client connections
@@ -165,6 +166,13 @@ int initialize_server(server_context_t * server)
     if (E_SUCCESS != exit_code)
     {
         perror("initialize_server(): listen() failed.");
+        goto END;
+    }
+
+    exit_code = sock_fd_arr_init(server->sock_mgr, server->fd);
+    if (E_SUCCESS != exit_code)
+    {
+        print_error("start_tcp_server(): Unable to setup poll.");
         goto END;
     }
 

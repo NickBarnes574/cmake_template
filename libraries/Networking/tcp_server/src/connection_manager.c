@@ -86,7 +86,7 @@ int register_client(server_context_t * server)
         goto END;
     }
 
-    exit_code = fd_add(server->sock_mgr, client.fd);
+    exit_code = sock_fd_add(server->sock_mgr, client.fd);
     if (E_SUCCESS != exit_code)
     {
         print_error("register_client(): Unable to add fd to array.");
@@ -119,14 +119,14 @@ int handle_client_activity(socket_manager_t * sock_mgr, int index)
 
     client_fd = sock_mgr->fd_arr[index].fd;
 
-    exit_code = receive_data_from_client(client_fd, &buffer, sock_mgr, index);
+    exit_code = receive_data_from_client(client_fd, buffer, sock_mgr, index);
     if (E_SUCCESS != exit_code)
     {
         print_error("handle_client_activity(): Unable to receive data.");
         goto END;
     }
 
-    exit_code = broadcast_data_to_clients(sock_mgr, client_fd, &buffer);
+    exit_code = broadcast_data_to_clients(sock_mgr, client_fd, buffer);
     if (E_SUCCESS != exit_code)
     {
         print_error("handle_client_activity(): Unable to broadcast data.");
@@ -151,12 +151,12 @@ int receive_data_from_client(int                client_fd,
         goto END;
     }
 
-    exit_code = recv_data(client_fd, &buffer);
+    exit_code = recv_data(client_fd, buffer);
     if (E_SUCCESS != exit_code)
     {
         print_error("handle_client_activity(): recv_data() failed.");
         close(client_fd);
-        exit_code = fd_remove(sock_mgr, index);
+        exit_code = sock_fd_remove(sock_mgr, index);
         if (E_SUCCESS != exit_code)
         {
             print_error("handle_client_activity(): Unable to remove fd.");
@@ -182,7 +182,7 @@ int broadcast_data_to_clients(socket_manager_t * sock_mgr,
         if ((destination_fd != client_fd) &&
             (destination_fd != sock_mgr->fd_arr[0].fd))
         {
-            exit_code = send_data(destination_fd, &buffer);
+            exit_code = send_data(destination_fd, buffer);
             if (E_SUCCESS != exit_code)
             {
                 print_error("handle_client_activity(): send_data() failed.");

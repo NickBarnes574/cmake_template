@@ -8,10 +8,11 @@
 
 #include "server_structs.h"
 
-int fd_add(socket_manager_t * sock_mgr, int new_fd);
-int fd_remove(socket_manager_t * sock_mgr, int index);
-int increase_capacity(socket_manager_t * sock_mgr);
-int setup_poll(socket_manager_t * context, int fd);
+int sock_fd_add(socket_manager_t * sock_mgr, int new_fd);
+int sock_fd_remove(socket_manager_t * sock_mgr, int index);
+int sock_fd_increase_capacity(socket_manager_t * sock_mgr);
+int sock_fd_arr_init(socket_manager_t * sock_mgr, int server_fd);
+int close_all_sockets(socket_manager_t * sock_mgr);
 
 #endif /* _SOCKET_MANAGER_H */
 

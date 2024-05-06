@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "tcp_server.h": "c",
-        "stdint.h": "c"
+        "stdint.h": "c",
+        "server_structs.h": "c"
     }
 }

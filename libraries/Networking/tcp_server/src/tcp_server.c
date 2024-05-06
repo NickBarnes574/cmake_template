@@ -25,8 +25,16 @@ int start_tcp_server(char * port)
         goto END;
     }
 
-    server.port      = port;
-    sock_mgr.max_fds = DEFAULT_FD_CAPACITY;
+    // Initialize signal handler
+    exit_code = signal_action_setup();
+    if (E_SUCCESS != exit_code)
+    {
+        print_error("start_tcp_server(): Unable to setup signal handler.");
+        goto END;
+    }
+
+    server.port     = port;
+    server.sock_mgr = &sock_mgr;
 
     exit_code = initialize_server(&server);
     if (E_SUCCESS != exit_code)
@@ -34,15 +42,6 @@ int start_tcp_server(char * port)
         print_error("start_tcp_server(): Unable to initialize server.");
         goto END;
     }
-
-    exit_code = setup_poll(&sock_mgr, server.fd);
-    if (E_SUCCESS != exit_code)
-    {
-        print_error("start_tcp_server(): Unable to setup poll.");
-        goto END;
-    }
-
-    server.sock_mgr = &sock_mgr;
 
     exit_code = run_server_loop(&server);
     if (E_SUCCESS != exit_code)
@@ -52,11 +51,6 @@ int start_tcp_server(char * port)
     }
 
 END:
-    if (server.fd)
-    {
-        close(server.fd);
-    }
-    free(sock_mgr.fd_arr);
-    sock_mgr.fd_arr = NULL;
+    close_all_sockets(server.sock_mgr);
     return exit_code;
 }
