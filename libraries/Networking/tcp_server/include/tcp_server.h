@@ -9,6 +9,14 @@
 #include <stdlib.h>
 
 /**
+ * @brief Indicator for server shutdown.
+ *
+ * This define value is returned by certain functions to indicate
+ * that a shutdown signal has been received and the server should
+ * terminate its operations gracefully.
+ */
+
+/**
  * @brief
  *
  * @param port
