@@ -14,8 +14,8 @@
 
 int main()
 {
-    int number = 10;
-    int *p_number = NULL;
+    int   number   = 10;
+    int * p_number = NULL;
 
     p_number = &number;
 

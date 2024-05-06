@@ -7,6 +7,7 @@
 function(add_all_tests)
 
     library_tests()
+    training_tests()
 
 endfunction()
 
