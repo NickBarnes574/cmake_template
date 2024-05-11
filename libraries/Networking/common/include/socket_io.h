@@ -1,6 +1,7 @@
 #ifndef _SOCKET_IO_H
 #define _SOCKET_IO_H
 
+#include <netdb.h> // struct addrinfo
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -8,6 +9,7 @@
 #define MAX_BYTES \
     (size_t)1400 // Max number of bytes to send or received at once
 
+int create_socket(int * fd, struct addrinfo * addr);
 int send_data(int socket, void * buffer_p);
 int recv_data(int socket, void * buffer_p);
 

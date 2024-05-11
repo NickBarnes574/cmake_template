@@ -1,3 +1,4 @@
+#include <errno.h> // errno
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/socket.h>
@@ -20,6 +21,43 @@
  * @return The size of the next chunk to be processed.
  */
 static size_t calculate_chunk(size_t bytes_to_process, size_t bytes_processed);
+
+int create_socket(int * fd, struct addrinfo * addr)
+{
+    int exit_code = E_FAILURE;
+    int optval    = 1; // Enable SO_REUSEADDR
+    int sock_fd   = 0;
+
+    if (NULL == addr)
+    {
+        print_error("create_socket(): NULL argument passed.");
+        goto END;
+    }
+
+    errno   = 0;
+    sock_fd = socket(addr->ai_family, addr->ai_socktype, addr->ai_protocol);
+    if (-1 == sock_fd)
+    {
+        perror("create_socket(): socket() failed.");
+        goto END;
+    }
+
+    // Enable the SO_REUSEADDR option to reuse the local address
+    exit_code =
+        setsockopt(sock_fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
+    if (E_SUCCESS != exit_code)
+    {
+        perror("create_socket(): setsockopt() failed.");
+        close(sock_fd);
+        goto END;
+    }
+
+    *fd = sock_fd;
+
+    exit_code = E_SUCCESS;
+END:
+    return exit_code;
+}
 
 int send_data(int socket, void * buffer_p)
 {

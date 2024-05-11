@@ -147,31 +147,6 @@ int close_all_sockets(socket_manager_t * sock_mgr)
     free(sock_mgr->fd_arr);
     sock_mgr->fd_arr = NULL;
 
-    // sock_mgr->fd_arr = calloc(DEFAULT_FD_CAPACITY, sizeof(struct pollfd));
-    // if (NULL == sock_mgr->fd_arr)
-    // {
-    //     print_error("sock_fd_arr_init(): CMR failure - 'fd_arr'.");
-    //     goto END;
-    // }
-
-    // sock_mgr->fd_arr[0].fd     = server_fd; // Set up the server socket
-    // sock_mgr->fd_arr[0].events = POLLIN;    // Check for read events
-    // sock_mgr->fd_count         = 1;
-    // sock_mgr->max_fds          = DEFAULT_FD_CAPACITY;
-
-    // if (0 >= sock_mgr->max_fds)
-    // {
-    //     print_error("sock_fd_arr_init(): 'max_fds' must be greater than 0");
-    //     goto END;
-    // }
-
-    // // Initialize the rest of the array
-    // for (int idx = 1; idx < sock_mgr->max_fds; idx++)
-    // {
-    //     sock_mgr->fd_arr[idx].fd     = -1; // Unused slots are set to `-1`
-    //     sock_mgr->fd_arr[idx].events = 0;
-    // }
-
     exit_code = E_SUCCESS;
 END:
     return exit_code;
