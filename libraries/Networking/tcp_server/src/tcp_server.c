@@ -15,12 +15,14 @@
 #define MAX_CLIENT_ADDRESS_SIZE 100 // Size for storing client address strings
 #define BACKLOG_SIZE            10 // Maximum number of pending client connections
 #define TIMEOUT                 (-1)
+#define NUM_THREADS             10 // Number of threads to create
 
 int start_tcp_server(char * port)
 {
-    int              exit_code = E_FAILURE;
-    server_context_t server    = { 0 };
-    socket_manager_t sock_mgr  = { 0 };
+    int              exit_code   = E_FAILURE;
+    server_context_t server      = { 0 };
+    socket_manager_t sock_mgr    = { 0 };
+    threadpool_t *   thread_pool = NULL;
 
     if (NULL == port)
     {
@@ -36,8 +38,16 @@ int start_tcp_server(char * port)
         goto END;
     }
 
-    server.port     = port;
-    server.sock_mgr = &sock_mgr;
+    thread_pool = threadpool_create(NUM_THREADS);
+    if (NULL == thread_pool)
+    {
+        print_error("start_tcp_server(): Unable to create thread pool.");
+        goto END;
+    }
+
+    server.port        = port;
+    server.sock_mgr    = &sock_mgr;
+    server.thread_pool = thread_pool;
 
     exit_code = initialize_server(&server);
     if (E_SUCCESS != exit_code)
@@ -55,6 +65,7 @@ int start_tcp_server(char * port)
 
 END:
     close_all_sockets(server.sock_mgr);
+    threadpool_destroy(&server.thread_pool);
     return exit_code;
 }
 

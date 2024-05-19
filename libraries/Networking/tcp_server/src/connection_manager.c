@@ -14,6 +14,12 @@
 #define POLL_ERROR_EVENTS  (POLLERR | POLLHUP | POLLNVAL)
 #define CLIENT_BUFFER_SIZE 256
 
+typedef struct job_arg
+{
+    char data[CLIENT_BUFFER_SIZE]; // Data to process
+    int  client_fd;                // Client file descriptor
+} job_arg_t;
+
 int handle_connections(server_context_t * server)
 {
     int             exit_code = E_FAILURE;
@@ -103,6 +109,33 @@ int register_client(server_context_t * server)
     exit_code = E_SUCCESS;
 END:
     return exit_code;
+}
+
+void * process_client_request(void * arg)
+{
+    int         exit_code = E_FAILURE;
+    job_arg_t * job_args  = NULL;
+
+    if (NULL == arg)
+    {
+        print_error("process_client_request(): NULL argument passed.");
+        goto END;
+    }
+
+    job_args = (job_arg_t *)arg;
+
+    // Process data
+    printf("Processing data: %s\n", job_args->data);
+
+    exit_code = send_data(job_args->client_fd, job_args->data);
+    if (E_SUCCESS != exit_code)
+    {
+        print_error("process_client_request(): Unable to send data.");
+        goto END;
+    }
+
+END:
+    return NULL;
 }
 
 int handle_client_activity(socket_manager_t * sock_mgr, int index)
