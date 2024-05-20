@@ -9,7 +9,8 @@
 #include "server_utils.h"
 #include "socket_io.h"
 #include "socket_manager.h"
-#include "utilities.h" // get_in_addr()
+#include "string_operations.h" // copy_string()
+#include "utilities.h"         // get_in_addr()
 
 #define POLL_ERROR_EVENTS  (POLLERR | POLLHUP | POLLNVAL)
 #define CLIENT_BUFFER_SIZE 256
@@ -59,7 +60,7 @@ int handle_connections(server_context_t * server)
         }
         else
         {
-            exit_code = handle_client_activity(server->sock_mgr, idx);
+            exit_code = handle_client_activity(server, idx);
             if (E_SUCCESS != exit_code)
             {
                 continue;
@@ -138,31 +139,55 @@ END:
     return NULL;
 }
 
-int handle_client_activity(socket_manager_t * sock_mgr, int index)
+int handle_client_activity(server_context_t * server, int index)
 {
     int  exit_code                  = E_FAILURE;
     char buffer[CLIENT_BUFFER_SIZE] = { 0 };
     int  client_fd                  = 0;
 
-    if ((NULL == sock_mgr) || (NULL == sock_mgr->fd_arr))
+    if ((NULL == server->sock_mgr) || (NULL == server->sock_mgr->fd_arr) ||
+        (NULL == server))
     {
         print_error("handle_client_activity(): NULL argument passed.");
         goto END;
     }
 
-    client_fd = sock_mgr->fd_arr[index].fd;
+    client_fd = server->sock_mgr->fd_arr[index].fd;
 
-    exit_code = receive_data_from_client(client_fd, buffer, sock_mgr, index);
+    exit_code =
+        receive_data_from_client(client_fd, buffer, server->sock_mgr, index);
     if (E_SUCCESS != exit_code)
     {
         print_error("handle_client_activity(): Unable to receive data.");
         goto END;
     }
 
-    exit_code = broadcast_data_to_clients(sock_mgr, client_fd, buffer);
+    job_arg_t * job_args = calloc(1, sizeof(job_arg_t));
+    if (NULL == job_args)
+    {
+        print_error("handle_client_activity(): CMR failure - job_args.");
+        goto END;
+    }
+
+    job_args->client_fd = client_fd;
+    exit_code =
+        copy_string(buffer, &(job_args->data), CLIENT_BUFFER_SIZE - 1, false);
     if (E_SUCCESS != exit_code)
     {
-        print_error("handle_client_activity(): Unable to broadcast data.");
+        print_error("handle_client_activity(): Failed to copy buffer.");
+        free(job_args);
+        job_args = NULL;
+        goto END;
+    }
+
+    exit_code = threadpool_add_job(
+        server->thread_pool, process_client_request, free, job_args);
+    if (E_SUCCESS != exit_code)
+    {
+        print_error("handle_client_activity(): Cannot add job to thread pool.");
+        free(job_args->data);
+        free(job_args);
+        job_args = NULL;
         goto END;
     }
 
@@ -198,32 +223,6 @@ int receive_data_from_client(int                client_fd,
     }
 
     exit_code = E_SUCCESS;
-END:
-    return exit_code;
-}
-
-int broadcast_data_to_clients(socket_manager_t * sock_mgr,
-                              int                client_fd,
-                              char *             buffer)
-{
-    int exit_code      = E_FAILURE;
-    int destination_fd = 0;
-
-    for (int idx_b = 0; idx_b < sock_mgr->fd_count; idx_b++)
-    {
-        destination_fd = sock_mgr->fd_arr[idx_b].fd;
-        if ((destination_fd != client_fd) &&
-            (destination_fd != sock_mgr->fd_arr[0].fd))
-        {
-            exit_code = send_data(destination_fd, buffer);
-            if (E_SUCCESS != exit_code)
-            {
-                print_error("handle_client_activity(): send_data() failed.");
-                goto END;
-            }
-        }
-    }
-
 END:
     return exit_code;
 }

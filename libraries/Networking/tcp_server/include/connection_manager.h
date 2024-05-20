@@ -8,12 +8,9 @@
 
 #include "server_structs.h"
 
-int handle_client_activity(socket_manager_t * sock_mgr, int index);
+int handle_client_activity(server_context_t * server, int index);
 int handle_connections(server_context_t * server);
 int register_client(server_context_t * server);
-int broadcast_data_to_clients(socket_manager_t * sock_mgr,
-                              int                client_fd,
-                              char *             buffer);
 int receive_data_from_client(int                client_fd,
                              char *             buffer,
                              socket_manager_t * sock_mgr,

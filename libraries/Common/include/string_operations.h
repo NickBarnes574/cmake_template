@@ -32,6 +32,11 @@ int strip_newline(char * input_str_p);
  */
 int strings_are_equal(const char * str1_p, const char * str2_p, int * result_p);
 
+int copy_string(const char * input,
+                char **      output,
+                size_t       character_limit,
+                bool         allow_truncation);
+
 #endif /* _STRING_OPERATIONS_H */
 
 /*** end of file ***/
