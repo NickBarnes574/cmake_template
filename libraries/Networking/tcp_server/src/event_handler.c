@@ -1,25 +1,23 @@
 #include <arpa/inet.h> //inet_ntop()
 #include <errno.h>     // errno
 #include <poll.h>      // poll()
+#include <pthread.h>   // pthread_mutext_t
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h> // memcpy()
 #include <unistd.h> // close()
 
-#include "connection_manager.h"
+#include "event_handler.h"
+#include "opcodes.h"
+#include "request_handler.h" // process_client_request()
 #include "server_utils.h"
 #include "socket_io.h"
 #include "socket_manager.h"
-#include "string_operations.h" // copy_string()
-#include "utilities.h"         // get_in_addr()
+#include "utilities.h" // get_in_addr()
 
-#define POLL_ERROR_EVENTS  (POLLERR | POLLHUP | POLLNVAL)
-#define CLIENT_BUFFER_SIZE 256
+#define POLL_ERROR_EVENTS (POLLERR | POLLHUP | POLLNVAL)
 
-typedef struct job_arg
-{
-    char data[CLIENT_BUFFER_SIZE]; // Data to process
-    int  client_fd;                // Client file descriptor
-} job_arg_t;
+static int recv_opcode(uint8_t * opcode, int client_fd);
 
 int handle_connections(server_context_t * server)
 {
@@ -60,7 +58,7 @@ int handle_connections(server_context_t * server)
         }
         else
         {
-            exit_code = handle_client_activity(server, idx);
+            exit_code = handle_client_event(server, idx);
             if (E_SUCCESS != exit_code)
             {
                 continue;
@@ -93,10 +91,19 @@ int register_client(server_context_t * server)
         goto END;
     }
 
+    exit_code = set_fd_non_blocking(client.fd);
+    if (E_SUCCESS != exit_code)
+    {
+        print_error("register_client(): Unable to set fd to non-blocking.");
+        close(client.fd);
+        goto END;
+    }
+
     exit_code = sock_fd_add(server->sock_mgr, client.fd);
     if (E_SUCCESS != exit_code)
     {
         print_error("register_client(): Unable to add fd to array.");
+        close(client.fd);
         goto END;
     }
 
@@ -112,80 +119,42 @@ END:
     return exit_code;
 }
 
-void * process_client_request(void * arg)
+int handle_client_event(server_context_t * server, int index)
 {
     int         exit_code = E_FAILURE;
+    int         client_fd = 0;
+    uint8_t     opcode    = -1;
     job_arg_t * job_args  = NULL;
-
-    if (NULL == arg)
-    {
-        print_error("process_client_request(): NULL argument passed.");
-        goto END;
-    }
-
-    job_args = (job_arg_t *)arg;
-
-    // Process data
-    printf("Processing data: %s\n", job_args->data);
-
-    exit_code = send_data(job_args->client_fd, job_args->data);
-    if (E_SUCCESS != exit_code)
-    {
-        print_error("process_client_request(): Unable to send data.");
-        goto END;
-    }
-
-END:
-    return NULL;
-}
-
-int handle_client_activity(server_context_t * server, int index)
-{
-    int  exit_code                  = E_FAILURE;
-    char buffer[CLIENT_BUFFER_SIZE] = { 0 };
-    int  client_fd                  = 0;
 
     if ((NULL == server->sock_mgr) || (NULL == server->sock_mgr->fd_arr) ||
         (NULL == server))
     {
-        print_error("handle_client_activity(): NULL argument passed.");
+        print_error("handle_client_event(): NULL argument passed.");
         goto END;
     }
 
     client_fd = server->sock_mgr->fd_arr[index].fd;
 
-    exit_code =
-        receive_data_from_client(client_fd, buffer, server->sock_mgr, index);
+    exit_code = recv_opcode(&opcode, client_fd);
     if (E_SUCCESS != exit_code)
     {
-        print_error("handle_client_activity(): Unable to receive data.");
+        print_error("handle_client_event(): Error receiving opcode.");
         goto END;
     }
 
-    job_arg_t * job_args = calloc(1, sizeof(job_arg_t));
-    if (NULL == job_args)
-    {
-        print_error("handle_client_activity(): CMR failure - job_args.");
-        goto END;
-    }
-
-    job_args->client_fd = client_fd;
-    exit_code =
-        copy_string(buffer, &(job_args->data), CLIENT_BUFFER_SIZE - 1, false);
+    exit_code = create_job_args(
+        client_fd, opcode, &server->sock_mgr->mutex_arr[index], &job_args);
     if (E_SUCCESS != exit_code)
     {
-        print_error("handle_client_activity(): Failed to copy buffer.");
-        free(job_args);
-        job_args = NULL;
+        print_error("handle_client_event(): Unable to create job args.");
         goto END;
     }
 
     exit_code = threadpool_add_job(
-        server->thread_pool, process_client_request, free, job_args);
+        server->thread_pool, process_client_request, free_job_args, job_args);
     if (E_SUCCESS != exit_code)
     {
-        print_error("handle_client_activity(): Cannot add job to thread pool.");
-        free(job_args->data);
+        print_error("handle_client_event(): Cannot add job to thread pool.");
         free(job_args);
         job_args = NULL;
         goto END;
@@ -196,33 +165,24 @@ END:
     return exit_code;
 }
 
-int receive_data_from_client(int                client_fd,
-                             char *             buffer,
-                             socket_manager_t * sock_mgr,
-                             int                index)
+static int recv_opcode(uint8_t * opcode, int client_fd)
 {
-    int exit_code = E_FAILURE;
+    int     exit_code = E_FAILURE;
+    uint8_t result    = -1;
 
-    if ((NULL == buffer) || (NULL == sock_mgr))
+    if (NULL == opcode)
     {
-        print_error("receive_data_from_client(): NULL argument passed.");
+        print_error("recv_opcode(): NULL argument passed.");
         goto END;
     }
 
-    exit_code = recv_data(client_fd, buffer);
+    exit_code = recv_all_data(client_fd, &result, sizeof(uint8_t));
     if (E_SUCCESS != exit_code)
     {
-        print_error("handle_client_activity(): recv_data() failed.");
-        close(client_fd);
-        exit_code = sock_fd_remove(sock_mgr, index);
-        if (E_SUCCESS != exit_code)
-        {
-            print_error("handle_client_activity(): Unable to remove fd.");
-        }
         goto END;
     }
 
-    exit_code = E_SUCCESS;
+    *opcode = result;
 END:
     return exit_code;
 }

@@ -73,7 +73,7 @@ int copy_string(const char * input,
                 bool         allow_truncation)
 {
     int    exit_code      = E_FAILURE;
-    int    num_characters = 0;
+    size_t num_characters = 0;
     size_t buffer_size    = 0;
     char * buffer         = NULL;
 
@@ -93,13 +93,6 @@ int copy_string(const char * input,
     }
 
     num_characters = snprintf(buffer, buffer_size, "%s", input);
-    if (0 > num_characters)
-    {
-        print_error("copy_string(): snprintf() failure.");
-        free(buffer);
-        buffer = NULL;
-        goto END;
-    }
     if (num_characters >= buffer_size)
     {
         if (false == allow_truncation)

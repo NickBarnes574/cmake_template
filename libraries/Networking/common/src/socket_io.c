@@ -1,4 +1,5 @@
 #include <errno.h> // errno
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/socket.h>
@@ -248,6 +249,32 @@ int recv_all_data(int socket, void * buffer_p, size_t bytes_to_recv)
         }
 
         total_bytes_received += byte_result;
+    }
+
+    exit_code = E_SUCCESS;
+END:
+    return exit_code;
+}
+
+int set_fd_non_blocking(int socket_fd)
+{
+    int exit_code    = E_FAILURE;
+    int flags        = 0;
+    int fcntl_result = 0;
+
+    // Get the current file descriptor flags
+    flags = fcntl(socket_fd, F_GETFL, 0);
+    if (-1 == flags)
+    {
+        print_error("set_fd_non_blocking(): fcntl(F_GETFL) failed.");
+        goto END;
+    }
+
+    fcntl_result = fcntl(socket_fd, F_SETFL, flags | O_NONBLOCK);
+    if (-1 == fcntl_result)
+    {
+        print_error("set_fd_non_blocking(): fcntl(F_SETFL) failed.");
+        goto END;
     }
 
     exit_code = E_SUCCESS;

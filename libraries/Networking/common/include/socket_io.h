@@ -12,19 +12,21 @@
 int create_socket(int * fd, struct addrinfo * addr);
 int send_data(int socket, void * buffer_p);
 int recv_data(int socket, void * buffer_p);
+int set_fd_non_blocking(int socket_fd);
 
 /**
  * @brief Sends the specified number of bytes to a given socket.
  *
- * This function handles sending data over a specified socket. It ensures that
- * the arguments are valid and then utilizes the socket_io function to manage
- * the actual sending of data, processing it in chunks as defined by MAX_BYTES.
+ * This function handles sending data over a specified socket. It ensures
+ * that the arguments are valid and then utilizes the socket_io function to
+ * manage the actual sending of data, processing it in chunks as defined by
+ * MAX_BYTES.
  *
  * @param socket The socket descriptor for sending data.
  * @param buffer_p A pointer to the buffer containing the data to send.
  * @param bytes_to_send The total number of bytes to send.
- * @return E_SUCCESS on successful completion of the send operation or E_FAILURE
- * in case of an error.
+ * @return E_SUCCESS on successful completion of the send operation or
+ * E_FAILURE in case of an error.
  */
 int send_all_data(int socket, void * buffer_p, size_t bytes_to_send);
 

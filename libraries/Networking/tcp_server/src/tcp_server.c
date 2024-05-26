@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "connection_manager.h" // handle_connections()
+#include "event_handler.h" // handle_connections()
 #include "signal_handler.h" // CONINUE_RUNNING, SHUTDOWN, signal_action_setup(), check_for_signals()
 #include "socket_io.h"      // create_socket()
 #include "socket_manager.h" // sock_fd_arr_init(), close_all_sockets()
@@ -15,7 +15,8 @@
 #define MAX_CLIENT_ADDRESS_SIZE 100 // Size for storing client address strings
 #define BACKLOG_SIZE            10 // Maximum number of pending client connections
 #define TIMEOUT                 (-1)
-#define NUM_THREADS             10 // Number of threads to create
+#define NUM_THREADS             10  // Number of threads to create
+#define MAX_CLIENTS             100 // Maximum number of clients
 
 int start_tcp_server(char * port)
 {
@@ -27,14 +28,6 @@ int start_tcp_server(char * port)
     if (NULL == port)
     {
         print_error("start_tcp_server(): NULL argument passed.");
-        goto END;
-    }
-
-    // Initialize signal handler
-    exit_code = signal_action_setup();
-    if (E_SUCCESS != exit_code)
-    {
-        print_error("start_tcp_server(): Unable to setup signal handler.");
         goto END;
     }
 
@@ -80,9 +73,6 @@ int run_server_loop(server_context_t * server)
         print_error("run_server_loop(): NULL argument passed.");
         goto END;
     }
-
-    server->sock_mgr->fd_count    = 1; // For the server fd
-    server->sock_mgr->fd_capacity = DEFAULT_FD_CAPACITY;
 
     while (CONTINUE_RUNNING == signal)
     {
@@ -189,10 +179,11 @@ int initialize_server(server_context_t * server)
         goto END;
     }
 
-    exit_code = sock_fd_arr_init(server->sock_mgr, server->fd);
+    exit_code = sock_mgr_init(
+        server->sock_mgr, server->fd, MAX_CLIENTS, DEFAULT_FD_CAPACITY);
     if (E_SUCCESS != exit_code)
     {
-        print_error("start_tcp_server(): Unable to setup poll.");
+        print_error("initialize_server(): Unable to initialize sock manager.");
         goto END;
     }
 

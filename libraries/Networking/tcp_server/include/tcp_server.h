@@ -28,7 +28,6 @@
 int start_tcp_server(char * port);
 int initialize_server(server_context_t * server);
 int run_server_loop(server_context_t * server);
-int handle_client_activity(socket_manager_t * sock_mgr, int index);
 
 #endif /* _TCP_SERVER_H */
 
