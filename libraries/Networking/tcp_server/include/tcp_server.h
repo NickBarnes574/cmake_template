@@ -6,28 +6,19 @@
 #ifndef _TCP_SERVER_H
 #define _TCP_SERVER_H
 
-#include <stdlib.h>
+typedef void * (*request_func_t)(void *);
 
-#include "server_structs.h" // server_context_t, socket_manager_t
+typedef struct server_config
+{
+    char *         port;         // The port on which the server is listening.
+    int            max_clients;  // Max number of clients the server can handle.
+    int            timeout;      // Poll timeout duration.
+    int            num_threads;  // Number of threads in the thread pool.
+    int            backlog_size; // Backlog size for listen().
+    request_func_t client_request; // User-defined request handling function.
+} server_config_t;
 
-/**
- * @brief Indicator for server shutdown.
- *
- * This define value is returned by certain functions to indicate
- * that a shutdown signal has been received and the server should
- * terminate its operations gracefully.
- */
-
-/**
- * @brief
- *
- * @param port
- * @param max_connections
- * @return int
- */
-int start_tcp_server(char * port);
-int initialize_server(server_context_t * server);
-int run_server_loop(server_context_t * server);
+int start_tcp_server(server_config_t * config);
 
 #endif /* _TCP_SERVER_H */
 

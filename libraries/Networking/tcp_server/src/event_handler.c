@@ -8,8 +8,8 @@
 #include <unistd.h> // close()
 
 #include "event_handler.h"
+#include "job_handler.h" // process_client_request()
 #include "opcodes.h"
-#include "request_handler.h" // process_client_request()
 #include "server_utils.h"
 #include "socket_io.h"
 #include "socket_manager.h"
@@ -17,7 +17,12 @@
 
 #define POLL_ERROR_EVENTS (POLLERR | POLLHUP | POLLNVAL)
 
-static int recv_opcode(uint8_t * opcode, int client_fd);
+static int  recv_opcode(uint8_t * opcode, int client_fd);
+static int  create_job_args(int               client_fd,
+                            uint8_t           opcode,
+                            pthread_mutex_t * fd_mutex,
+                            job_arg_t **      job_args);
+static void free_job_args(void * arg);
 
 int handle_connections(server_context_t * server)
 {
@@ -150,8 +155,10 @@ int handle_client_event(server_context_t * server, int index)
         goto END;
     }
 
-    exit_code = threadpool_add_job(
-        server->thread_pool, process_client_request, free_job_args, job_args);
+    exit_code = threadpool_add_job(server->thread_pool,
+                                   server->config->client_request,
+                                   free_job_args,
+                                   job_args);
     if (E_SUCCESS != exit_code)
     {
         print_error("handle_client_event(): Cannot add job to thread pool.");
@@ -185,6 +192,56 @@ static int recv_opcode(uint8_t * opcode, int client_fd)
     *opcode = result;
 END:
     return exit_code;
+}
+
+static int create_job_args(int               client_fd,
+                           uint8_t           opcode,
+                           pthread_mutex_t * fd_mutex,
+                           job_arg_t **      job_args)
+{
+    int         exit_code    = E_FAILURE;
+    job_arg_t * new_job_args = NULL;
+
+    if ((NULL == fd_mutex) || (NULL == job_args))
+    {
+        print_error("create_job_args(): NULL argument passed.");
+        goto END;
+    }
+
+    new_job_args = calloc(1, sizeof(job_arg_t));
+    if (NULL == new_job_args)
+    {
+        print_error("create_job_args(): CMR failure - new_job_args.");
+        goto END;
+    }
+
+    new_job_args->client_fd = client_fd;
+    new_job_args->opcode    = opcode;
+    new_job_args->fd_mutex  = fd_mutex;
+
+    *job_args = new_job_args;
+
+    exit_code = E_SUCCESS;
+END:
+    return exit_code;
+}
+
+static void free_job_args(void * arg)
+{
+    job_arg_t * job_args = NULL;
+
+    if (NULL == arg)
+    {
+        print_error("free_job_arg(): NULL argument passed.");
+        goto END;
+    }
+
+    job_args = (job_arg_t *)arg;
+
+    free(job_args);
+
+END:
+    return;
 }
 
 /*** end of file ***/

@@ -9,6 +9,7 @@
 
 #include <netdb.h> // sockaddr_storage, socklen_t, INET6_ADDRSTRLEN
 
+#include "tcp_server.h"
 #include "threadpool.h" // threadpool_t
 
 #define DEFAULT_FD_CAPACITY 5
@@ -34,10 +35,10 @@ typedef struct socket_manager
  */
 typedef struct server_context
 {
-    int                fd;       // File descriptor for the server socket.
-    char *             port;     // The port on which the server is listening.
-    socket_manager_t * sock_mgr; // Responsible for managing connections.
+    int                fd;          // File descriptor for the server socket.
+    socket_manager_t * sock_mgr;    // Responsible for managing connections.
     threadpool_t *     thread_pool; // Responsible for processing requests.
+    server_config_t *  config;      // Settings provided by the user.
 } server_context_t;
 
 /**

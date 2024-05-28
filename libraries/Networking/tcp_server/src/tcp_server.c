@@ -6,6 +6,8 @@
 #include <stdlib.h>
 
 #include "event_handler.h" // handle_connections()
+#include "number_converter.h"
+#include "server_structs.h"
 #include "signal_handler.h" // CONINUE_RUNNING, SHUTDOWN, signal_action_setup(), check_for_signals()
 #include "socket_io.h"      // create_socket()
 #include "socket_manager.h" // sock_fd_arr_init(), close_all_sockets()
@@ -13,34 +15,49 @@
 #include "utilities.h"
 
 #define MAX_CLIENT_ADDRESS_SIZE 100 // Size for storing client address strings
-#define BACKLOG_SIZE            10 // Maximum number of pending client connections
-#define TIMEOUT                 (-1)
-#define NUM_THREADS             10  // Number of threads to create
-#define MAX_CLIENTS             100 // Maximum number of clients
+#define MAX_TIMEOUT             300 // Maximum timeout in seconds (5 minutes)
+#define MIN_TIMEOUT             10  // Minimum timeout in seconds
+#define MAX_BACKLOG             128
+#define MIN_BACKLOG             1
+#define MIN_NUM_THREADS         2
+#define MAX_NUM_THREADS         24
+#define MIN_CLIENTS             1
+#define MAX_CLIENTS             100
 
-int start_tcp_server(char * port)
+static int initialize_server(server_context_t * server);
+static int run_server_loop(server_context_t * server);
+static int validate_config(server_config_t * config);
+
+int start_tcp_server(server_config_t * config)
 {
     int              exit_code   = E_FAILURE;
     server_context_t server      = { 0 };
     socket_manager_t sock_mgr    = { 0 };
     threadpool_t *   thread_pool = NULL;
 
-    if (NULL == port)
+    if (NULL == config)
     {
         print_error("start_tcp_server(): NULL argument passed.");
         goto END;
     }
 
-    thread_pool = threadpool_create(NUM_THREADS);
+    exit_code = validate_config(config);
+    if (E_SUCCESS != exit_code)
+    {
+        print_error("start_tcp_server(): Error validating server config.");
+        goto END;
+    }
+
+    thread_pool = threadpool_create(config->num_threads);
     if (NULL == thread_pool)
     {
         print_error("start_tcp_server(): Unable to create thread pool.");
         goto END;
     }
 
-    server.port        = port;
     server.sock_mgr    = &sock_mgr;
     server.thread_pool = thread_pool;
+    server.config      = config;
 
     exit_code = initialize_server(&server);
     if (E_SUCCESS != exit_code)
@@ -62,7 +79,7 @@ END:
     return exit_code;
 }
 
-int run_server_loop(server_context_t * server)
+static int run_server_loop(server_context_t * server)
 {
     int exit_code  = E_FAILURE;
     int signal     = CONTINUE_RUNNING;
@@ -83,8 +100,9 @@ int run_server_loop(server_context_t * server)
             goto END;
         }
 
-        poll_count =
-            poll(server->sock_mgr->fd_arr, server->sock_mgr->fd_count, TIMEOUT);
+        poll_count = poll(server->sock_mgr->fd_arr,
+                          server->sock_mgr->fd_count,
+                          server->config->timeout);
         if (0 > poll_count)
         {
             if (errno == EINTR)
@@ -113,7 +131,7 @@ END:
     return exit_code;
 }
 
-int initialize_server(server_context_t * server)
+static int initialize_server(server_context_t * server)
 {
     int               exit_code = E_FAILURE;
     struct addrinfo   hints     = { 0 };
@@ -135,9 +153,10 @@ int initialize_server(server_context_t * server)
     hints.ai_addr      = NULL;
     hints.ai_next      = NULL;
 
-    printf("Port: '%s'\n", server->port); // Ensure that the port is correct
+    printf("Port: '%s'\n",
+           server->config->port); // Ensure that the port is correct
 
-    exit_code = getaddrinfo(NULL, server->port, &hints, &addr_list);
+    exit_code = getaddrinfo(NULL, server->config->port, &hints, &addr_list);
     if (E_SUCCESS != exit_code)
     {
         fprintf(stderr,
@@ -172,15 +191,17 @@ int initialize_server(server_context_t * server)
     }
 
     errno     = 0;
-    exit_code = listen(server->fd, BACKLOG_SIZE);
+    exit_code = listen(server->fd, server->config->backlog_size);
     if (E_SUCCESS != exit_code)
     {
         perror("initialize_server(): listen() failed.");
         goto END;
     }
 
-    exit_code = sock_mgr_init(
-        server->sock_mgr, server->fd, MAX_CLIENTS, DEFAULT_FD_CAPACITY);
+    exit_code = sock_mgr_init(server->sock_mgr,
+                              server->fd,
+                              server->config->max_clients,
+                              DEFAULT_FD_CAPACITY);
     if (E_SUCCESS != exit_code)
     {
         print_error("initialize_server(): Unable to initialize sock manager.");
@@ -189,5 +210,70 @@ int initialize_server(server_context_t * server)
 
 END:
     freeaddrinfo(addr_list);
+    return exit_code;
+}
+
+static int validate_config(server_config_t * config)
+{
+    int     exit_code = E_FAILURE;
+    int32_t port      = 0;
+
+    if (NULL == config)
+    {
+        print_error("validate_config(): NULL argument passed.");
+        goto END;
+    }
+
+    exit_code = str_to_int32(config->port, &port);
+    if (E_SUCCESS != exit_code)
+    {
+        print_error("validate_config(): Unable to convert port to integer.");
+        goto END;
+    }
+    exit_code = E_FAILURE;
+
+    // Check for well-known ports
+    if ((0 <= port) && (1023 >= port))
+    {
+        print_error("validate_config(): Well-known port detected.");
+        goto END;
+    }
+
+    if ((MIN_BACKLOG > config->backlog_size) ||
+        (MAX_BACKLOG < config->backlog_size))
+    {
+        print_error("validate_config(): Invalid backlog size.");
+        goto END;
+    }
+
+    if ((-1 != config->timeout) &&
+        ((MIN_TIMEOUT > config->timeout) || (MAX_TIMEOUT < config->timeout)))
+    {
+        print_error("validate_config(): Invalid server timeout.");
+        goto END;
+    }
+
+    if ((MIN_NUM_THREADS > config->num_threads) ||
+        (MAX_NUM_THREADS < config->num_threads))
+    {
+        print_error("validate_config(): Invalid number of threads.");
+        goto END;
+    }
+
+    if ((MIN_CLIENTS > config->max_clients) ||
+        (MAX_CLIENTS < config->max_clients))
+    {
+        print_error("validate_config(): Invalid number of maximum clients.");
+        goto END;
+    }
+
+    if (NULL == config->client_request)
+    {
+        print_error("validate_config(): NULL client request function.");
+        goto END;
+    }
+
+    exit_code = E_SUCCESS;
+END:
     return exit_code;
 }
