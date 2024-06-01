@@ -9,7 +9,6 @@
 
 #include "event_handler.h"
 #include "job_handler.h" // process_client_request()
-#include "opcodes.h"
 #include "server_utils.h"
 #include "socket_io.h"
 #include "socket_manager.h"
@@ -32,7 +31,7 @@ int handle_connections(server_context_t * server)
     if ((NULL == server) || (NULL == server->sock_mgr))
     {
         print_error("handle_connections(): NULL argument passed.");
-        return E_FAILURE;
+        goto END;
     }
 
     for (int idx = 0; idx < server->sock_mgr->fd_count; idx++)
@@ -44,12 +43,12 @@ int handle_connections(server_context_t * server)
             print_error("handle_connections(): Error on socket.");
             close(fd_entry->fd);
             fd_entry->fd = -1;
-            continue; // Skip if we get a socket error
+            continue; // Skip if we get a socket error.
         }
 
         if (0 == (fd_entry->revents & POLLIN))
         {
-            continue; // Skip if there's no data to read
+            continue; // Skip if there's no data to read.
         }
 
         if (fd_entry->fd == server->fd)
@@ -57,8 +56,8 @@ int handle_connections(server_context_t * server)
             exit_code = register_client(server);
             if (E_SUCCESS != exit_code)
             {
-                // Continue processing even when a new connection fails
-                continue;
+                print_error("handle_connections(): Unable to register client.");
+                continue; // Keep processing even when a new connection fails.
             }
         }
         else
@@ -66,12 +65,14 @@ int handle_connections(server_context_t * server)
             exit_code = handle_client_event(server, idx);
             if (E_SUCCESS != exit_code)
             {
-                continue;
+                print_error("handle_connections(): Error handling event.");
+                continue; // Keep processing even if an event cannot be handled.
             }
         }
     }
 
-    return E_SUCCESS;
+END:
+    return exit_code;
 }
 
 int register_client(server_context_t * server)
