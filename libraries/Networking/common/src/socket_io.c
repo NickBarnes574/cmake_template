@@ -141,19 +141,19 @@ int send_all_data(int socket, void * buffer_p, size_t bytes_to_send)
 
     if (NULL == buffer_p)
     {
-        print_error("NULL argument passed.");
+        print_error("send_all_data(): NULL argument passed.");
         goto END;
     }
 
     if (0 == bytes_to_send)
     {
-        print_error("Nothing to send.");
+        print_error("send_all_data(): Nothing to send.");
         goto END;
     }
 
     if (MIN_SOCKET > socket)
     {
-        print_error("Invalid socket.");
+        print_error("send_all_data(): Invalid socket.");
         goto END;
     }
 
@@ -168,7 +168,7 @@ int send_all_data(int socket, void * buffer_p, size_t bytes_to_send)
         byte_result = send(socket, position, chunk, 0);
         if (E_FAILURE == byte_result)
         {
-            print_error("Error sending data.");
+            print_error("send_all_data(): Error sending data.");
             goto END;
         }
 
@@ -178,7 +178,7 @@ int send_all_data(int socket, void * buffer_p, size_t bytes_to_send)
             // Check if data finished transferring
             if (total_bytes_sent < bytes_to_send)
             {
-                print_error("Connection closed unexpectedly.");
+                print_error("send_all_data(): Connection closed unexpectedly.");
                 goto END;
             }
 
@@ -196,62 +196,57 @@ END:
 int recv_all_data(int socket, void * buffer_p, size_t bytes_to_recv)
 {
     int       exit_code            = E_FAILURE;
-    size_t    chunk                = 0;
-    ssize_t   byte_result          = 0;
     size_t    total_bytes_received = 0;
-    uint8_t * byte_buffer          = NULL;
-    uint8_t * position             = NULL;
+    ssize_t   byte_result          = 0;
+    uint8_t * byte_buffer          = (uint8_t *)buffer_p;
 
     if (NULL == buffer_p)
     {
-        print_error("NULL argument passed.");
+        print_error("recv_all_data(): NULL argument passed.");
         goto END;
     }
 
     if (0 == bytes_to_recv)
     {
-        print_error("Nothing to receive.");
+        print_error("recv_all_data(): Nothing to receive.");
         goto END;
     }
 
     if (MIN_SOCKET > socket)
     {
-        print_error("Invalid socket.");
+        print_error("recv_all_data(): Invalid socket.");
         goto END;
     }
 
     while (total_bytes_received < bytes_to_recv)
     {
-        // Only allow MAX_BYTES to be received at a time
-        chunk = calculate_chunk(bytes_to_recv, total_bytes_received);
-
-        byte_buffer = (uint8_t *)buffer_p;
-        position    = byte_buffer + total_bytes_received;
-
-        byte_result = recv(socket, position, chunk, 0);
-        if (E_FAILURE == byte_result)
+        byte_result = recv(socket,
+                           byte_buffer + total_bytes_received,
+                           bytes_to_recv - total_bytes_received,
+                           0);
+        if (byte_result <= 0) // Check for errors or connection closure
         {
-            print_error("Error receiving data.");
+            if (byte_result == 0)
+            {
+                print_error("recv_all_data(): Connection closed by peer.");
+            }
+            else
+            {
+                perror("recv_all_data(): Error receiving data");
+            }
             goto END;
         }
 
-        // Connection closed by the other side
-        if (0 == byte_result)
-        {
-            // Check if data finished transferring
-            if (total_bytes_received < bytes_to_recv)
-            {
-                print_error("Connection closed unexpectedly.");
-                goto END;
-            }
-
-            break;
-        }
-
         total_bytes_received += byte_result;
+
+        // Debugging: print the amount of data received so far
+        printf("Received %zd/%zu bytes so far\n",
+               total_bytes_received,
+               bytes_to_recv);
     }
 
     exit_code = E_SUCCESS;
+
 END:
     return exit_code;
 }

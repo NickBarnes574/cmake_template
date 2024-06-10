@@ -30,10 +30,10 @@ static int validate_config(server_config_t * config);
 
 int start_tcp_server(server_config_t * config)
 {
-    int              exit_code   = E_FAILURE;
-    server_context_t server      = { 0 };
-    socket_manager_t sock_mgr    = { 0 };
-    threadpool_t *   thread_pool = NULL;
+    int                exit_code   = E_FAILURE;
+    server_context_t   server      = { 0 };
+    socket_manager_t * sock_mgr    = calloc(1, sizeof(socket_manager_t));
+    threadpool_t *     thread_pool = NULL;
 
     if (NULL == config)
     {
@@ -55,7 +55,7 @@ int start_tcp_server(server_config_t * config)
         goto END;
     }
 
-    server.sock_mgr    = &sock_mgr;
+    server.sock_mgr    = sock_mgr;
     server.thread_pool = thread_pool;
     server.config      = config;
 
@@ -75,6 +75,7 @@ int start_tcp_server(server_config_t * config)
 
 END:
     close_all_sockets(server.sock_mgr);
+    free(sock_mgr);
     threadpool_destroy(&server.thread_pool);
     return exit_code;
 }
@@ -98,6 +99,14 @@ static int run_server_loop(server_context_t * server)
         {
             printf("Shutdown signal received.\n");
             goto END;
+        }
+
+        printf("Polling with %d fds.\n", server->sock_mgr->fd_count);
+        for (int i = 0; i < server->sock_mgr->fd_count; i++)
+        {
+            printf("FD %d: events = %d\n",
+                   server->sock_mgr->fd_arr[i].fd,
+                   server->sock_mgr->fd_arr[i].events);
         }
 
         poll_count = poll(server->sock_mgr->fd_arr,

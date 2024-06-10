@@ -12,7 +12,7 @@
 #include "tcp_server.h"
 #include "threadpool.h" // threadpool_t
 
-#define DEFAULT_FD_CAPACITY 5
+#define DEFAULT_FD_CAPACITY 10
 
 /**
  * @struct socket_manager
@@ -26,6 +26,7 @@ typedef struct socket_manager
     int               fd_count; // Current number of managed file descriptors.
     int               fd_capacity; // Capacity of the array.
     pthread_mutex_t * mutex_arr;   // Mutex array for each possible client fd.
+    pthread_mutex_t   mutex;
 } socket_manager_t;
 
 /**

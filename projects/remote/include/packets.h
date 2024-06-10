@@ -53,8 +53,8 @@ typedef struct __attribute__((__packed__)) authentication_request
 
 typedef struct __attribute__((__packed__)) message_request
 {
-    uint8_t       opcode;
-    uint32_t      session_id;
+    uint8_t opcode;
+    // uint32_t      session_id;
     unsigned char padding[3];
     uint32_t      message_len;
     char *        message;

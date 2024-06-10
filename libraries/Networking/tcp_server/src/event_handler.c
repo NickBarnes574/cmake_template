@@ -17,10 +17,12 @@
 #define POLL_ERROR_EVENTS (POLLERR | POLLHUP | POLLNVAL)
 
 static int  recv_opcode(uint8_t * opcode, int client_fd);
-static int  create_job_args(int               client_fd,
-                            uint8_t           opcode,
-                            pthread_mutex_t * fd_mutex,
-                            job_arg_t **      job_args);
+static int  create_job_args(int                client_fd,
+                            int                arr_idx,
+                            uint8_t            opcode,
+                            pthread_mutex_t *  fd_mutex,
+                            socket_manager_t * sock_mgr,
+                            job_arg_t **       job_args);
 static void free_job_args(void * arg);
 
 int handle_connections(server_context_t * server)
@@ -38,37 +40,48 @@ int handle_connections(server_context_t * server)
     {
         fd_entry = &server->sock_mgr->fd_arr[idx];
 
+        // Clear revents before processing
         if (fd_entry->revents & POLL_ERROR_EVENTS)
         {
+            printf("CLIENT HAS CLOSED THE SOCKET.\n");
             print_error("handle_connections(): Error on socket.");
             close(fd_entry->fd);
             fd_entry->fd = -1;
             continue; // Skip if we get a socket error.
         }
 
-        if (0 == (fd_entry->revents & POLLIN))
+        if (0 == (fd_entry->revents &
+                  (POLLIN | POLLOUT | POLLHUP | POLLERR | POLLNVAL)))
         {
-            continue; // Skip if there's no data to read.
+            printf("Nothing to read on fd: [%d]\n", fd_entry->fd);
+            fd_entry->revents = 0; // Clear revents
+            continue;              // Skip if there's no data to read.
         }
 
         if (fd_entry->fd == server->fd)
         {
+            printf("Registering new client on fd: [%d]\n", fd_entry->fd);
             exit_code = register_client(server);
             if (E_SUCCESS != exit_code)
             {
+                fd_entry->revents = 0; // Clear revents
                 print_error("handle_connections(): Unable to register client.");
                 continue; // Keep processing even when a new connection fails.
             }
         }
         else
         {
+            printf("Handling a client event on fd: [%d]\n", fd_entry->fd);
             exit_code = handle_client_event(server, idx);
             if (E_SUCCESS != exit_code)
             {
+                fd_entry->revents = 0; // Clear revents
                 print_error("handle_connections(): Error handling event.");
                 continue; // Keep processing even if an event cannot be handled.
             }
         }
+
+        fd_entry->revents = 0;
     }
 
 END:
@@ -141,6 +154,8 @@ int handle_client_event(server_context_t * server, int index)
 
     client_fd = server->sock_mgr->fd_arr[index].fd;
 
+    printf("Receiving opcode on fd [%d]\n", client_fd);
+
     exit_code = recv_opcode(&opcode, client_fd);
     if (E_SUCCESS != exit_code)
     {
@@ -148,13 +163,21 @@ int handle_client_event(server_context_t * server, int index)
         goto END;
     }
 
-    exit_code = create_job_args(
-        client_fd, opcode, &server->sock_mgr->mutex_arr[index], &job_args);
+    exit_code = create_job_args(client_fd,
+                                index,
+                                opcode,
+                                &server->sock_mgr->mutex_arr[index],
+                                server->sock_mgr,
+                                &job_args);
     if (E_SUCCESS != exit_code)
     {
         print_error("handle_client_event(): Unable to create job args.");
         goto END;
     }
+
+    pthread_mutex_lock(&server->sock_mgr->mutex);
+    server->sock_mgr->fd_arr[index].events &= ~POLLIN;
+    pthread_mutex_unlock(&server->sock_mgr->mutex);
 
     exit_code = threadpool_add_job(server->thread_pool,
                                    server->config->client_request,
@@ -191,14 +214,19 @@ static int recv_opcode(uint8_t * opcode, int client_fd)
     }
 
     *opcode = result;
+    printf(
+        "recv_opcode(): Received opcode %d from fd %d\n", *opcode, client_fd);
+
 END:
     return exit_code;
 }
 
-static int create_job_args(int               client_fd,
-                           uint8_t           opcode,
-                           pthread_mutex_t * fd_mutex,
-                           job_arg_t **      job_args)
+static int create_job_args(int                client_fd,
+                           int                arr_idx,
+                           uint8_t            opcode,
+                           pthread_mutex_t *  fd_mutex,
+                           socket_manager_t * sock_mgr,
+                           job_arg_t **       job_args)
 {
     int         exit_code    = E_FAILURE;
     job_arg_t * new_job_args = NULL;
@@ -217,8 +245,10 @@ static int create_job_args(int               client_fd,
     }
 
     new_job_args->client_fd = client_fd;
+    new_job_args->arr_idx   = arr_idx;
     new_job_args->opcode    = opcode;
     new_job_args->fd_mutex  = fd_mutex;
+    new_job_args->sock_mgr  = sock_mgr;
 
     *job_args = new_job_args;
 
@@ -239,7 +269,15 @@ static void free_job_args(void * arg)
 
     job_args = (job_arg_t *)arg;
 
+    // Re-enable POLLIN
+    job_args->sock_mgr->fd_arr[job_args->arr_idx].events |= POLLIN;
+
+    pthread_mutex_unlock(
+        &job_args->sock_mgr->mutex); // Unlock the sock_mgr mutex
+
     free(job_args);
+
+    printf("FINISHED!!\n");
 
 END:
     return;

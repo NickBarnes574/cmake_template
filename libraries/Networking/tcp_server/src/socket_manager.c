@@ -46,6 +46,7 @@ int sock_mgr_init(socket_manager_t * sock_mgr,
     sock_mgr->fd_count    = 1; // For the server fd
     sock_mgr->fd_capacity = fd_capacity;
     sock_mgr->max_fds     = max_fds;
+    pthread_mutex_init(&sock_mgr->mutex, NULL);
 
     exit_code = E_SUCCESS;
 END:
@@ -71,20 +72,28 @@ int sock_fd_add(socket_manager_t * sock_mgr, int new_fd)
         goto END;
     }
 
-    if (sock_mgr->fd_count == sock_mgr->fd_capacity)
+    pthread_mutex_lock(&sock_mgr->mutex);
+
+    if (sock_mgr->fd_count == (sock_mgr->fd_capacity))
     {
         exit_code = sock_fd_increase_capacity(sock_mgr);
         if (E_SUCCESS != exit_code)
         {
             print_error("sock_fd_add(): Unable to check capacity.");
+            pthread_mutex_unlock(&sock_mgr->mutex);
             goto END;
         }
     }
 
     // Add new client fd to the array
+    printf("sock_mgr->fd_arr[sock_mgr->fd_count].fd = %d\n",
+           sock_mgr->fd_arr[sock_mgr->fd_count].fd);
+    printf("new_fd = %d\n", new_fd);
     sock_mgr->fd_arr[sock_mgr->fd_count].fd     = new_fd;
     sock_mgr->fd_arr[sock_mgr->fd_count].events = POLLIN;
     sock_mgr->fd_count++;
+
+    pthread_mutex_unlock(&sock_mgr->mutex);
 
     exit_code = E_SUCCESS;
 END:
@@ -101,8 +110,25 @@ int sock_fd_remove(socket_manager_t * sock_mgr, int index)
         goto END;
     }
 
-    sock_mgr->fd_arr[index] = sock_mgr->fd_arr[sock_mgr->fd_count - 1];
+    pthread_mutex_lock(&sock_mgr->mutex);
+
+    if (index < 0 || index >= sock_mgr->fd_count)
+    {
+        print_error("sock_fd_remove(): Index out of bounds.");
+        pthread_mutex_unlock(&sock_mgr->mutex);
+        goto END;
+    }
+
+    // Mark the fd as unused and shift the rest of the array
+    for (int i = index; i < sock_mgr->fd_count - 1; i++)
+    {
+        sock_mgr->fd_arr[i] = sock_mgr->fd_arr[i + 1];
+    }
+
+    sock_mgr->fd_arr[sock_mgr->fd_count - 1].fd = -1;
     sock_mgr->fd_count--;
+
+    pthread_mutex_unlock(&sock_mgr->mutex);
 
     exit_code = E_SUCCESS;
 END:
@@ -192,6 +218,8 @@ int close_all_sockets(socket_manager_t * sock_mgr)
     mutex_arr_destroy(sock_mgr->max_fds, sock_mgr->mutex_arr);
     free(sock_mgr->mutex_arr);
     sock_mgr->mutex_arr = NULL;
+
+    pthread_mutex_destroy(&sock_mgr->mutex);
 
     exit_code = E_SUCCESS;
 END:
