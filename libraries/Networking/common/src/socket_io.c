@@ -204,19 +204,19 @@ int recv_all_data(int socket, void * buffer_p, size_t bytes_to_recv)
 
     if (NULL == buffer_p)
     {
-        print_error("NULL argument passed.");
+        print_error("recv_all_data(): NULL argument passed.");
         goto END;
     }
 
     if (0 == bytes_to_recv)
     {
-        print_error("Nothing to receive.");
+        print_error("recv_all_data(): Nothing to receive.");
         goto END;
     }
 
     if (MIN_SOCKET > socket)
     {
-        print_error("Invalid socket.");
+        print_error("recv_all_data(): Invalid socket.");
         goto END;
     }
 
@@ -231,7 +231,7 @@ int recv_all_data(int socket, void * buffer_p, size_t bytes_to_recv)
         byte_result = recv(socket, position, chunk, 0);
         if (E_FAILURE == byte_result)
         {
-            print_error("Error receiving data.");
+            print_error("recv_all_data(): Error receiving data.");
             goto END;
         }
 
@@ -241,7 +241,8 @@ int recv_all_data(int socket, void * buffer_p, size_t bytes_to_recv)
             // Check if data finished transferring
             if (total_bytes_received < bytes_to_recv)
             {
-                print_error("Connection closed unexpectedly.");
+                fprintf(stderr, "client [%d] was closed.\n", socket);
+                print_error("recv_all_data(): Connection closed unexpectedly.");
                 goto END;
             }
 

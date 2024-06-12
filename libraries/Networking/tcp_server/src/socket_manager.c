@@ -101,8 +101,12 @@ int sock_fd_remove(socket_manager_t * sock_mgr, int index)
         goto END;
     }
 
-    sock_mgr->fd_arr[index] = sock_mgr->fd_arr[sock_mgr->fd_count - 1];
     sock_mgr->fd_count--;
+    sock_mgr->fd_arr[index].fd = sock_mgr->fd_arr[sock_mgr->fd_count].fd;
+    sock_mgr->fd_arr[index].events =
+        sock_mgr->fd_arr[sock_mgr->fd_count].events;
+    sock_mgr->fd_arr[index].revents =
+        sock_mgr->fd_arr[sock_mgr->fd_count].revents;
 
     exit_code = E_SUCCESS;
 END:
