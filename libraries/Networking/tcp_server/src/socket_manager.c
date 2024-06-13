@@ -86,6 +86,10 @@ int sock_fd_add(socket_manager_t * sock_mgr, int new_fd)
     sock_mgr->fd_arr[sock_mgr->fd_count].events = POLLIN;
     sock_mgr->fd_count++;
 
+    printf("sock_fd_add(): Added fd %d. Total fds: %d\n",
+           new_fd,
+           sock_mgr->fd_count);
+
     exit_code = E_SUCCESS;
 END:
     return exit_code;
@@ -101,12 +105,32 @@ int sock_fd_remove(socket_manager_t * sock_mgr, int index)
         goto END;
     }
 
+    if (index < 0 || index >= sock_mgr->fd_count)
+    {
+        printf("sock_fd_remove(): Invalid index %d\n", index);
+        goto END;
+    }
+
+    int removed_fd = sock_mgr->fd_arr[index].fd;
+
     sock_mgr->fd_count--;
-    sock_mgr->fd_arr[index].fd = sock_mgr->fd_arr[sock_mgr->fd_count].fd;
-    sock_mgr->fd_arr[index].events =
-        sock_mgr->fd_arr[sock_mgr->fd_count].events;
-    sock_mgr->fd_arr[index].revents =
-        sock_mgr->fd_arr[sock_mgr->fd_count].revents;
+    if (index != sock_mgr->fd_count)
+    {
+        sock_mgr->fd_arr[index].fd = sock_mgr->fd_arr[sock_mgr->fd_count].fd;
+        sock_mgr->fd_arr[index].events =
+            sock_mgr->fd_arr[sock_mgr->fd_count].events;
+        sock_mgr->fd_arr[index].revents =
+            sock_mgr->fd_arr[sock_mgr->fd_count].revents;
+    }
+
+    // Reset the removed entry (optional but can be helpful for debugging)
+    sock_mgr->fd_arr[sock_mgr->fd_count].fd      = -1;
+    sock_mgr->fd_arr[sock_mgr->fd_count].events  = 0;
+    sock_mgr->fd_arr[sock_mgr->fd_count].revents = 0;
+
+    printf("sock_fd_remove(): Removed fd %d. Total fds: %d\n",
+           removed_fd,
+           sock_mgr->fd_count);
 
     exit_code = E_SUCCESS;
 END:
@@ -247,6 +271,30 @@ static void mutex_arr_destroy(int max_fds, pthread_mutex_t * mutex_arr)
 
 END:
     return;
+}
+
+void print_fd_array(socket_manager_t * sock_mgr)
+{
+    if (sock_mgr == NULL)
+    {
+        printf("print_fd_array(): NULL socket manager\n");
+        return;
+    }
+
+    printf("File Descriptor Array:\n");
+    printf("Index | FD   | Events   | Revents\n");
+    printf("-----------------------------\n");
+
+    for (int i = 0; i < sock_mgr->fd_count; i++)
+    {
+        printf("%5d | %4d | %8x | %8x\n",
+               i,
+               sock_mgr->fd_arr[i].fd,
+               sock_mgr->fd_arr[i].events,
+               sock_mgr->fd_arr[i].revents);
+    }
+
+    printf("\n");
 }
 
 /*** end of file ***/

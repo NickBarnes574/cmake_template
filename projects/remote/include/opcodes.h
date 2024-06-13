@@ -13,8 +13,9 @@
 //
 // ------------------------------OPERATION CODES------------------------------
 //
-#define AUTHENTICATION 0x01
-#define MESSAGE        0x02
+#define AUTHENTICATION   0x01
+#define MESSAGE          0x02
+#define CLOSE_CONNECTION 0x03
 
 //
 // --------------------------------RETURN CODES--------------------------------

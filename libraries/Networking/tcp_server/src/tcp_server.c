@@ -91,8 +91,11 @@ static int run_server_loop(server_context_t * server)
         goto END;
     }
 
+    printf("----run_server_loop() - entered function\n");
+
     while (CONTINUE_RUNNING == signal)
     {
+        printf("----run_server_loop() - top of while loop\n");
         signal = check_for_signals();
         if (SHUTDOWN == signal)
         {
@@ -100,9 +103,16 @@ static int run_server_loop(server_context_t * server)
             goto END;
         }
 
+        printf("----run_server_loop() - checked the signals\n");
+
+        print_fd_array(server->sock_mgr);
+
         poll_count = poll(server->sock_mgr->fd_arr,
                           server->sock_mgr->fd_count,
                           server->config->timeout);
+
+        printf("----run_server_loop() - poll count = %d\n", poll_count);
+
         if (0 > poll_count)
         {
             if (errno == EINTR)
@@ -118,12 +128,20 @@ static int run_server_loop(server_context_t * server)
             }
         }
 
+        if (0 == poll_count)
+        {
+            // Timeout occurred, no file descriptors were ready
+            printf("----run_server_loop() - poll timeout occurred\n");
+            continue;
+        }
+
         exit_code = handle_connections(server);
         if (E_SUCCESS != exit_code)
         {
             print_error("run_server_loop(): handle_connections() failed.");
             goto END;
         }
+        printf("----run_server_loop() - bottom of while loop\n");
     }
 
     exit_code = E_SUCCESS;
@@ -187,6 +205,14 @@ static int initialize_server(server_context_t * server)
     {
         // None of the addresses succeeded
         exit_code = E_FAILURE;
+        goto END;
+    }
+
+    exit_code = set_fd_non_blocking(server->fd);
+    if (E_SUCCESS != exit_code)
+    {
+        print_error("register_client(): Unable to set fd to non-blocking.");
+        close(server->fd);
         goto END;
     }
 

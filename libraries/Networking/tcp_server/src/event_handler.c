@@ -34,9 +34,15 @@ int handle_connections(server_context_t * server)
         goto END;
     }
 
+    printf("----handle_connections() - entered function\n");
+
     for (int idx = 0; idx < server->sock_mgr->fd_count; idx++)
     {
+        printf("----handle_connections() - inside for loop at idx [%d]\n", idx);
+
         fd_entry = &server->sock_mgr->fd_arr[idx];
+
+        printf("current fd = [%d]\n", fd_entry->fd);
 
         if (fd_entry->revents & POLL_ERROR_EVENTS)
         {
@@ -48,8 +54,11 @@ int handle_connections(server_context_t * server)
 
         if (0 == (fd_entry->revents & POLLIN))
         {
+            printf("----handle_connections() - no data to read\n");
             continue; // Skip if there's no data to read.
         }
+
+        printf("Data to read on fd [%d]\n", fd_entry->fd);
 
         if (fd_entry->fd == server->fd)
         {
@@ -139,7 +148,7 @@ int handle_client_event(server_context_t * server, int index)
     }
 
     client_fd = server->sock_mgr->fd_arr[index].fd;
-
+    printf("----handle_client_event() - entered function\n");
     // exit_code = recv_opcode(&opcode, client_fd);
     // if (E_SUCCESS != exit_code)
     // {
@@ -148,14 +157,8 @@ int handle_client_event(server_context_t * server, int index)
     // }
 
     // Remove from mutex_arr
-    server->sock_mgr->fd_arr[index].events = 0;
-    exit_code = sock_fd_remove(server->sock_mgr, index);
-    if (E_SUCCESS != exit_code)
-    {
-        print_error("handle_client_event(): Unable to remove fd from array.");
-        goto END;
-    }
 
+    printf("----handle_client_event() - creating job args\n");
     exit_code = create_job_args(client_fd,
                                 &server->sock_mgr->mutex_arr[index],
                                 server->sock_mgr,
@@ -166,6 +169,7 @@ int handle_client_event(server_context_t * server, int index)
         goto END;
     }
 
+    printf("----handle_client_event() - adding job to thread pool\n");
     exit_code = threadpool_add_job(server->thread_pool,
                                    server->config->client_request,
                                    free_job_args,
@@ -177,6 +181,16 @@ int handle_client_event(server_context_t * server, int index)
         job_args = NULL;
         goto END;
     }
+
+    printf("----handle_client_event() - removing the fd\n");
+    // server->sock_mgr->fd_arr[index].events = 0;
+    exit_code = sock_fd_remove(server->sock_mgr, index);
+    if (E_SUCCESS != exit_code)
+    {
+        print_error("handle_client_event(): Unable to remove fd from array.");
+        goto END;
+    }
+    print_fd_array(server->sock_mgr);
 
     exit_code = E_SUCCESS;
 END:
@@ -239,8 +253,7 @@ END:
 
 static void free_job_args(void * arg)
 {
-    job_arg_t * job_args  = NULL;
-    int         exit_code = E_FAILURE;
+    job_arg_t * job_args = NULL;
 
     if (NULL == arg)
     {
@@ -249,15 +262,6 @@ static void free_job_args(void * arg)
     }
 
     job_args = (job_arg_t *)arg;
-
-    pthread_mutex_lock(job_args->fd_mutex);
-    exit_code = sock_fd_add(job_args->sock_mgr, job_args->client_fd);
-    if (E_SUCCESS != exit_code)
-    {
-        print_error("free_job_args(): Unable to add fd to array.");
-        pthread_mutex_unlock(job_args->fd_mutex);
-    }
-    pthread_mutex_unlock(job_args->fd_mutex);
 
     free(job_args);
 

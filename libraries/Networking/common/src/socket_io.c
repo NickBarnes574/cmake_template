@@ -243,6 +243,7 @@ int recv_all_data(int socket, void * buffer_p, size_t bytes_to_recv)
             {
                 fprintf(stderr, "client [%d] was closed.\n", socket);
                 print_error("recv_all_data(): Connection closed unexpectedly.");
+                exit_code = E_CONNECTION_CLOSED;
                 goto END;
             }
 

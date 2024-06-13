@@ -1,6 +1,7 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "job_handler.h"
 #include "opcodes.h"
@@ -21,18 +22,35 @@ void * process_client_request(void * arg)
         print_error("process_client_request(): NULL argument passed.");
         goto END;
     }
-
+    printf("----process_client_request() - entered function\n");
     job_args = (job_arg_t *)arg;
 
     pthread_mutex_lock(job_args->fd_mutex);
     exit_code = process_job(job_args->client_fd);
     if (E_SUCCESS != exit_code)
     {
+        if (E_CONNECTION_CLOSED == exit_code)
+        {
+            close(job_args->client_fd);
+            pthread_mutex_unlock(job_args->fd_mutex);
+            goto END;
+        }
         print_error("process_client_request(): Unable to process job.");
     }
+
+    // Determine whether or not to add back to fd array and/or close client
+    exit_code = sock_fd_add(job_args->sock_mgr, job_args->client_fd);
+    if (E_SUCCESS != exit_code)
+    {
+        print_error("free_job_args(): Unable to add fd to array.");
+        pthread_mutex_unlock(job_args->fd_mutex);
+    }
+    printf("----process_client_request() - adding the fd back to the array\n");
+    print_fd_array(job_args->sock_mgr);
     pthread_mutex_unlock(job_args->fd_mutex);
 
 END:
+    printf("----process_client_request() - exiting function\n");
     return NULL;
 }
 
@@ -57,6 +75,12 @@ int process_job(int client_fd)
                 print_error("process_job(): Unable to process message.");
                 goto END;
             }
+            break;
+
+        case CLOSE_CONNECTION:
+            printf("CLOSING CONNECTION\n");
+            exit_code = E_CONNECTION_CLOSED;
+            goto END;
             break;
 
         default:

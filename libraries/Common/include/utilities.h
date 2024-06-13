@@ -11,10 +11,11 @@
 #include <stdint.h>
 
 // Exit codes
-#define E_SUCCESS      0
-#define E_FAILURE      -1
-#define E_EOF          -2
-#define E_NULL_POINTER -3
+#define E_SUCCESS           0
+#define E_FAILURE           -1
+#define E_EOF               -2
+#define E_NULL_POINTER      -3
+#define E_CONNECTION_CLOSED -4
 
 // Color codes
 typedef enum
