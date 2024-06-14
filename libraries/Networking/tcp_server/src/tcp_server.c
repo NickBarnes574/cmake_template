@@ -2,10 +2,12 @@
 
 #include <errno.h>
 #include <poll.h> // poll(), EINTR
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "event_handler.h" // handle_connections()
+#include "job_handler.h"
 #include "number_converter.h"
 #include "server_structs.h"
 #include "signal_handler.h" // CONINUE_RUNNING, SHUTDOWN, signal_action_setup(), check_for_signals()
@@ -34,6 +36,7 @@ int start_tcp_server(server_config_t * config)
     server_context_t server      = { 0 };
     socket_manager_t sock_mgr    = { 0 };
     threadpool_t *   thread_pool = NULL;
+    queue_t *        fd_queue    = NULL;
 
     if (NULL == config)
     {
@@ -55,8 +58,16 @@ int start_tcp_server(server_config_t * config)
         goto END;
     }
 
+    fd_queue = queue_init(100, free);
+    if (NULL == fd_queue)
+    {
+        print_error("start_tcp_server(): Unable to create fd queue.");
+        goto END;
+    }
+
     server.sock_mgr    = &sock_mgr;
     server.thread_pool = thread_pool;
+    server.fd_queue    = fd_queue;
     server.config      = config;
 
     exit_code = initialize_server(&server);
@@ -76,6 +87,7 @@ int start_tcp_server(server_config_t * config)
 END:
     close_all_sockets(server.sock_mgr);
     threadpool_destroy(&server.thread_pool);
+    queue_destroy(&server.fd_queue);
     return exit_code;
 }
 
@@ -103,15 +115,41 @@ static int run_server_loop(server_context_t * server)
             goto END;
         }
 
-        printf("----run_server_loop() - checked the signals\n");
+        while (!queue_emptycheck(server->fd_queue))
+        {
+            queue_node_t * node = queue_dequeue(server->fd_queue);
+            if (NULL == node)
+            {
+                break;
+            }
+            fd_operation_t * op = (fd_operation_t *)node->data;
+            if (KEEP_CONNECTION_OPEN == op->action)
+            {
+                printf("ADDING BACK TO FD");
+                sock_fd_add(server->sock_mgr, op->fd);
+            }
+            else if (CLOSE_CONNECTION == op->action)
+            {
+                close(op->fd);
+            }
+            free(op);
+            free(node);
+        }
 
-        print_fd_array(server->sock_mgr);
+        // printf("----run_server_loop() - checked the signals\n");
+        // printf("----fd count = %d\n", server->sock_mgr->fd_count);
+        // Lock the file descriptor mutex before accessing fd_arr and fd_count
+        // pthread_mutex_lock(&server->sock_mgr->fd_mutex);
+        // print_fd_array(server->sock_mgr);
+        // pthread_mutex_unlock(&server->sock_mgr->fd_mutex);
 
+        pthread_mutex_lock(&server->sock_mgr->fd_mutex);
         poll_count = poll(server->sock_mgr->fd_arr,
                           server->sock_mgr->fd_count,
                           server->config->timeout);
+        pthread_mutex_unlock(&server->sock_mgr->fd_mutex);
 
-        printf("----run_server_loop() - poll count = %d\n", poll_count);
+        // printf("----run_server_loop() - poll count = %d\n", poll_count);
 
         if (0 > poll_count)
         {
@@ -119,6 +157,7 @@ static int run_server_loop(server_context_t * server)
             {
                 // If interrupted by a signal, check the signal and continue the
                 // loop
+                printf("SHIT IS FUCKED\n");
                 continue;
             }
             else
@@ -141,7 +180,7 @@ static int run_server_loop(server_context_t * server)
             print_error("run_server_loop(): handle_connections() failed.");
             goto END;
         }
-        printf("----run_server_loop() - bottom of while loop\n");
+        // printf("----run_server_loop() - bottom of while loop\n");
     }
 
     exit_code = E_SUCCESS;

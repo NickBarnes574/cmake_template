@@ -21,6 +21,7 @@ queue_t * queue_init(uint32_t capacity, FREE_F customfree)
         goto END;
     }
 
+    pthread_mutex_init(&queue->queue_mutex, NULL);
     queue->customfree = (NULL == customfree) ? free : customfree;
 
 END:
@@ -56,10 +57,12 @@ int queue_emptycheck(queue_t * queue)
         goto END;
     }
 
+    pthread_mutex_lock(&queue->queue_mutex);
     if (0 == queue->currentsz)
     {
         exit_code = E_SUCCESS;
     }
+    pthread_mutex_unlock(&queue->queue_mutex);
 
 END:
     return exit_code;
@@ -89,9 +92,11 @@ int queue_enqueue(queue_t * queue, void * data)
         goto END;
     }
 
+    pthread_mutex_lock(&queue->queue_mutex);
     new_node->data = data;
 
     queue->arr[queue->currentsz++] = new_node;
+    pthread_mutex_unlock(&queue->queue_mutex);
 
     exit_code = E_SUCCESS;
 END:
@@ -114,6 +119,7 @@ queue_node_t * queue_dequeue(queue_t * queue)
         goto END;
     }
 
+    pthread_mutex_lock(&queue->queue_mutex);
     node = queue->arr[0];
 
     for (size_t idx = 0; idx < (queue->currentsz - 1); idx++)
@@ -124,6 +130,7 @@ queue_node_t * queue_dequeue(queue_t * queue)
     queue->arr[queue->currentsz - 1] = NULL;
 
     queue->currentsz--;
+    pthread_mutex_unlock(&queue->queue_mutex);
 
 END:
     return node;
@@ -155,6 +162,7 @@ int queue_clear(queue_t * queue)
         goto END;
     }
 
+    pthread_mutex_lock(&queue->queue_mutex);
     while (-1 == queue_emptycheck(queue))
     {
         queue->customfree(queue->arr[queue->currentsz - 1]->data);
@@ -163,6 +171,7 @@ int queue_clear(queue_t * queue)
         queue->arr[queue->currentsz - 1] = NULL;
         queue->currentsz--;
     }
+    pthread_mutex_unlock(&queue->queue_mutex);
 
     exit_code = E_SUCCESS;
 END:
@@ -190,6 +199,7 @@ int queue_destroy(queue_t ** queue_addr)
     (*queue_addr)->arr = NULL;
     free(*queue_addr);
     *queue_addr = NULL;
+    pthread_mutex_destroy(&(*queue_addr)->queue_mutex);
 
     exit_code = E_SUCCESS;
 END:

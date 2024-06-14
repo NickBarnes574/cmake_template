@@ -9,6 +9,7 @@
 
 #include <netdb.h> // sockaddr_storage, socklen_t, INET6_ADDRSTRLEN
 
+#include "queue.h"
 #include "tcp_server.h"
 #include "threadpool.h" // threadpool_t
 
@@ -21,7 +22,8 @@
  */
 typedef struct socket_manager
 {
-    struct pollfd *   fd_arr;   // Pointer to an array of pollfd structs.
+    struct pollfd *   fd_arr; // Pointer to an array of pollfd structs.
+    pthread_mutex_t   fd_mutex;
     int               max_fds;  // Max number of file descriptors (clients).
     int               fd_count; // Current number of managed file descriptors.
     int               fd_capacity; // Capacity of the array.
@@ -38,7 +40,8 @@ typedef struct server_context
     int                fd;          // File descriptor for the server socket.
     socket_manager_t * sock_mgr;    // Responsible for managing connections.
     threadpool_t *     thread_pool; // Responsible for processing requests.
-    server_config_t *  config;      // Settings provided by the user.
+    queue_t *          fd_queue;
+    server_config_t *  config; // Settings provided by the user.
 } server_context_t;
 
 /**

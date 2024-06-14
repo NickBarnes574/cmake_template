@@ -20,13 +20,15 @@
 static int  create_job_args(int                client_fd,
                             pthread_mutex_t *  fd_mutex,
                             socket_manager_t * sock_mgr,
+                            queue_t *          fd_queue,
                             job_arg_t **       job_args);
 static void free_job_args(void * arg);
 
 int handle_connections(server_context_t * server)
 {
-    int             exit_code = E_FAILURE;
-    struct pollfd * fd_entry  = NULL;
+    int             exit_code      = E_FAILURE;
+    struct pollfd * fd_entry       = NULL;
+    int             local_fd_count = 0;
 
     if ((NULL == server) || (NULL == server->sock_mgr))
     {
@@ -34,10 +36,37 @@ int handle_connections(server_context_t * server)
         goto END;
     }
 
+    // while (!queue_emptycheck(server->fd_queue))
+    // {
+    //     queue_node_t * node = queue_dequeue(server->fd_queue);
+    //     if (NULL == node)
+    //     {
+    //         break;
+    //     }
+    //     fd_operation_t * op = (fd_operation_t *)node->data;
+    //     if (KEEP_CONNECTION_OPEN == op->action)
+    //     {
+    //         printf("ADDING BACK TO FD");
+    //         sock_fd_add(server->sock_mgr, op->fd);
+    //     }
+    //     else if (CLOSE_CONNECTION == op->action)
+    //     {
+    //         close(op->fd);
+    //     }
+    //     free(op);
+    //     free(node);
+    // }
+
     printf("----handle_connections() - entered function\n");
 
-    for (int idx = 0; idx < server->sock_mgr->fd_count; idx++)
+    pthread_mutex_lock(&server->sock_mgr->fd_mutex); // Lock
+    local_fd_count =
+        server->sock_mgr->fd_count; // Copy fd_count to a local variable
+    pthread_mutex_unlock(&server->sock_mgr->fd_mutex); // Lock
+
+    for (int idx = 0; idx < local_fd_count; idx++)
     {
+        pthread_mutex_lock(&server->sock_mgr->fd_mutex); // Lock
         printf("----handle_connections() - inside for loop at idx [%d]\n", idx);
 
         fd_entry = &server->sock_mgr->fd_arr[idx];
@@ -49,12 +78,14 @@ int handle_connections(server_context_t * server)
             print_error("handle_connections(): Error on socket.");
             close(fd_entry->fd);
             fd_entry->fd = -1;
+            pthread_mutex_unlock(&server->sock_mgr->fd_mutex); // Unlock
             continue; // Skip if we get a socket error.
         }
 
         if (0 == (fd_entry->revents & POLLIN))
         {
             printf("----handle_connections() - no data to read\n");
+            pthread_mutex_unlock(&server->sock_mgr->fd_mutex); // Unlock
             continue; // Skip if there's no data to read.
         }
 
@@ -62,20 +93,24 @@ int handle_connections(server_context_t * server)
 
         if (fd_entry->fd == server->fd)
         {
+            pthread_mutex_unlock(&server->sock_mgr->fd_mutex); // Unlock
             exit_code = register_client(server);
             if (E_SUCCESS != exit_code)
             {
                 print_error("handle_connections(): Unable to register client.");
-                continue; // Keep processing even when a new connection fails.
+                // continue; // Keep processing even when a new connection
+                // fails.
             }
         }
         else
         {
+            pthread_mutex_unlock(&server->sock_mgr->fd_mutex); // Unlock
             exit_code = handle_client_event(server, idx);
             if (E_SUCCESS != exit_code)
             {
                 print_error("handle_connections(): Error handling event.");
-                continue; // Keep processing even if an event cannot be handled.
+                // continue; // Keep processing even if an event cannot be
+                // handled.
             }
         }
     }
@@ -147,7 +182,10 @@ int handle_client_event(server_context_t * server, int index)
         goto END;
     }
 
+    pthread_mutex_lock(&server->sock_mgr->fd_mutex);
     client_fd = server->sock_mgr->fd_arr[index].fd;
+    pthread_mutex_unlock(&server->sock_mgr->fd_mutex);
+
     printf("----handle_client_event() - entered function\n");
     // exit_code = recv_opcode(&opcode, client_fd);
     // if (E_SUCCESS != exit_code)
@@ -159,15 +197,19 @@ int handle_client_event(server_context_t * server, int index)
     // Remove from mutex_arr
 
     printf("----handle_client_event() - creating job args\n");
+    pthread_mutex_lock(&server->sock_mgr->fd_mutex);
     exit_code = create_job_args(client_fd,
-                                &server->sock_mgr->mutex_arr[index],
+                                &server->sock_mgr->fd_mutex,
                                 server->sock_mgr,
+                                server->fd_queue,
                                 &job_args);
     if (E_SUCCESS != exit_code)
     {
         print_error("handle_client_event(): Unable to create job args.");
+        pthread_mutex_unlock(&server->sock_mgr->fd_mutex);
         goto END;
     }
+    pthread_mutex_unlock(&server->sock_mgr->fd_mutex);
 
     printf("----handle_client_event() - adding job to thread pool\n");
     exit_code = threadpool_add_job(server->thread_pool,
@@ -190,7 +232,7 @@ int handle_client_event(server_context_t * server, int index)
         print_error("handle_client_event(): Unable to remove fd from array.");
         goto END;
     }
-    print_fd_array(server->sock_mgr);
+    // print_fd_array(server->sock_mgr);
 
     exit_code = E_SUCCESS;
 END:
@@ -222,6 +264,7 @@ END:
 static int create_job_args(int                client_fd,
                            pthread_mutex_t *  fd_mutex,
                            socket_manager_t * sock_mgr,
+                           queue_t *          fd_queue,
                            job_arg_t **       job_args)
 {
     int         exit_code    = E_FAILURE;
@@ -243,6 +286,7 @@ static int create_job_args(int                client_fd,
     new_job_args->client_fd = client_fd;
     new_job_args->fd_mutex  = fd_mutex;
     new_job_args->sock_mgr  = sock_mgr;
+    new_job_args->fd_queue  = fd_queue;
 
     *job_args = new_job_args;
 

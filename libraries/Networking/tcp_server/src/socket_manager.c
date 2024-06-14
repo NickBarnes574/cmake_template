@@ -43,6 +43,13 @@ int sock_mgr_init(socket_manager_t * sock_mgr,
         goto END;
     }
 
+    exit_code = pthread_mutex_init(&sock_mgr->fd_mutex, NULL);
+    if (E_SUCCESS != exit_code)
+    {
+        print_error("sock_mgr_init(): Mutex initialization failure.");
+        goto END;
+    }
+
     sock_mgr->fd_count    = 1; // For the server fd
     sock_mgr->fd_capacity = fd_capacity;
     sock_mgr->max_fds     = max_fds;
@@ -71,12 +78,15 @@ int sock_fd_add(socket_manager_t * sock_mgr, int new_fd)
         goto END;
     }
 
+    pthread_mutex_lock(&sock_mgr->fd_mutex);
+
     if (sock_mgr->fd_count == sock_mgr->fd_capacity)
     {
         exit_code = sock_fd_increase_capacity(sock_mgr);
         if (E_SUCCESS != exit_code)
         {
             print_error("sock_fd_add(): Unable to check capacity.");
+            pthread_mutex_unlock(&sock_mgr->fd_mutex);
             goto END;
         }
     }
@@ -86,9 +96,11 @@ int sock_fd_add(socket_manager_t * sock_mgr, int new_fd)
     sock_mgr->fd_arr[sock_mgr->fd_count].events = POLLIN;
     sock_mgr->fd_count++;
 
-    printf("sock_fd_add(): Added fd %d. Total fds: %d\n",
-           new_fd,
-           sock_mgr->fd_count);
+    // printf("sock_fd_add(): Added fd %d. Total fds: %d\n",
+    //        new_fd,
+    //        sock_mgr->fd_count);
+
+    pthread_mutex_unlock(&sock_mgr->fd_mutex);
 
     exit_code = E_SUCCESS;
 END:
@@ -105,32 +117,21 @@ int sock_fd_remove(socket_manager_t * sock_mgr, int index)
         goto END;
     }
 
-    if (index < 0 || index >= sock_mgr->fd_count)
-    {
-        printf("sock_fd_remove(): Invalid index %d\n", index);
-        goto END;
-    }
-
-    int removed_fd = sock_mgr->fd_arr[index].fd;
+    // Lock the file descriptor mutex
+    pthread_mutex_lock(&sock_mgr->fd_mutex);
 
     sock_mgr->fd_count--;
-    if (index != sock_mgr->fd_count)
-    {
-        sock_mgr->fd_arr[index].fd = sock_mgr->fd_arr[sock_mgr->fd_count].fd;
-        sock_mgr->fd_arr[index].events =
-            sock_mgr->fd_arr[sock_mgr->fd_count].events;
-        sock_mgr->fd_arr[index].revents =
-            sock_mgr->fd_arr[sock_mgr->fd_count].revents;
-    }
+    sock_mgr->fd_arr[index].fd = sock_mgr->fd_arr[sock_mgr->fd_count].fd;
+    sock_mgr->fd_arr[index].events =
+        sock_mgr->fd_arr[sock_mgr->fd_count].events;
+    sock_mgr->fd_arr[index].revents =
+        sock_mgr->fd_arr[sock_mgr->fd_count].revents;
+    // printf("sock_fd_remove(): Removed fd %d. Total fds: %d\n",
+    //        sock_mgr->fd_arr[index].fd,
+    //        sock_mgr->fd_count);
 
-    // Reset the removed entry (optional but can be helpful for debugging)
-    sock_mgr->fd_arr[sock_mgr->fd_count].fd      = -1;
-    sock_mgr->fd_arr[sock_mgr->fd_count].events  = 0;
-    sock_mgr->fd_arr[sock_mgr->fd_count].revents = 0;
-
-    printf("sock_fd_remove(): Removed fd %d. Total fds: %d\n",
-           removed_fd,
-           sock_mgr->fd_count);
+    // Unlock the file descriptor mutex
+    pthread_mutex_unlock(&sock_mgr->fd_mutex);
 
     exit_code = E_SUCCESS;
 END:
@@ -183,6 +184,10 @@ int sock_fd_arr_init(socket_manager_t * sock_mgr, int server_fd)
         goto END;
     }
 
+    sock_mgr->fd_capacity = DEFAULT_FD_CAPACITY;
+    sock_mgr->fd_count    = 1;
+    sock_mgr->max_fds     = DEFAULT_FD_CAPACITY;
+
     sock_mgr->fd_arr[0].fd     = server_fd; // Set up the server socket
     sock_mgr->fd_arr[0].events = POLLIN;    // Check for read events
 
@@ -213,6 +218,8 @@ int close_all_sockets(socket_manager_t * sock_mgr)
     {
         close(sock_mgr->fd_arr[idx].fd);
     }
+
+    pthread_mutex_destroy(&sock_mgr->fd_mutex);
 
     free(sock_mgr->fd_arr);
     sock_mgr->fd_arr = NULL;

@@ -6,10 +6,10 @@
 #include "tcp_server.h"
 #include "utilities.h"
 
-#define BACKLOG_SIZE 10   // Maximum number of pending client connections.
-#define NUM_THREADS  10   // Number of threads to create.
-#define MAX_CLIENTS  100  // Maximum number of clients the server can handle.
-#define TIMEOUT      (-1) // Poll timeout duration.
+#define BACKLOG_SIZE 10  // Maximum number of pending client connections.
+#define NUM_THREADS  10  // Number of threads to create.
+#define MAX_CLIENTS  100 // Maximum number of clients the server can handle.
+#define TIMEOUT      100 // Poll timeout duration.
 
 int main(void)
 {

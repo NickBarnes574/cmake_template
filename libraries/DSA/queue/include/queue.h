@@ -1,6 +1,7 @@
 #ifndef _QUEUE_H
 #define _QUEUE_H
 
+#include <pthread.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -40,6 +41,7 @@ typedef struct queue_t
     uint32_t        currentsz;
     FREE_F          customfree;
     queue_node_t ** arr;
+    pthread_mutex_t queue_mutex;
 } queue_t;
 
 /**
