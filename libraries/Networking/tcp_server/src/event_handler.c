@@ -58,8 +58,6 @@ int handle_connections(server_context_t * server)
             continue; // Skip if there's no data to read.
         }
 
-        printf("Data to read on fd [%d]\n", fd_entry->fd);
-
         if (fd_entry->fd == server->fd)
         {
             exit_code = register_client(server);
@@ -122,12 +120,18 @@ int register_client(server_context_t * server)
         goto END;
     }
 
-    printf("pollserver: new connection from %s on socket %d\n",
-           inet_ntop(client.addr.ss_family,
-                     get_in_addr((struct sockaddr *)&client.addr),
-                     client.IP_addr,
-                     INET6_ADDRSTRLEN),
-           client.fd);
+    char log_new_connection[256] = { 0 };
+
+    snprintf(log_new_connection,
+             sizeof(log_new_connection),
+             "new connection from port: [%s] on socket: [%d]",
+             inet_ntop(client.addr.ss_family,
+                       get_in_addr((struct sockaddr *)&client.addr),
+                       client.IP_addr,
+                       INET6_ADDRSTRLEN),
+             client.fd);
+
+    message_log("INFO", COLOR_GREEN, LOG_BOTH, log_new_connection);
 
     exit_code = E_SUCCESS;
 END:
@@ -149,6 +153,9 @@ int handle_client_event(server_context_t * server, int index)
 
     client_fd = server->sock_mgr->fd_arr[index].fd;
 
+    message_log(
+        "INFO", COLOR_NONE, LOG_FILE, "handling event on client fd [%s]...");
+
     exit_code = create_job_args(
         client_fd, &server->sock_mgr->fd_mutex, server->sock_mgr, &job_args);
     if (E_SUCCESS != exit_code)
@@ -169,42 +176,17 @@ int handle_client_event(server_context_t * server, int index)
         goto END;
     }
 
-    printf("----handle_client_event() - removing the fd\n");
-    // server->sock_mgr->fd_arr[index].events = 0;
     exit_code = sock_fd_remove(server->sock_mgr, index);
     if (E_SUCCESS != exit_code)
     {
         print_error("handle_client_event(): Unable to remove fd from array.");
         goto END;
     }
-    print_fd_array(server->sock_mgr);
 
     exit_code = E_SUCCESS;
 END:
     return exit_code;
 }
-
-// static int recv_opcode(uint8_t * opcode, int client_fd)
-// {
-//     int     exit_code = E_FAILURE;
-//     uint8_t result    = -1;
-
-//     if (NULL == opcode)
-//     {
-//         print_error("recv_opcode(): NULL argument passed.");
-//         goto END;
-//     }
-
-//     exit_code = recv_all_data(client_fd, &result, sizeof(uint8_t));
-//     if (E_SUCCESS != exit_code)
-//     {
-//         goto END;
-//     }
-
-//     *opcode = result;
-// END:
-//     return exit_code;
-// }
 
 static int create_job_args(int                client_fd,
                            pthread_mutex_t *  fd_mutex,

@@ -27,7 +27,15 @@ typedef enum
     COLOR_BLUE
 } color_code_t;
 
+typedef enum
+{
+    LOG_CONSOLE,
+    LOG_FILE,
+    LOG_BOTH
+} log_dest_t;
+
 #define MAX_MSG_SIZE 500
+#define LOGFILE      "server.log"
 
 #ifdef DEBUG
 
@@ -98,6 +106,7 @@ void print_strerror(const char * p_message);
  */
 int message_log(const char * prefix_p,
                 color_code_t color,
+                log_dest_t   destination,
                 const char * format,
                 ...);
 

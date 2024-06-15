@@ -30,6 +30,12 @@ void * process_client_request(void * arg)
     {
         if (E_CONNECTION_CLOSED == exit_code)
         {
+            message_log("INFO",
+                        COLOR_RED,
+                        LOG_BOTH,
+                        "closing connection [%d]",
+                        job_args->client_fd);
+
             close(job_args->client_fd);
             goto END;
         }
@@ -43,8 +49,6 @@ void * process_client_request(void * arg)
         print_error("free_job_args(): Unable to add fd to array.");
     }
 
-    // print_fd_array(job_args->sock_mgr);
-
 END:
     return NULL;
 }
@@ -54,7 +58,6 @@ int process_job(int client_fd)
     int     exit_code = E_FAILURE;
     uint8_t opcode    = -1;
 
-    fprintf(stderr, "GETTING OPCODE [%d]\n", client_fd);
     exit_code = recv_all_data(client_fd, &opcode, sizeof(uint8_t));
     if (E_SUCCESS != exit_code)
     {
@@ -73,7 +76,6 @@ int process_job(int client_fd)
             break;
 
         case CLOSE_CONNECTION:
-            fprintf(stderr, "CLOSING CONNECTION\n");
             exit_code = E_CONNECTION_CLOSED;
             goto END;
             break;
@@ -96,20 +98,14 @@ int message(int client_fd)
     char *        message     = NULL;
 
     // Read padding
-    // fprintf(stderr, "GETTING PADDING [%d]\n", client_fd);
     exit_code = recv_all_data(client_fd, padding, sizeof(padding));
     if (E_SUCCESS != exit_code)
     {
         print_error("message(): Unable to get padding.");
         goto END;
     }
-    // printf("Padding: [0x%02x 0x%02x 0x%02x]\n",
-    //        padding[0],
-    //        padding[1],
-    //        padding[2]);
 
     // Read message length
-    // fprintf(stderr, "GETTING MESSAGE LENGTH [%d]\n", client_fd);
     exit_code = recv_all_data(client_fd, &message_len, sizeof(message_len));
     if (E_SUCCESS != exit_code)
     {
@@ -117,18 +113,7 @@ int message(int client_fd)
         goto END;
     }
 
-    // printf("Message length before ntohl: %u\n", message_len);
-
-    // Print raw bytes received for message length
-    // unsigned char * raw_bytes = (unsigned char *)&message_len;
-    // printf("Raw message length bytes: [0x%02x 0x%02x 0x%02x 0x%02x]\n",
-    //        raw_bytes[0],
-    //        raw_bytes[1],
-    //        raw_bytes[2],
-    //        raw_bytes[3]);
-
     message_len = ntohl(message_len);
-    // printf("Message length after ntohl: %u\n", message_len);
 
     // Verify the message length to ensure it is within a reasonable range
     if (message_len >
@@ -147,8 +132,6 @@ int message(int client_fd)
         goto END;
     }
 
-    // printf("Receiving message of length [%u]\n", message_len);
-    // fprintf(stderr, "GETTING MESSAGE [%d]\n", client_fd);
     exit_code = recv_all_data(client_fd, message, message_len);
     if (E_SUCCESS != exit_code)
     {
@@ -156,7 +139,15 @@ int message(int client_fd)
         goto END;
     }
 
-    // printf("[MESSAGE RECEIVED]: %s\n", message);
+    if (MAX_MSG_SIZE > message_len)
+    {
+        message_log("INFO", COLOR_YELLOW, LOG_BOTH, "MESSAGE: %s", message);
+    }
+    else
+    {
+        message_log(
+            "INFO", COLOR_YELLOW, LOG_BOTH, "message is too long to display");
+    }
 
     exit_code = E_SUCCESS;
 

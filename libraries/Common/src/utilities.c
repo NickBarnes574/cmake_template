@@ -10,7 +10,7 @@
 #include "utilities.h"
 
 #define BYTE             8
-#define TIME_BUFFER_SIZE 20
+#define TIME_BUFFER_SIZE 80
 
 void print_error(const char * p_message)
 {
@@ -48,34 +48,35 @@ END:
 
 int message_log(const char * prefix_p,
                 color_code_t color,
+                log_dest_t   destination,
                 const char * format,
                 ...)
 {
-    int          exit_code                     = E_FAILURE;
-    char         buffer[MAX_MSG_SIZE]          = { 0 };
-    const char * color_code                    = NULL;
-    va_list      args                          = { 0 };
-    int          ret                           = 0;
-    time_t       now                           = 0;
-    time_t       time_check                    = 0;
-    size_t       strftime_check                = 0;
-    struct tm *  timeinfo                      = { 0 };
+    int          exit_code            = E_FAILURE;
+    char         buffer[MAX_MSG_SIZE] = { 0 };
+    const char * color_code           = NULL;
+    va_list      args;
+    int          ret = 0;
+    time_t       now = 0;
+    struct tm *  timeinfo;
     char         time_buffer[TIME_BUFFER_SIZE] = { 0 };
+    FILE *       file                          = NULL;
 
     // Timestamp
-    time_check = time(&now);
-    if (E_FAILURE == time_check)
+    now = time(NULL);
+    if (now == ((time_t)-1))
     {
-        print_error("message_log(): time() failed.");
+        fprintf(stderr, "message_log(): time() failed.\n");
         goto END;
     }
 
-    timeinfo       = localtime(&now);
-    strftime_check = strftime(
-        time_buffer, sizeof(time_buffer), "%Y-%m-%d %H:%M:%S", timeinfo);
-    if (0 == strftime_check)
+    timeinfo = localtime(&now);
+    if (strftime(
+            time_buffer, sizeof(time_buffer), "%Y-%m-%d %H:%M:%S", timeinfo) ==
+        0)
     {
-        print_error("message_log(): strftime() failed to format the time.");
+        fprintf(stderr,
+                "message_log(): strftime() failed to format the time.\n");
         goto END;
     }
 
@@ -106,18 +107,39 @@ int message_log(const char * prefix_p,
 
     if (ret >= (int)sizeof(buffer))
     {
-        print_error(
-            "message_log(): Message is too long. Message must be 500 "
-            "characters or "
-            "less.");
+        fprintf(stderr,
+                "message_log(): Message truncated. Buffer size exceeded.\n");
         goto END;
     }
 
+    // Handle log destination
+    if (destination == LOG_FILE || destination == LOG_BOTH)
+    {
+        file = fopen(LOGFILE, "a");
+        if (!file)
+        {
+            fprintf(stderr, "message_log(): Unable to open log file.\n");
+            goto END;
+        }
+    }
+
     // Print the message with timestamp
-    printf(
-        "%s[%s][%s]: %s\033[0m\n", color_code, time_buffer, prefix_p, buffer);
+    if (destination == LOG_CONSOLE || destination == LOG_BOTH)
+    {
+        printf("%s[%s][%s]: %s\033[0m\n",
+               color_code,
+               time_buffer,
+               prefix_p,
+               buffer);
+    }
+    if (destination == LOG_FILE || destination == LOG_BOTH)
+    {
+        fprintf(file, "[%s][%s]: %s\n", time_buffer, prefix_p, buffer);
+        fclose(file);
+    }
 
     exit_code = E_SUCCESS;
+
 END:
     return exit_code;
 }

@@ -103,6 +103,7 @@ static int run_server_loop(server_context_t * server)
             goto END;
         }
 
+        // Create local variable copies in order to avoid race conditions
         pthread_mutex_lock(&server->sock_mgr->fd_mutex);
         local_fd_arr   = server->sock_mgr->fd_arr;
         local_fd_count = server->sock_mgr->fd_count;
@@ -167,9 +168,6 @@ static int initialize_server(server_context_t * server)
     hints.ai_addr      = NULL;
     hints.ai_next      = NULL;
 
-    printf("Port: '%s'\n",
-           server->config->port); // Ensure that the port is correct
-
     exit_code = getaddrinfo(NULL, server->config->port, &hints, &addr_list);
     if (E_SUCCESS != exit_code)
     {
@@ -229,6 +227,14 @@ static int initialize_server(server_context_t * server)
         print_error("initialize_server(): Unable to initialize sock manager.");
         goto END;
     }
+
+    message_log("INFO", COLOR_GREEN, LOG_BOTH, "server started...");
+    message_log("INFO",
+                COLOR_NONE,
+                LOG_FILE,
+                "server socket [%d] listening on port: %s",
+                server->fd,
+                server->config->port);
 
 END:
     freeaddrinfo(addr_list);

@@ -166,7 +166,9 @@ int threadpool_shutdown(threadpool_t * pool_p)
         goto END;
     }
 
+    pthread_mutex_lock(&signal_flag_mutex);
     pool_p->signal = SHUTDOWN;
+    pthread_mutex_unlock(&signal_flag_mutex);
 
     pthread_mutex_lock(&pool_p->mutex);
     exit_code = pthread_cond_broadcast(&pool_p->condition);

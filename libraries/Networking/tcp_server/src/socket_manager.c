@@ -229,53 +229,6 @@ END:
     return exit_code;
 }
 
-// static int mutex_arr_init(int max_fds, pthread_mutex_t ** mutex_arr)
-// {
-//     int               exit_code = E_FAILURE;
-//     pthread_mutex_t * new_array = NULL;
-
-//     if (NULL == mutex_arr)
-//     {
-//         print_error("mutex_arr_init(): NULL argument passed.");
-//         goto END;
-//     }
-
-//     new_array = calloc(max_fds, sizeof(pthread_mutex_t));
-//     if (NULL == new_array)
-//     {
-//         print_error("mutex_arr_init(): CMR failure - new_array");
-//         goto END;
-//     }
-
-//     for (int idx = 0; idx < max_fds; idx++)
-//     {
-//         pthread_mutex_init(&new_array[idx], NULL);
-//     }
-
-//     *mutex_arr = new_array;
-
-//     exit_code = E_SUCCESS;
-// END:
-//     return exit_code;
-// }
-
-// static void mutex_arr_destroy(int max_fds, pthread_mutex_t * mutex_arr)
-// {
-//     if (NULL == mutex_arr)
-//     {
-//         print_error("mutex_arr_destroy(): NULL argument passed.");
-//         goto END;
-//     }
-
-//     for (int idx = 0; idx < max_fds; idx++)
-//     {
-//         pthread_mutex_destroy(&mutex_arr[idx]);
-//     }
-
-// END:
-//     return;
-// }
-
 void print_fd_array(socket_manager_t * sock_mgr)
 {
     if (sock_mgr == NULL)
