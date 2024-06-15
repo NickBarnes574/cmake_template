@@ -1,7 +1,0 @@
-==107720== Helgrind, a thread error detector
-==107720== Copyright (C) 2007-2017, and GNU GPL'd, by OpenWorks LLP et al.
-==107720== Using Valgrind-3.18.1 and LibVEX; rerun with -h for copyright info
-==107720== Command: ./build/x86_64/projects/Debug/remote/poll_server_x86_64
-==107720== Parent PID: 64023
-==107720== 
-==107720== FATAL: can't open suppressions file "none"
