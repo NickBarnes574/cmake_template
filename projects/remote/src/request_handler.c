@@ -141,7 +141,12 @@ int message(int client_fd)
 
     if (MAX_MSG_SIZE > message_len)
     {
-        message_log("INFO", COLOR_YELLOW, LOG_BOTH, "MESSAGE: %s", message);
+        message_log("INFO",
+                    COLOR_YELLOW,
+                    LOG_BOTH,
+                    "MESSAGE from [%d]: %s",
+                    client_fd,
+                    message);
     }
     else
     {

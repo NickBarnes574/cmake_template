@@ -153,8 +153,11 @@ int handle_client_event(server_context_t * server, int index)
 
     client_fd = server->sock_mgr->fd_arr[index].fd;
 
-    message_log(
-        "INFO", COLOR_NONE, LOG_FILE, "handling event on client fd [%s]...");
+    message_log("INFO",
+                COLOR_NONE,
+                LOG_FILE,
+                "handling event on client fd [%d]...",
+                client_fd);
 
     exit_code = create_job_args(
         client_fd, &server->sock_mgr->fd_mutex, server->sock_mgr, &job_args);

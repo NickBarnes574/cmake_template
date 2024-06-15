@@ -228,10 +228,10 @@ static int initialize_server(server_context_t * server)
         goto END;
     }
 
-    message_log("INFO", COLOR_GREEN, LOG_BOTH, "server started...");
+    message_log("INFO", COLOR_NONE, LOG_FILE, "server started...");
     message_log("INFO",
-                COLOR_NONE,
-                LOG_FILE,
+                COLOR_GREEN,
+                LOG_BOTH,
                 "server socket [%d] listening on port: %s",
                 server->fd,
                 server->config->port);
