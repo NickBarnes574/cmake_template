@@ -2,6 +2,7 @@
 
 #include <errno.h>
 #include <poll.h> // poll(), EINTR
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -81,9 +82,11 @@ END:
 
 static int run_server_loop(server_context_t * server)
 {
-    int exit_code  = E_FAILURE;
-    int signal     = CONTINUE_RUNNING;
-    int poll_count = 0;
+    int             exit_code      = E_FAILURE;
+    int             signal         = CONTINUE_RUNNING;
+    int             poll_count     = 0;
+    struct pollfd * local_fd_arr   = NULL;
+    int             local_fd_count = 0;
 
     if ((NULL == server) || (NULL == server->sock_mgr))
     {
@@ -91,11 +94,8 @@ static int run_server_loop(server_context_t * server)
         goto END;
     }
 
-    printf("----run_server_loop() - entered function\n");
-
     while (CONTINUE_RUNNING == signal)
     {
-        printf("----run_server_loop() - top of while loop\n");
         signal = check_for_signals();
         if (SHUTDOWN == signal)
         {
@@ -103,15 +103,13 @@ static int run_server_loop(server_context_t * server)
             goto END;
         }
 
-        printf("----run_server_loop() - checked the signals\n");
+        pthread_mutex_lock(&server->sock_mgr->fd_mutex);
+        local_fd_arr   = server->sock_mgr->fd_arr;
+        local_fd_count = server->sock_mgr->fd_count;
+        pthread_mutex_unlock(&server->sock_mgr->fd_mutex);
 
-        print_fd_array(server->sock_mgr);
-
-        poll_count = poll(server->sock_mgr->fd_arr,
-                          server->sock_mgr->fd_count,
-                          server->config->timeout);
-
-        printf("----run_server_loop() - poll count = %d\n", poll_count);
+        poll_count =
+            poll(local_fd_arr, local_fd_count, server->config->timeout);
 
         if (0 > poll_count)
         {
@@ -131,7 +129,6 @@ static int run_server_loop(server_context_t * server)
         if (0 == poll_count)
         {
             // Timeout occurred, no file descriptors were ready
-            printf("----run_server_loop() - poll timeout occurred\n");
             continue;
         }
 
@@ -141,7 +138,6 @@ static int run_server_loop(server_context_t * server)
             print_error("run_server_loop(): handle_connections() failed.");
             goto END;
         }
-        printf("----run_server_loop() - bottom of while loop\n");
     }
 
     exit_code = E_SUCCESS;

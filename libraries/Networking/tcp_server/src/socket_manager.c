@@ -7,8 +7,8 @@
 #include "socket_manager.h"
 #include "utilities.h"
 
-static int  mutex_arr_init(int max_fds, pthread_mutex_t ** mutex_arr);
-static void mutex_arr_destroy(int max_fds, pthread_mutex_t * mutex_arr);
+// static int  mutex_arr_init(int max_fds, pthread_mutex_t ** mutex_arr);
+// static void mutex_arr_destroy(int max_fds, pthread_mutex_t * mutex_arr);
 
 int sock_mgr_init(socket_manager_t * sock_mgr,
                   int                server_fd,
@@ -36,16 +36,18 @@ int sock_mgr_init(socket_manager_t * sock_mgr,
         goto END;
     }
 
-    exit_code = mutex_arr_init(max_fds, &sock_mgr->mutex_arr);
-    if (E_SUCCESS != exit_code)
-    {
-        print_error("sock_mgr_init(): Unable to initialize mutex array.");
-        goto END;
-    }
+    // exit_code = mutex_arr_init(max_fds, &sock_mgr->mutex_arr);
+    // if (E_SUCCESS != exit_code)
+    // {
+    //     print_error("sock_mgr_init(): Unable to initialize mutex array.");
+    //     goto END;
+    // }
 
     sock_mgr->fd_count    = 1; // For the server fd
     sock_mgr->fd_capacity = fd_capacity;
     sock_mgr->max_fds     = max_fds;
+
+    pthread_mutex_init(&sock_mgr->fd_mutex, NULL);
 
     exit_code = E_SUCCESS;
 END:
@@ -54,8 +56,8 @@ END:
         free(sock_mgr->fd_arr);
         sock_mgr->fd_arr = NULL;
 
-        mutex_arr_destroy(max_fds, sock_mgr->mutex_arr);
-        free(sock_mgr->mutex_arr);
+        // mutex_arr_destroy(max_fds, sock_mgr->mutex_arr);
+        // free(sock_mgr->mutex_arr);
         sock_mgr->mutex_arr = NULL;
     }
     return exit_code;
@@ -70,6 +72,8 @@ int sock_fd_add(socket_manager_t * sock_mgr, int new_fd)
         print_error("sock_fd_add(): NULL argument passed.");
         goto END;
     }
+
+    pthread_mutex_lock(&sock_mgr->fd_mutex);
 
     if (sock_mgr->fd_count == sock_mgr->fd_capacity)
     {
@@ -86,9 +90,7 @@ int sock_fd_add(socket_manager_t * sock_mgr, int new_fd)
     sock_mgr->fd_arr[sock_mgr->fd_count].events = POLLIN;
     sock_mgr->fd_count++;
 
-    printf("sock_fd_add(): Added fd %d. Total fds: %d\n",
-           new_fd,
-           sock_mgr->fd_count);
+    pthread_mutex_unlock(&sock_mgr->fd_mutex);
 
     exit_code = E_SUCCESS;
 END:
@@ -105,13 +107,15 @@ int sock_fd_remove(socket_manager_t * sock_mgr, int index)
         goto END;
     }
 
+    pthread_mutex_lock(&sock_mgr->fd_mutex);
+
     if (index < 0 || index >= sock_mgr->fd_count)
     {
         printf("sock_fd_remove(): Invalid index %d\n", index);
         goto END;
     }
 
-    int removed_fd = sock_mgr->fd_arr[index].fd;
+    // int removed_fd = sock_mgr->fd_arr[index].fd;
 
     sock_mgr->fd_count--;
     if (index != sock_mgr->fd_count)
@@ -128,9 +132,7 @@ int sock_fd_remove(socket_manager_t * sock_mgr, int index)
     sock_mgr->fd_arr[sock_mgr->fd_count].events  = 0;
     sock_mgr->fd_arr[sock_mgr->fd_count].revents = 0;
 
-    printf("sock_fd_remove(): Removed fd %d. Total fds: %d\n",
-           removed_fd,
-           sock_mgr->fd_count);
+    pthread_mutex_unlock(&sock_mgr->fd_mutex);
 
     exit_code = E_SUCCESS;
 END:
@@ -217,61 +219,62 @@ int close_all_sockets(socket_manager_t * sock_mgr)
     free(sock_mgr->fd_arr);
     sock_mgr->fd_arr = NULL;
 
-    mutex_arr_destroy(sock_mgr->max_fds, sock_mgr->mutex_arr);
-    free(sock_mgr->mutex_arr);
-    sock_mgr->mutex_arr = NULL;
+    // mutex_arr_destroy(sock_mgr->max_fds, sock_mgr->mutex_arr);
+    // free(sock_mgr->mutex_arr);
+    // sock_mgr->mutex_arr = NULL;
+    pthread_mutex_destroy(&sock_mgr->fd_mutex);
 
     exit_code = E_SUCCESS;
 END:
     return exit_code;
 }
 
-static int mutex_arr_init(int max_fds, pthread_mutex_t ** mutex_arr)
-{
-    int               exit_code = E_FAILURE;
-    pthread_mutex_t * new_array = NULL;
+// static int mutex_arr_init(int max_fds, pthread_mutex_t ** mutex_arr)
+// {
+//     int               exit_code = E_FAILURE;
+//     pthread_mutex_t * new_array = NULL;
 
-    if (NULL == mutex_arr)
-    {
-        print_error("mutex_arr_init(): NULL argument passed.");
-        goto END;
-    }
+//     if (NULL == mutex_arr)
+//     {
+//         print_error("mutex_arr_init(): NULL argument passed.");
+//         goto END;
+//     }
 
-    new_array = calloc(max_fds, sizeof(pthread_mutex_t));
-    if (NULL == new_array)
-    {
-        print_error("mutex_arr_init(): CMR failure - new_array");
-        goto END;
-    }
+//     new_array = calloc(max_fds, sizeof(pthread_mutex_t));
+//     if (NULL == new_array)
+//     {
+//         print_error("mutex_arr_init(): CMR failure - new_array");
+//         goto END;
+//     }
 
-    for (int idx = 0; idx < max_fds; idx++)
-    {
-        pthread_mutex_init(&new_array[idx], NULL);
-    }
+//     for (int idx = 0; idx < max_fds; idx++)
+//     {
+//         pthread_mutex_init(&new_array[idx], NULL);
+//     }
 
-    *mutex_arr = new_array;
+//     *mutex_arr = new_array;
 
-    exit_code = E_SUCCESS;
-END:
-    return exit_code;
-}
+//     exit_code = E_SUCCESS;
+// END:
+//     return exit_code;
+// }
 
-static void mutex_arr_destroy(int max_fds, pthread_mutex_t * mutex_arr)
-{
-    if (NULL == mutex_arr)
-    {
-        print_error("mutex_arr_destroy(): NULL argument passed.");
-        goto END;
-    }
+// static void mutex_arr_destroy(int max_fds, pthread_mutex_t * mutex_arr)
+// {
+//     if (NULL == mutex_arr)
+//     {
+//         print_error("mutex_arr_destroy(): NULL argument passed.");
+//         goto END;
+//     }
 
-    for (int idx = 0; idx < max_fds; idx++)
-    {
-        pthread_mutex_destroy(&mutex_arr[idx]);
-    }
+//     for (int idx = 0; idx < max_fds; idx++)
+//     {
+//         pthread_mutex_destroy(&mutex_arr[idx]);
+//     }
 
-END:
-    return;
-}
+// END:
+//     return;
+// }
 
 void print_fd_array(socket_manager_t * sock_mgr)
 {
@@ -281,6 +284,7 @@ void print_fd_array(socket_manager_t * sock_mgr)
         return;
     }
 
+    pthread_mutex_lock(&sock_mgr->fd_mutex);
     printf("File Descriptor Array:\n");
     printf("Index | FD   | Events   | Revents\n");
     printf("-----------------------------\n");
@@ -295,6 +299,7 @@ void print_fd_array(socket_manager_t * sock_mgr)
     }
 
     printf("\n");
+    pthread_mutex_unlock(&sock_mgr->fd_mutex);
 }
 
 /*** end of file ***/

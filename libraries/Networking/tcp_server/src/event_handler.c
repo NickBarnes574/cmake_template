@@ -25,8 +25,9 @@ static void free_job_args(void * arg);
 
 int handle_connections(server_context_t * server)
 {
-    int             exit_code = E_FAILURE;
-    struct pollfd * fd_entry  = NULL;
+    int             exit_code      = E_FAILURE;
+    struct pollfd * fd_entry       = NULL;
+    int             local_fd_count = 0;
 
     if ((NULL == server) || (NULL == server->sock_mgr))
     {
@@ -34,15 +35,15 @@ int handle_connections(server_context_t * server)
         goto END;
     }
 
-    printf("----handle_connections() - entered function\n");
+    pthread_mutex_lock(&server->sock_mgr->fd_mutex);
+    local_fd_count = server->sock_mgr->fd_count;
+    pthread_mutex_unlock(&server->sock_mgr->fd_mutex);
 
-    for (int idx = 0; idx < server->sock_mgr->fd_count; idx++)
+    for (int idx = 0; idx < local_fd_count; idx++)
     {
-        printf("----handle_connections() - inside for loop at idx [%d]\n", idx);
-
+        pthread_mutex_lock(&server->sock_mgr->fd_mutex);
         fd_entry = &server->sock_mgr->fd_arr[idx];
-
-        printf("current fd = [%d]\n", fd_entry->fd);
+        pthread_mutex_unlock(&server->sock_mgr->fd_mutex);
 
         if (fd_entry->revents & POLL_ERROR_EVENTS)
         {
@@ -54,7 +55,6 @@ int handle_connections(server_context_t * server)
 
         if (0 == (fd_entry->revents & POLLIN))
         {
-            printf("----handle_connections() - no data to read\n");
             continue; // Skip if there's no data to read.
         }
 
@@ -148,28 +148,15 @@ int handle_client_event(server_context_t * server, int index)
     }
 
     client_fd = server->sock_mgr->fd_arr[index].fd;
-    printf("----handle_client_event() - entered function\n");
-    // exit_code = recv_opcode(&opcode, client_fd);
-    // if (E_SUCCESS != exit_code)
-    // {
-    //     print_error("handle_client_event(): Error receiving opcode.");
-    //     goto END;
-    // }
 
-    // Remove from mutex_arr
-
-    printf("----handle_client_event() - creating job args\n");
-    exit_code = create_job_args(client_fd,
-                                &server->sock_mgr->mutex_arr[index],
-                                server->sock_mgr,
-                                &job_args);
+    exit_code = create_job_args(
+        client_fd, &server->sock_mgr->fd_mutex, server->sock_mgr, &job_args);
     if (E_SUCCESS != exit_code)
     {
         print_error("handle_client_event(): Unable to create job args.");
         goto END;
     }
 
-    printf("----handle_client_event() - adding job to thread pool\n");
     exit_code = threadpool_add_job(server->thread_pool,
                                    server->config->client_request,
                                    free_job_args,

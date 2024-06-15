@@ -22,17 +22,15 @@ void * process_client_request(void * arg)
         print_error("process_client_request(): NULL argument passed.");
         goto END;
     }
-    printf("----process_client_request() - entered function\n");
+
     job_args = (job_arg_t *)arg;
 
-    pthread_mutex_lock(job_args->fd_mutex);
     exit_code = process_job(job_args->client_fd);
     if (E_SUCCESS != exit_code)
     {
         if (E_CONNECTION_CLOSED == exit_code)
         {
             close(job_args->client_fd);
-            pthread_mutex_unlock(job_args->fd_mutex);
             goto END;
         }
         print_error("process_client_request(): Unable to process job.");
@@ -43,14 +41,11 @@ void * process_client_request(void * arg)
     if (E_SUCCESS != exit_code)
     {
         print_error("free_job_args(): Unable to add fd to array.");
-        pthread_mutex_unlock(job_args->fd_mutex);
     }
-    printf("----process_client_request() - adding the fd back to the array\n");
-    print_fd_array(job_args->sock_mgr);
-    pthread_mutex_unlock(job_args->fd_mutex);
+
+    // print_fd_array(job_args->sock_mgr);
 
 END:
-    printf("----process_client_request() - exiting function\n");
     return NULL;
 }
 
@@ -101,20 +96,20 @@ int message(int client_fd)
     char *        message     = NULL;
 
     // Read padding
-    fprintf(stderr, "GETTING PADDING [%d]\n", client_fd);
+    // fprintf(stderr, "GETTING PADDING [%d]\n", client_fd);
     exit_code = recv_all_data(client_fd, padding, sizeof(padding));
     if (E_SUCCESS != exit_code)
     {
         print_error("message(): Unable to get padding.");
         goto END;
     }
-    printf("Padding: [0x%02x 0x%02x 0x%02x]\n",
-           padding[0],
-           padding[1],
-           padding[2]);
+    // printf("Padding: [0x%02x 0x%02x 0x%02x]\n",
+    //        padding[0],
+    //        padding[1],
+    //        padding[2]);
 
     // Read message length
-    fprintf(stderr, "GETTING MESSAGE LENGTH [%d]\n", client_fd);
+    // fprintf(stderr, "GETTING MESSAGE LENGTH [%d]\n", client_fd);
     exit_code = recv_all_data(client_fd, &message_len, sizeof(message_len));
     if (E_SUCCESS != exit_code)
     {
@@ -122,18 +117,18 @@ int message(int client_fd)
         goto END;
     }
 
-    printf("Message length before ntohl: %u\n", message_len);
+    // printf("Message length before ntohl: %u\n", message_len);
 
     // Print raw bytes received for message length
-    unsigned char * raw_bytes = (unsigned char *)&message_len;
-    printf("Raw message length bytes: [0x%02x 0x%02x 0x%02x 0x%02x]\n",
-           raw_bytes[0],
-           raw_bytes[1],
-           raw_bytes[2],
-           raw_bytes[3]);
+    // unsigned char * raw_bytes = (unsigned char *)&message_len;
+    // printf("Raw message length bytes: [0x%02x 0x%02x 0x%02x 0x%02x]\n",
+    //        raw_bytes[0],
+    //        raw_bytes[1],
+    //        raw_bytes[2],
+    //        raw_bytes[3]);
 
     message_len = ntohl(message_len);
-    printf("Message length after ntohl: %u\n", message_len);
+    // printf("Message length after ntohl: %u\n", message_len);
 
     // Verify the message length to ensure it is within a reasonable range
     if (message_len >
@@ -152,8 +147,8 @@ int message(int client_fd)
         goto END;
     }
 
-    printf("Receiving message of length [%u]\n", message_len);
-    fprintf(stderr, "GETTING MESSAGE [%d]\n", client_fd);
+    // printf("Receiving message of length [%u]\n", message_len);
+    // fprintf(stderr, "GETTING MESSAGE [%d]\n", client_fd);
     exit_code = recv_all_data(client_fd, message, message_len);
     if (E_SUCCESS != exit_code)
     {
@@ -161,7 +156,7 @@ int message(int client_fd)
         goto END;
     }
 
-    printf("[MESSAGE RECEIVED]: %s\n", message);
+    // printf("[MESSAGE RECEIVED]: %s\n", message);
 
     exit_code = E_SUCCESS;
 

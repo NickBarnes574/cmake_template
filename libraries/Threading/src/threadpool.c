@@ -339,6 +339,13 @@ static void * start_thread(void * pool_p)
     {
         pthread_mutex_lock(&threadpool_p->mutex);
 
+        // Check for signal to stop running
+        if (SHUTDOWN == threadpool_p->signal)
+        {
+            pthread_mutex_unlock(&threadpool_p->mutex);
+            break;
+        }
+
         if (KEEP_RUNNING != signal_flag_g)
         {
             print_error("start_thread(): Signal caught.");
