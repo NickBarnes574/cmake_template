@@ -73,7 +73,7 @@ int process_job(int client_fd)
             break;
 
         case CLOSE_CONNECTION:
-            printf("CLOSING CONNECTION\n");
+            fprintf(stderr, "CLOSING CONNECTION\n");
             exit_code = E_CONNECTION_CLOSED;
             goto END;
             break;

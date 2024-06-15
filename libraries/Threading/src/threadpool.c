@@ -340,9 +340,11 @@ static void * start_thread(void * pool_p)
         pthread_mutex_lock(&threadpool_p->mutex);
 
         // Check for signal to stop running
+        pthread_mutex_lock(&signal_flag_mutex);
         if (SHUTDOWN == threadpool_p->signal)
         {
             pthread_mutex_unlock(&threadpool_p->mutex);
+            pthread_mutex_unlock(&signal_flag_mutex);
             break;
         }
 
@@ -350,8 +352,10 @@ static void * start_thread(void * pool_p)
         {
             print_error("start_thread(): Signal caught.");
             pthread_mutex_unlock(&threadpool_p->mutex);
+            pthread_mutex_unlock(&signal_flag_mutex);
             goto END;
         }
+        pthread_mutex_unlock(&signal_flag_mutex);
 
         exit_code = wait_for_job(threadpool_p);
         if (E_SUCCESS != exit_code)
@@ -421,11 +425,14 @@ static int wait_for_job(threadpool_t * threadpool_p)
     while ((EMPTY == queue_emptycheck(threadpool_p->job_queue)) &&
            (SHUTDOWN != threadpool_p->signal))
     {
+        pthread_mutex_lock(&signal_flag_mutex);
         if (KEEP_RUNNING != signal_flag_g)
         {
             print_error("wait_for_job(): Signal caught.");
+            pthread_mutex_unlock(&signal_flag_mutex);
             goto END;
         }
+        pthread_mutex_unlock(&signal_flag_mutex);
 
         exit_code =
             pthread_cond_wait(&threadpool_p->condition, &threadpool_p->mutex);

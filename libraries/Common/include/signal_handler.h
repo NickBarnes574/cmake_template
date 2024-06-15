@@ -18,6 +18,7 @@ typedef enum
  * Default value should be 0
  **/
 extern volatile sig_atomic_t signal_flag_g;
+extern pthread_mutex_t       signal_flag_mutex;
 
 /**
  * @brief This will be the function used to handle the signals.
