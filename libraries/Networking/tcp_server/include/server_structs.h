@@ -21,12 +21,11 @@
  */
 typedef struct socket_manager
 {
-    struct pollfd *   fd_arr;   // Pointer to an array of pollfd structs.
-    int               max_fds;  // Max number of file descriptors (clients).
-    int               fd_count; // Current number of managed file descriptors.
-    int               fd_capacity; // Capacity of the array.
-    pthread_mutex_t   fd_mutex;
-    pthread_mutex_t * mutex_arr; // Mutex array for each possible client fd.
+    struct pollfd * fd_arr;      // Pointer to an array of pollfd structs.
+    int             max_fds;     // Max number of file descriptors (clients).
+    int             fd_count;    // Current number of managed file descriptors.
+    int             fd_capacity; // Capacity of the array.
+    pthread_mutex_t fd_mutex;    // Mutex for the client fd.
 } socket_manager_t;
 
 /**

@@ -25,8 +25,39 @@
 #define MIN_CLIENTS             1
 #define MAX_CLIENTS             100
 
+/**
+ * @brief Initializes the server context with the given configuration.
+ *
+ * This function sets up the server context by creating and binding a socket,
+ * setting it to non-blocking mode, and initializing the socket manager.
+ *
+ * @param server Pointer to the server context to initialize.
+ * @return int E_SUCCESS on success, E_FAILURE on failure.
+ */
 static int initialize_server(server_context_t * server);
+
+/**
+ * @brief Runs the main server loop, handling incoming connections and signals.
+ *
+ * This function runs the main server loop, polling for connections and
+ * handling them appropriately. It also checks for shutdown signals to
+ * gracefully terminate the server.
+ *
+ * @param server Pointer to the server context.
+ * @return int E_SUCCESS on success, E_FAILURE on failure.
+ */
 static int run_server_loop(server_context_t * server);
+
+/**
+ * @brief Validates the server configuration.
+ *
+ * This function checks the server configuration for validity, including
+ * port number, backlog size, timeout, number of threads, maximum clients,
+ * and client request function.
+ *
+ * @param config Pointer to the server configuration to validate.
+ * @return int E_SUCCESS if the configuration is valid, E_FAILURE otherwise.
+ */
 static int validate_config(server_config_t * config);
 
 int start_tcp_server(server_config_t * config)
@@ -103,7 +134,7 @@ static int run_server_loop(server_context_t * server)
             goto END;
         }
 
-        // Create local variable copies in order to avoid race conditions
+        // Create local copies in order to avoid race conditions
         pthread_mutex_lock(&server->sock_mgr->fd_mutex);
         local_fd_arr   = server->sock_mgr->fd_arr;
         local_fd_count = server->sock_mgr->fd_count;

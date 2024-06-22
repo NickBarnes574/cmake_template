@@ -16,11 +16,32 @@
 
 #define POLL_ERROR_EVENTS (POLLERR | POLLHUP | POLLNVAL)
 
-// static int  recv_opcode(uint8_t * opcode, int client_fd);
-static int  create_job_args(int                client_fd,
-                            pthread_mutex_t *  fd_mutex,
-                            socket_manager_t * sock_mgr,
-                            job_arg_t **       job_args);
+/**
+ * @brief Creates job arguments for handling client requests.
+ *
+ * This function allocates and initializes the job arguments needed for
+ * processing a client request. It includes the client file descriptor, the file
+ * descriptor mutex, and the socket manager.
+ *
+ * @param client_fd Client file descriptor.
+ * @param fd_mutex Pointer to the file descriptor mutex.
+ * @param sock_mgr Pointer to the socket manager.
+ * @param job_args Double pointer to store the allocated job arguments.
+ * @return int E_SUCCESS on success, E_FAILURE on failure.
+ */
+static int create_job_args(int                client_fd,
+                           pthread_mutex_t *  fd_mutex,
+                           socket_manager_t * sock_mgr,
+                           job_arg_t **       job_args);
+
+/**
+ * @brief Frees the memory allocated for job arguments.
+ *
+ * This function releases the memory allocated for the job arguments used
+ * in processing a client request.
+ *
+ * @param arg Pointer to the job arguments to free.
+ */
 static void free_job_args(void * arg);
 
 int handle_connections(server_context_t * server)
@@ -189,6 +210,47 @@ int handle_client_event(server_context_t * server, int index)
     exit_code = E_SUCCESS;
 END:
     return exit_code;
+}
+
+void * process_client_request(void * arg)
+{
+    int         exit_code = E_FAILURE;
+    job_arg_t * job_args  = NULL;
+
+    if (NULL == arg)
+    {
+        print_error("process_client_request(): NULL argument passed.");
+        goto END;
+    }
+
+    job_args = (job_arg_t *)arg;
+
+    exit_code = process_job(job_args->client_fd);
+    if (E_SUCCESS != exit_code)
+    {
+        if (E_CONNECTION_CLOSED == exit_code)
+        {
+            message_log("INFO",
+                        COLOR_RED,
+                        LOG_BOTH,
+                        "closing connection [%d]",
+                        job_args->client_fd);
+
+            close(job_args->client_fd);
+            goto END;
+        }
+        print_error("process_client_request(): Unable to process job.");
+    }
+
+    // Determine whether or not to add back to fd array and/or close client
+    exit_code = sock_fd_add(job_args->sock_mgr, job_args->client_fd);
+    if (E_SUCCESS != exit_code)
+    {
+        print_error("free_job_args(): Unable to add fd to array.");
+    }
+
+END:
+    return NULL;
 }
 
 static int create_job_args(int                client_fd,

@@ -7,9 +7,6 @@
 #include "socket_manager.h"
 #include "utilities.h"
 
-// static int  mutex_arr_init(int max_fds, pthread_mutex_t ** mutex_arr);
-// static void mutex_arr_destroy(int max_fds, pthread_mutex_t * mutex_arr);
-
 int sock_mgr_init(socket_manager_t * sock_mgr,
                   int                server_fd,
                   int                max_fds,
@@ -36,13 +33,6 @@ int sock_mgr_init(socket_manager_t * sock_mgr,
         goto END;
     }
 
-    // exit_code = mutex_arr_init(max_fds, &sock_mgr->mutex_arr);
-    // if (E_SUCCESS != exit_code)
-    // {
-    //     print_error("sock_mgr_init(): Unable to initialize mutex array.");
-    //     goto END;
-    // }
-
     sock_mgr->fd_count    = 1; // For the server fd
     sock_mgr->fd_capacity = fd_capacity;
     sock_mgr->max_fds     = max_fds;
@@ -55,10 +45,6 @@ END:
     {
         free(sock_mgr->fd_arr);
         sock_mgr->fd_arr = NULL;
-
-        // mutex_arr_destroy(max_fds, sock_mgr->mutex_arr);
-        // free(sock_mgr->mutex_arr);
-        sock_mgr->mutex_arr = NULL;
     }
     return exit_code;
 }
@@ -114,8 +100,6 @@ int sock_fd_remove(socket_manager_t * sock_mgr, int index)
         printf("sock_fd_remove(): Invalid index %d\n", index);
         goto END;
     }
-
-    // int removed_fd = sock_mgr->fd_arr[index].fd;
 
     sock_mgr->fd_count--;
     if (index != sock_mgr->fd_count)
@@ -218,10 +202,6 @@ int close_all_sockets(socket_manager_t * sock_mgr)
 
     free(sock_mgr->fd_arr);
     sock_mgr->fd_arr = NULL;
-
-    // mutex_arr_destroy(sock_mgr->max_fds, sock_mgr->mutex_arr);
-    // free(sock_mgr->mutex_arr);
-    // sock_mgr->mutex_arr = NULL;
     pthread_mutex_destroy(&sock_mgr->fd_mutex);
 
     exit_code = E_SUCCESS;
