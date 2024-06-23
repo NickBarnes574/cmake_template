@@ -53,6 +53,7 @@ void print_boxed_info(FILE *       output,
                       const char * hostname,
                       const char * os,
                       const char * cpu,
+                      const char * architecture,
                       const char * memory)
 {
     size_t max_len = strlen(header);
@@ -66,6 +67,9 @@ void print_boxed_info(FILE *       output,
     max_len = max_len > strlen(temp) ? max_len : strlen(temp);
 
     snprintf(temp, BUFFER_SIZE, "CPU: %s", cpu);
+    max_len = max_len > strlen(temp) ? max_len : strlen(temp);
+
+    snprintf(temp, BUFFER_SIZE, "Architecture: %s", architecture);
     max_len = max_len > strlen(temp) ? max_len : strlen(temp);
 
     snprintf(temp, BUFFER_SIZE, "Memory: %s", memory);
@@ -98,6 +102,9 @@ void print_boxed_info(FILE *       output,
     snprintf(temp, BUFFER_SIZE, "CPU: %s", cpu);
     fprintf(output, "| %-*s |\n", (int)max_len, temp);
 
+    snprintf(temp, BUFFER_SIZE, "Architecture: %s", architecture);
+    fprintf(output, "| %-*s |\n", (int)max_len, temp);
+
     snprintf(temp, BUFFER_SIZE, "Memory: %s", memory);
     fprintf(output, "| %-*s |\n", (int)max_len, temp);
 
@@ -116,11 +123,13 @@ int log_system_info()
     char * hostname  = NULL;
     char * os        = NULL;
     char * cpu       = NULL;
+    char * arch      = NULL;
     char * memory    = NULL;
 
     hostname = get_hostname();
     os       = get_operating_system();
     cpu      = get_cpu_info();
+    arch     = get_cpu_architecture();
     memory   = get_memory_info();
 
     file = fopen(LOGFILE, "a");
@@ -135,6 +144,7 @@ int log_system_info()
                      hostname ? hostname : "N/A",
                      os ? os : "N/A",
                      cpu ? cpu : "N/A",
+                     arch ? arch : "N/A",
                      memory ? memory : "N/A");
     fclose(file);
 
@@ -143,6 +153,7 @@ int log_system_info()
                      hostname ? hostname : "N/A",
                      os ? os : "N/A",
                      cpu ? cpu : "N/A",
+                     arch ? arch : "N/A",
                      memory ? memory : "N/A");
 
     exit_code = E_SUCCESS;
@@ -151,6 +162,7 @@ END:
     free(hostname);
     free(os);
     free(cpu);
+    free(arch);
     free(memory);
     return exit_code;
 }
@@ -236,7 +248,7 @@ int message_log(const char * prefix_p,
     {
         fprintf(file,
                 "\n---------------------------------SESSION "
-                "START---------------------------------\n");
+                "START---------------------------------\n\n");
         fclose(file);
         exit_code = E_SUCCESS;
         goto END;

@@ -108,6 +108,29 @@ char * get_cpu_info()
     return NULL;
 }
 
+char * get_cpu_architecture()
+{
+    struct utsname buffer;
+    char *         result = (char *)malloc(BUFFER_SIZE);
+    if (result == NULL)
+    {
+        perror("malloc");
+        return NULL;
+    }
+
+    if (uname(&buffer) == 0)
+    {
+        snprintf(result, BUFFER_SIZE, "%s", buffer.machine);
+    }
+    else
+    {
+        perror("uname");
+        free(result);
+        return NULL;
+    }
+    return result;
+}
+
 char * get_memory_info()
 {
     FILE * meminfo = fopen("/proc/meminfo", "r");
