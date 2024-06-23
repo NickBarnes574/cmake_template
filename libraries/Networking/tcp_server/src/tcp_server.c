@@ -12,6 +12,7 @@
 #include "signal_handler.h" // CONINUE_RUNNING, SHUTDOWN, signal_action_setup(), check_for_signals()
 #include "socket_io.h"      // create_socket()
 #include "socket_manager.h" // sock_fd_arr_init(), close_all_sockets()
+#include "system_info.h"
 #include "tcp_server.h"
 #include "utilities.h"
 
@@ -73,6 +74,12 @@ int start_tcp_server(server_config_t * config)
         goto END;
     }
 
+    message_log("SESSION_START", COLOR_NONE, LOG_FILE, "");
+    log_system_info();
+    message_log("INFO", COLOR_NONE, LOG_BOTH, "TCP server: version 1.0.0");
+    message_log(
+        "INFO", COLOR_NONE, LOG_BOTH, "Loading configuration settings...");
+
     exit_code = validate_config(config);
     if (E_SUCCESS != exit_code)
     {
@@ -91,12 +98,17 @@ int start_tcp_server(server_config_t * config)
     server.thread_pool = thread_pool;
     server.config      = config;
 
+    message_log("INFO", COLOR_NONE, LOG_BOTH, "Initializing server...");
+
     exit_code = initialize_server(&server);
     if (E_SUCCESS != exit_code)
     {
         print_error("start_tcp_server(): Unable to initialize server.");
         goto END;
     }
+
+    message_log(
+        "INFO", COLOR_NONE, LOG_BOTH, "Listening on port: %s...", config->port);
 
     exit_code = run_server_loop(&server);
     if (E_SUCCESS != exit_code)
@@ -130,7 +142,11 @@ static int run_server_loop(server_context_t * server)
         signal = check_for_signals();
         if (SHUTDOWN == signal)
         {
-            printf("Shutdown signal received.\n");
+            message_log("INFO",
+                        COLOR_RED,
+                        LOG_BOTH,
+                        "Shutdown signal received, shutting down...");
+            exit_code = E_SUCCESS;
             goto END;
         }
 
@@ -258,14 +274,6 @@ static int initialize_server(server_context_t * server)
         print_error("initialize_server(): Unable to initialize sock manager.");
         goto END;
     }
-
-    message_log("INFO", COLOR_NONE, LOG_FILE, "server started...");
-    message_log("INFO",
-                COLOR_GREEN,
-                LOG_BOTH,
-                "server socket [%d] listening on port: %s",
-                server->fd,
-                server->config->port);
 
 END:
     freeaddrinfo(addr_list);

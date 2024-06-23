@@ -7,10 +7,12 @@
 #include <string.h>
 #include <time.h>
 
+#include "system_info.h"
 #include "utilities.h"
 
 #define BYTE             8
 #define TIME_BUFFER_SIZE 80
+#define BUFFER_SIZE      1024
 
 void print_error(const char * p_message)
 {
@@ -44,6 +46,113 @@ void print_strerror(const char * p_message)
 #endif
 END:
     return;
+}
+
+void print_boxed_info(FILE *       output,
+                      const char * header,
+                      const char * hostname,
+                      const char * os,
+                      const char * cpu,
+                      const char * memory)
+{
+    size_t max_len = strlen(header);
+
+    // Calculate the max length considering the full strings
+    char temp[BUFFER_SIZE];
+    snprintf(temp, BUFFER_SIZE, "Hostname: %s", hostname);
+    max_len = max_len > strlen(temp) ? max_len : strlen(temp);
+
+    snprintf(temp, BUFFER_SIZE, "Operating System: %s", os);
+    max_len = max_len > strlen(temp) ? max_len : strlen(temp);
+
+    snprintf(temp, BUFFER_SIZE, "CPU: %s", cpu);
+    max_len = max_len > strlen(temp) ? max_len : strlen(temp);
+
+    snprintf(temp, BUFFER_SIZE, "Memory: %s", memory);
+    max_len = max_len > strlen(temp) ? max_len : strlen(temp);
+
+    max_len += 2; // Padding
+
+    fprintf(output, "+");
+    for (size_t i = 0; i < max_len + 2; i++)
+    {
+        fprintf(output, "-");
+    }
+    fprintf(output, "+\n");
+
+    fprintf(output, "| %-*s |\n", (int)max_len, header);
+
+    fprintf(output, "+");
+    for (size_t i = 0; i < max_len + 2; i++)
+    {
+        fprintf(output, "-");
+    }
+    fprintf(output, "+\n");
+
+    snprintf(temp, BUFFER_SIZE, "Hostname: %s", hostname);
+    fprintf(output, "| %-*s |\n", (int)max_len, temp);
+
+    snprintf(temp, BUFFER_SIZE, "Operating System: %s", os);
+    fprintf(output, "| %-*s |\n", (int)max_len, temp);
+
+    snprintf(temp, BUFFER_SIZE, "CPU: %s", cpu);
+    fprintf(output, "| %-*s |\n", (int)max_len, temp);
+
+    snprintf(temp, BUFFER_SIZE, "Memory: %s", memory);
+    fprintf(output, "| %-*s |\n", (int)max_len, temp);
+
+    fprintf(output, "+");
+    for (size_t i = 0; i < max_len + 2; i++)
+    {
+        fprintf(output, "-");
+    }
+    fprintf(output, "+\n");
+}
+
+int log_system_info()
+{
+    int    exit_code = E_FAILURE;
+    FILE * file      = NULL;
+    char * hostname  = NULL;
+    char * os        = NULL;
+    char * cpu       = NULL;
+    char * memory    = NULL;
+
+    hostname = get_hostname();
+    os       = get_operating_system();
+    cpu      = get_cpu_info();
+    memory   = get_memory_info();
+
+    file = fopen(LOGFILE, "a");
+    if (!file)
+    {
+        fprintf(stderr, "log_system_info(): Unable to open log file.\n");
+        goto END;
+    }
+
+    print_boxed_info(file,
+                     "SYSTEM INFO",
+                     hostname ? hostname : "N/A",
+                     os ? os : "N/A",
+                     cpu ? cpu : "N/A",
+                     memory ? memory : "N/A");
+    fclose(file);
+
+    print_boxed_info(stdout,
+                     "SYSTEM INFO",
+                     hostname ? hostname : "N/A",
+                     os ? os : "N/A",
+                     cpu ? cpu : "N/A",
+                     memory ? memory : "N/A");
+
+    exit_code = E_SUCCESS;
+
+END:
+    free(hostname);
+    free(os);
+    free(cpu);
+    free(memory);
+    return exit_code;
 }
 
 int message_log(const char * prefix_p,
@@ -121,6 +230,16 @@ int message_log(const char * prefix_p,
             fprintf(stderr, "message_log(): Unable to open log file.\n");
             goto END;
         }
+    }
+
+    if (0 == strncmp(prefix_p, "SESSION_START", 25))
+    {
+        fprintf(file,
+                "\n---------------------------------SESSION "
+                "START---------------------------------\n");
+        fclose(file);
+        exit_code = E_SUCCESS;
+        goto END;
     }
 
     // Print the message with timestamp

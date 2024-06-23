@@ -110,6 +110,8 @@ int message_log(const char * prefix_p,
                 const char * format,
                 ...);
 
+int log_system_info();
+
 #endif /* _UTILITIES_H */
 
 /*** end of file ***/
