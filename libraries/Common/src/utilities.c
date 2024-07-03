@@ -9,10 +9,41 @@
 
 #include "utilities.h"
 
-#define BYTE 8
+#define BYTE             8
 #define TIME_BUFFER_SIZE 20
 
-void print_error(const char *p_message)
+#ifdef DEBUG
+
+#define RED   "\x1B[31m"
+#define GREEN "\x1B[32m"
+#define RESET "\x1B[0m"
+
+#define __FILENAME__ \
+    (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+
+#define PRINT_DEBUG(...)             \
+    do                               \
+    {                                \
+        printf("%s@ %s%s:%s%d%s | ", \
+               RED,                  \
+               __FILENAME__,         \
+               RESET,                \
+               GREEN,                \
+               __LINE__,             \
+               RESET);               \
+        printf(__VA_ARGS__);         \
+    } while (0);
+
+#else
+#define PRINT_DEBUG(...)    \
+    do                      \
+    {                       \
+        printf(__VA_ARGS__) \
+    } while (0);
+
+#endif // DEBUG
+
+void print_error(const char * p_message)
 {
     if (NULL == p_message)
     {
@@ -29,7 +60,7 @@ END:
     return;
 }
 
-void print_strerror(const char *p_message)
+void print_strerror(const char * p_message)
 {
     if (NULL == p_message)
     {
@@ -46,21 +77,21 @@ END:
     return;
 }
 
-int message_log(const char *prefix_p,
+int message_log(const char * prefix_p,
                 color_code_t color,
-                const char *format,
+                const char * format,
                 ...)
 {
-    int exit_code = E_FAILURE;
-    char buffer[MAX_MSG_SIZE] = {0};
-    const char *color_code = NULL;
-    va_list args = {0};
-    int ret = 0;
-    time_t now = 0;
-    time_t time_check = 0;
-    size_t strftime_check = 0;
-    struct tm *timeinfo = {0};
-    char time_buffer[TIME_BUFFER_SIZE] = {0};
+    int          exit_code                     = E_FAILURE;
+    char         buffer[MAX_MSG_SIZE]          = { 0 };
+    const char * color_code                    = NULL;
+    va_list      args                          = { 0 };
+    int          ret                           = 0;
+    time_t       now                           = 0;
+    time_t       time_check                    = 0;
+    size_t       strftime_check                = 0;
+    struct tm *  timeinfo                      = { 0 };
+    char         time_buffer[TIME_BUFFER_SIZE] = { 0 };
 
     // Timestamp
     time_check = time(&now);
@@ -70,8 +101,9 @@ int message_log(const char *prefix_p,
         goto END;
     }
 
-    timeinfo = localtime(&now);
-    strftime_check = strftime(time_buffer, sizeof(time_buffer), "%Y-%m-%d %H:%M:%S", timeinfo);
+    timeinfo       = localtime(&now);
+    strftime_check = strftime(
+        time_buffer, sizeof(time_buffer), "%Y-%m-%d %H:%M:%S", timeinfo);
     if (0 == strftime_check)
     {
         print_error("message_log(): strftime() failed to format the time.");
@@ -81,21 +113,21 @@ int message_log(const char *prefix_p,
     // Handle color code
     switch (color)
     {
-    case COLOR_YELLOW:
-        color_code = "\033[0;33m";
-        break;
-    case COLOR_RED:
-        color_code = "\033[0;31m";
-        break;
-    case COLOR_GREEN:
-        color_code = "\033[0;32m";
-        break;
-    case COLOR_BLUE:
-        color_code = "\033[0;34m";
-        break;
-    default:
-        color_code = "\033[0m"; // Default to no color
-        break;
+        case COLOR_YELLOW:
+            color_code = "\033[0;33m";
+            break;
+        case COLOR_RED:
+            color_code = "\033[0;31m";
+            break;
+        case COLOR_GREEN:
+            color_code = "\033[0;32m";
+            break;
+        case COLOR_BLUE:
+            color_code = "\033[0;34m";
+            break;
+        default:
+            color_code = "\033[0m"; // Default to no color
+            break;
     }
 
     // Prepare the message
