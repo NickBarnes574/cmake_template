@@ -52,7 +52,7 @@ build:
 	@rm -rf $(BUILD_DIR) # Remove artifacts temporarily
 
 clean:
-	@rm -rf build tests .vscode
+	@rm -rf build tests
 
 .PHONY: release debug clean aarch64 all build
 

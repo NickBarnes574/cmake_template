@@ -1,0 +1,30 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/libraries/Common/include",
+                "${workspaceFolder}/libraries/Math/include",
+                "${workspaceFolder}/libraries/DSA/adjacency_list/include",
+                "${workspaceFolder}/libraries/DSA/adjacency_matrix/include",
+                "${workspaceFolder}/libraries/DSA/hash_table/include",
+                "${workspaceFolder}/libraries/DSA/linked_list/include",
+                "${workspaceFolder}/libraries/DSA/queue/include",
+                "${workspaceFolder}/libraries/DSA/stack/include",
+                "${workspaceFolder}/libraries/DSA/vector/include",
+                "${workspaceFolder}/libraries/Networking/common/include",
+                "${workspaceFolder}/libraries/Networking/tcp_server/include",
+                "${workspaceFolder}/libraries/Threading/include"
+            ],
+            "defines": [
+                "_GNU_SOURCE"
+            ],
+            "compilerPath": "/usr/bin/clang-14",
+            "cStandard": "c11",
+            "cppStandard": "c++14",
+            "intelliSenseMode": "clang-x64"
+        }
+    ],
+    "version": 4
+}

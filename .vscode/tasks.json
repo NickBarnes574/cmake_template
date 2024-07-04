@@ -1,0 +1,53 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build All",
+            "type": "shell",
+            "command": "make",
+            "args": ["all"],
+            "group": "build",
+            "problemMatcher": ["$gcc"],
+            "detail": "Build all architectures."
+        },
+        {
+            "label": "Build Release",
+            "type": "shell",
+            "command": "make",
+            "args": ["release"],
+            "group": "build",
+            "problemMatcher": ["$gcc"],
+            "detail": "Build release configuration for x86_64."
+        },
+        {
+            "label": "Build Debug",
+            "type": "shell",
+            "command": "make",
+            "args": ["debug"],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": ["$gcc"],
+            "detail": "Build debug configuration for x86_64."
+        },
+        {
+            "label": "Build AARCH64",
+            "type": "shell",
+            "command": "make",
+            "args": ["aarch64"],
+            "group": "build",
+            "problemMatcher": ["$gcc"],
+            "detail": "Build release configuration for aarch64."
+        },
+        {
+            "label": "Clean",
+            "type": "shell",
+            "command": "make",
+            "args": ["clean"],
+            "group": "build",
+            "problemMatcher": [],
+            "detail": "Clean the build directory."
+        }
+    ]
+}
