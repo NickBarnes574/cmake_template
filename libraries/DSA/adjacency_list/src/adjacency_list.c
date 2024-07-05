@@ -3,7 +3,7 @@
 #include "stack.h"
 #include "utilities.h"
 
-#define MAX_STACK_SIZE 100
+#define MAX_STACK_SIZE 2000
 
 void edge_list_free(void * data)
 {
@@ -488,7 +488,7 @@ static int initialize_dfs(graph_t *  graph,
     *start_node = graph_find_node(graph, start_data);
     if (NULL == *start_node)
     {
-        print_error("initialize_dfs(): Start node not found.");
+        print_error("initialize_dfs(): Unable to find start node.");
         goto END;
     }
 
@@ -512,27 +512,27 @@ END:
     return exit_code;
 }
 
-static int visit_node(stack_t * stack, list_t * visited_list, node_t * node)
+static int dfs_visit_node(stack_t * stack, list_t * visited_list, node_t * node)
 {
     int exit_code = E_FAILURE;
 
     if ((NULL == stack) || (NULL == visited_list) || (NULL == node))
     {
-        print_error("visit_node(): NULL argument passed.");
+        print_error("dfs_visit_node(): NULL argument passed.");
         goto END;
     }
 
     exit_code = stack_push(stack, node);
     if (E_SUCCESS != exit_code)
     {
-        print_error("visit_node(): Unable to push node onto stack.");
+        print_error("dfs_visit_node(): Unable to push node onto stack.");
         goto END;
     }
 
     exit_code = list_push_tail(visited_list, node);
     if (E_SUCCESS != exit_code)
     {
-        print_error("visit_node(): Unable to push node onto visited list.");
+        print_error("dfs_visit_node(): Unable to push node onto visited list.");
         goto END;
     }
 
@@ -574,10 +574,9 @@ static int traverse_dfs(stack_t * stack, list_t * visited_list, ACTION_F action)
 
             if (false == list_contains(visited_list, neighbor))
             {
-                if (E_SUCCESS != visit_node(stack, visited_list, neighbor))
+                if (E_SUCCESS != dfs_visit_node(stack, visited_list, neighbor))
                 {
-                    print_error(
-                        "traverse_dfs(): Unable to visit neighbor node.");
+                    print_error("traverse_dfs(): Unable to visit neighbor.");
                     goto END;
                 }
             }
@@ -612,7 +611,7 @@ int graph_dfs(graph_t * graph, void * start_data, ACTION_F action)
         goto END;
     }
 
-    exit_code = visit_node(stack, visited_list, start_node);
+    exit_code = dfs_visit_node(stack, visited_list, start_node);
     if (E_SUCCESS != exit_code)
     {
         print_error("graph_dfs(): Unable to visit node.");
@@ -632,12 +631,165 @@ END:
     return exit_code;
 }
 
+static int bfs_visit_node(queue_t * queue, list_t * visited_list, node_t * node)
+{
+    int exit_code = E_FAILURE;
+
+    if ((NULL == queue) || (NULL == visited_list) || (NULL == node))
+    {
+        print_error("bfs_visit_node(): NULL argument passed.");
+        goto END;
+    }
+
+    exit_code = queue_enqueue(queue, node);
+    if (E_SUCCESS != exit_code)
+    {
+        print_error("bfs_visit_node(): Unable to enqueue node.");
+        goto END;
+    }
+
+    exit_code = list_push_tail(visited_list, node);
+    if (E_SUCCESS != exit_code)
+    {
+        print_error("bfs_visit_node(): Unable to push node onto visited list.");
+        goto END;
+    }
+
+    exit_code = E_SUCCESS;
+END:
+    return exit_code;
+}
+
+static int initialize_bfs(graph_t *  graph,
+                          void *     start_data,
+                          list_t **  visited_list,
+                          queue_t ** queue,
+                          node_t **  start_node)
+{
+    int exit_code = E_FAILURE;
+
+    if ((NULL == graph) || (NULL == start_data) || (NULL == visited_list) ||
+        (NULL == queue) || (NULL == start_node))
+    {
+        print_error("initialize_bfs(): NULL argument passed.");
+        goto END;
+    }
+
+    *visited_list = list_new(noop_free, node_ptr_comp);
+    if (NULL == *visited_list)
+    {
+        print_error("initialize_dfs(): Failed to create visited list.");
+        goto END;
+    }
+
+    *start_node = graph_find_node(graph, start_data);
+    if (NULL == *start_node)
+    {
+        print_error("initialize_bfs(): Unable to find start node.");
+        goto END;
+    }
+
+    *queue = queue_init(free);
+    if (NULL == *queue)
+    {
+        print_error("initialize_bfs(): Failed to create queue.");
+        goto END;
+    }
+
+    exit_code = E_SUCCESS;
+END:
+    return exit_code;
+}
+
+static int traverse_bfs(queue_t * queue, list_t * visited_list, ACTION_F action)
+{
+    int           exit_code = E_FAILURE;
+    node_t *      current   = NULL;
+    list_node_t * edge_node = NULL;
+    edge_t *      edge      = NULL;
+    node_t *      neighbor  = NULL;
+
+    if ((NULL == queue) || (NULL == visited_list) || (NULL == action))
+    {
+        print_error("traverse_bfs(): NULL argument passed.");
+        goto END;
+    }
+
+    while (false == queue_is_empty(queue))
+    {
+        current = (node_t *)queue_dequeue(queue);
+        if (NULL == current)
+        {
+            print_error("traverse_bfs(): NULL data dequeued.");
+            goto END;
+        }
+
+        action(current->data);
+
+        edge_node = current->edge_list->head;
+        while (NULL != edge_node)
+        {
+            edge     = (edge_t *)edge_node->data;
+            neighbor = edge->node_2;
+
+            if (false == list_contains(visited_list, neighbor))
+            {
+                if (E_SUCCESS != bfs_visit_node(queue, visited_list, neighbor))
+                {
+                    print_error("traverse_bfs(): Unable to visit neighbor.");
+                    goto END;
+                }
+            }
+
+            edge_node = edge_node->next;
+        }
+    }
+
+    exit_code = E_SUCCESS;
+END:
+    return exit_code;
+}
+
 int graph_bfs(graph_t * graph, void * start_data, ACTION_F action)
 {
-    (void)graph;
-    (void)start_data;
-    (void)action;
-    return -1;
+    int       exit_code    = E_FAILURE;
+    list_t *  visited_list = NULL;
+    queue_t * queue        = NULL;
+    node_t *  start_node   = NULL;
+
+    if ((NULL == graph) || (NULL == start_data) || (NULL == action))
+    {
+        print_error("graph_bfs(): NULL argument passed.");
+        goto END;
+    }
+
+    exit_code =
+        initialize_bfs(graph, start_data, &visited_list, &queue, &start_node);
+    if (E_SUCCESS != exit_code)
+    {
+        print_error("graph_bfs(): Unable to initialize BFS.");
+        goto END;
+    }
+
+    exit_code = bfs_visit_node(queue, visited_list, start_node);
+    if (E_SUCCESS != exit_code)
+    {
+        print_error("graph_bfs(): Unable to visit node.");
+        goto END;
+    }
+
+    exit_code = traverse_bfs(queue, visited_list, action);
+    if (E_SUCCESS != exit_code)
+    {
+        print_error("graph_bfs(): Unable to perform BFS traversal.");
+        goto END;
+    }
+
+    exit_code = E_SUCCESS;
+END:
+    queue_destroy(&queue);
+    list_delete(&visited_list);
+    return exit_code;
 }
 
 int graph_dijkstra(graph_t * graph,
