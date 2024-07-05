@@ -13,7 +13,7 @@ typedef void (*FREE_F)(void *);
 /**
  * @brief Function pointer type for custom print functions.
  */
-typedef void (*PRINT_F)(const void *);
+typedef void (*ACTION_F)(const void *);
 
 /**
  * @brief Function pointer type for custom compare functions.
@@ -119,7 +119,7 @@ size_t graph_get_size(graph_t * graph);
  * @param graph Pointer to the graph.
  * @param custom_print Function pointer to the custom print function.
  */
-void graph_print(graph_t * graph, PRINT_F custom_print);
+void graph_print(graph_t * graph, ACTION_F custom_print);
 
 /**
  * @brief Clears all nodes and edges from the graph.
@@ -142,20 +142,20 @@ int graph_destroy(graph_t ** graph);
  *
  * @param graph Pointer to the graph.
  * @param start_data Pointer to the data of the starting node.
- * @param custom_print Function pointer to the custom print function.
+ * @param action Function pointer to the custom action function.
  * @return E_SUCCESS on success, or E_FAILURE on failure.
  */
-int graph_dfs(graph_t * graph, void * start_data, PRINT_F custom_print);
+int graph_dfs(graph_t * graph, void * start_data, ACTION_F action);
 
 /**
  * @brief Performs breadth-first search (BFS) on the graph.
  *
  * @param graph Pointer to the graph.
  * @param start_data Pointer to the data of the starting node.
- * @param custom_print Function pointer to the custom print function.
+ * @param action Function pointer to the custom action function.
  * @return E_SUCCESS on success, or E_FAILURE on failure.
  */
-int graph_bfs(graph_t * graph, void * start_data, PRINT_F custom_print);
+int graph_bfs(graph_t * graph, void * start_data, ACTION_F action);
 
 /**
  * @brief Finds the shortest path between two nodes using Dijkstra's algorithm.
