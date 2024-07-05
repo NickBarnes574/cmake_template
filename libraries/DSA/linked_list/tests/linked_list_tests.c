@@ -13,6 +13,12 @@ list_t * test_list = NULL;
 
 int data[DATA_ARR_LENGTH] = { 44, 51, 77, 14, 68, 41, 46, 18, 72, 53 };
 
+void custom_action(void * data)
+{
+    int * value = (int *)data;
+    (*value)++;
+}
+
 void custom_free(void * data)
 {
     (void)data;
@@ -359,218 +365,416 @@ void test_list_pop_tail_multiple(void)
 
 void test_list_pop_position_null_list(void)
 {
-    // TODO: Add test logic here
-    CU_FAIL()
+    void * result = NULL;
+
+    result = list_pop_position(NULL, 0);
+    CU_ASSERT_PTR_EQUAL(result, NULL);
 }
 
 void test_list_pop_position(void)
 {
-    // TODO: Add test logic here
-    CU_FAIL()
+    int    exit_code = E_FAILURE;
+    void * result    = NULL;
+
+    exit_code = list_push_position(test_list, &data[0], 0); // [44]
+    CU_ASSERT_EQUAL(exit_code, E_SUCCESS);
+    exit_code = list_push_position(test_list, &data[1], 1); // [44, 51]
+    CU_ASSERT_EQUAL(exit_code, E_SUCCESS);
+    exit_code = list_push_position(test_list, &data[2], 2); // [44, 51, 77]
+    CU_ASSERT_EQUAL(exit_code, E_SUCCESS);
+
+    result = list_pop_position(test_list, 1); // [44, 77]
+    CU_ASSERT_PTR_NOT_NULL(result);
+    CU_ASSERT_EQUAL(*(int *)result, data[1]);
+
+    result = list_pop_position(test_list, 0); // [77]
+    CU_ASSERT_PTR_NOT_NULL(result);
+    CU_ASSERT_EQUAL(*(int *)result, data[0]);
+
+    result = list_pop_position(test_list, 0); // []
+    CU_ASSERT_PTR_NOT_NULL(result);
+    CU_ASSERT_EQUAL(*(int *)result, data[2]);
 }
 
 void test_list_remove_head_null_list(void)
 {
-    // TODO: Add test logic here
-    CU_FAIL()
+    int exit_code = E_FAILURE;
+
+    exit_code = list_remove_head(NULL);
+    CU_ASSERT_EQUAL(exit_code, E_NULL_POINTER);
 }
 
 void test_list_remove_head(void)
 {
-    // TODO: Add test logic here
-    CU_FAIL()
+    int exit_code = E_FAILURE;
+
+    exit_code = list_push_head(test_list, &data[0]); // [44]
+    CU_ASSERT_EQUAL(exit_code, E_SUCCESS);
+    exit_code = list_push_head(test_list, &data[1]); // [51, 44]
+    CU_ASSERT_EQUAL(exit_code, E_SUCCESS);
+
+    exit_code = list_remove_head(test_list); // [44]
+    CU_ASSERT_EQUAL(exit_code, E_SUCCESS);
+    CU_ASSERT_EQUAL(*(int *)list_peek_head(test_list), data[0]);
+
+    exit_code = list_remove_head(test_list); // []
+    CU_ASSERT_EQUAL(exit_code, E_SUCCESS);
+    CU_ASSERT_PTR_NULL(list_peek_head(test_list));
 }
 
 void test_list_remove_tail_null_list(void)
 {
-    // TODO: Add test logic here
-    CU_FAIL()
+    int exit_code = E_FAILURE;
+
+    exit_code = list_remove_tail(NULL);
+    CU_ASSERT_EQUAL(exit_code, E_NULL_POINTER);
 }
 
 void test_list_remove_tail(void)
 {
-    // TODO: Add test logic here
-    CU_FAIL()
+    int exit_code = E_FAILURE;
+
+    exit_code = list_push_head(test_list, &data[0]); // [44]
+    CU_ASSERT_EQUAL(exit_code, E_SUCCESS);
+    exit_code = list_push_head(test_list, &data[1]); // [51, 44]
+    CU_ASSERT_EQUAL(exit_code, E_SUCCESS);
+
+    exit_code = list_remove_tail(test_list); // [51]
+    CU_ASSERT_EQUAL(exit_code, E_SUCCESS);
+    CU_ASSERT_EQUAL(*(int *)list_peek_tail(test_list), data[1]);
+
+    exit_code = list_remove_tail(test_list); // []
+    CU_ASSERT_EQUAL(exit_code, E_SUCCESS);
+    CU_ASSERT_PTR_NULL(list_peek_tail(test_list));
 }
 
 void test_list_remove_position_null_list(void)
 {
-    // TODO: Add test logic here
-    CU_FAIL()
+    int exit_code = E_FAILURE;
+
+    exit_code = list_remove_position(NULL, 0);
+    CU_ASSERT_EQUAL(exit_code, E_NULL_POINTER);
 }
 
 void test_list_remove_position(void)
 {
-    // TODO: Add test logic here
-    CU_FAIL()
+    int exit_code = E_FAILURE;
+
+    exit_code = list_push_position(test_list, &data[0], 0); // [44]
+    CU_ASSERT_EQUAL(exit_code, E_SUCCESS);
+    exit_code = list_push_position(test_list, &data[1], 1); // [44, 51]
+    CU_ASSERT_EQUAL(exit_code, E_SUCCESS);
+    exit_code = list_push_position(test_list, &data[2], 2); // [44, 51, 77]
+    CU_ASSERT_EQUAL(exit_code, E_SUCCESS);
+
+    exit_code = list_remove_position(test_list, 1); // [44, 77]
+    CU_ASSERT_EQUAL(exit_code, E_SUCCESS);
+    CU_ASSERT_EQUAL(*(int *)list_peek_position(test_list, 1), data[2]);
+
+    exit_code = list_remove_position(test_list, 0); // [77]
+    CU_ASSERT_EQUAL(exit_code, E_SUCCESS);
+    CU_ASSERT_EQUAL(*(int *)list_peek_position(test_list, 0), data[2]);
+
+    exit_code = list_remove_position(test_list, 0); // []
+    CU_ASSERT_EQUAL(exit_code, E_SUCCESS);
+    CU_ASSERT_PTR_NULL(list_peek_position(test_list, 0));
 }
 
 void test_list_peek_head_null_list(void)
 {
-    // TODO: Add test logic here
-    CU_FAIL()
+    void * result = NULL;
+
+    result = list_peek_head(NULL);
+    CU_ASSERT_PTR_EQUAL(result, NULL);
 }
 
 void test_list_peek_head(void)
 {
-    // TODO: Add test logic here
-    CU_FAIL()
+    int    exit_code = E_FAILURE;
+    void * result    = NULL;
+
+    exit_code = list_push_head(test_list, &data[0]); // [44]
+    CU_ASSERT_EQUAL(exit_code, E_SUCCESS);
+
+    result = list_peek_head(test_list);
+    CU_ASSERT_EQUAL(*(int *)result, data[0]);
 }
 
 void test_list_peek_tail_null_list(void)
 {
-    // TODO: Add test logic here
-    CU_FAIL()
+    void * result = NULL;
+
+    result = list_peek_tail(NULL);
+    CU_ASSERT_PTR_EQUAL(result, NULL);
 }
 
 void test_list_peek_tail(void)
 {
-    // TODO: Add test logic here
-    CU_FAIL()
+    int    exit_code = E_FAILURE;
+    void * result    = NULL;
+
+    exit_code = list_push_head(test_list, &data[0]); // [44]
+    CU_ASSERT_EQUAL(exit_code, E_SUCCESS);
+
+    result = list_peek_tail(test_list);
+    CU_ASSERT_EQUAL(*(int *)result, data[0]);
 }
 
 void test_list_peek_position_null_list(void)
 {
-    // TODO: Add test logic here
-    CU_FAIL()
+    void * result = NULL;
+
+    result = list_peek_position(NULL, 0);
+    CU_ASSERT_PTR_EQUAL(result, NULL);
 }
 
 void test_list_peek_position(void)
 {
-    // TODO: Add test logic here
-    CU_FAIL()
+    int    exit_code = E_FAILURE;
+    void * result    = NULL;
+
+    exit_code = list_push_position(test_list, &data[0], 0); // [44]
+    CU_ASSERT_EQUAL(exit_code, E_SUCCESS);
+    exit_code = list_push_position(test_list, &data[1], 1); // [44, 51]
+    CU_ASSERT_EQUAL(exit_code, E_SUCCESS);
+    exit_code = list_push_position(test_list, &data[2], 2); // [44, 51, 77]
+    CU_ASSERT_EQUAL(exit_code, E_SUCCESS);
+
+    result = list_peek_position(test_list, 1);
+    CU_ASSERT_EQUAL(*(int *)result, data[1]);
+
+    result = list_peek_position(test_list, 0);
+    CU_ASSERT_EQUAL(*(int *)result, data[0]);
+
+    result = list_peek_position(test_list, 2);
+    CU_ASSERT_EQUAL(*(int *)result, data[2]);
 }
 
 void test_list_remove_data_null_list(void)
 {
-    // TODO: Add test logic here
-    CU_FAIL()
+    int exit_code = E_FAILURE;
+
+    exit_code = list_remove_data(NULL, &data[0]);
+    CU_ASSERT_EQUAL(exit_code, E_NULL_POINTER);
 }
 
 void test_list_remove_data_null_data_p(void)
 {
-    // TODO: Add test logic here
-    CU_FAIL()
+    int exit_code = E_FAILURE;
+
+    exit_code = list_remove_data(test_list, NULL);
+    CU_ASSERT_EQUAL(exit_code, E_NULL_POINTER);
 }
 
 void test_list_remove_data(void)
 {
-    // TODO: Add test logic here
-    CU_FAIL()
+    int exit_code = E_FAILURE;
+
+    exit_code = list_push_head(test_list, &data[0]); // [44]
+    CU_ASSERT_EQUAL(exit_code, E_SUCCESS);
+    exit_code = list_push_head(test_list, &data[1]); // [51, 44]
+    CU_ASSERT_EQUAL(exit_code, E_SUCCESS);
+
+    exit_code = list_remove_data(test_list, &data[0]); // [51]
+    CU_ASSERT_EQUAL(exit_code, E_SUCCESS);
+    CU_ASSERT_EQUAL(*(int *)list_peek_head(test_list), data[1]);
+
+    exit_code = list_remove_data(test_list, &data[1]); // []
+    CU_ASSERT_EQUAL(exit_code, E_SUCCESS);
+    CU_ASSERT_PTR_NULL(list_peek_head(test_list));
 }
 
 void test_list_foreach_call_null_list(void)
 {
-    // TODO: Add test logic here
-    CU_FAIL()
+    int exit_code = E_FAILURE;
+
+    exit_code = list_foreach_call(NULL, NULL);
+    CU_ASSERT_EQUAL(exit_code, E_NULL_POINTER);
 }
 
 void test_list_foreach_call(void)
 {
-    // TODO: Add test logic here
-    CU_FAIL()
+    int exit_code = E_FAILURE;
+
+    exit_code = list_push_head(test_list, &data[0]);
+    CU_ASSERT_EQUAL(exit_code, E_SUCCESS);
+
+    exit_code = list_foreach_call(test_list, custom_action);
+    CU_ASSERT_EQUAL(exit_code, E_SUCCESS);
+
+    CU_ASSERT_EQUAL(data[0], 45);
 }
 
 void test_list_contains_null_list(void)
 {
-    // TODO: Add test logic here
-    CU_FAIL()
+    bool result = false;
+
+    result = list_contains(NULL, &data[0]);
+    CU_ASSERT_FALSE(result);
 }
 
 void test_list_contains_null_data_p(void)
 {
-    // TODO: Add test logic here
-    CU_FAIL()
+    bool result = false;
+
+    result = list_contains(test_list, NULL);
+    CU_ASSERT_FALSE(result);
 }
 
 void test_list_contains(void)
 {
-    // TODO: Add test logic here
-    CU_FAIL()
+    bool result = false;
+
+    list_push_head(test_list, &data[0]);
+    list_push_head(test_list, &data[1]);
+
+    result = list_contains(test_list, &data[0]);
+    CU_ASSERT_TRUE(result);
+
+    result = list_contains(test_list, &data[2]);
+    CU_ASSERT_FALSE(result);
 }
 
 void test_list_pick_random_item_null_list(void)
 {
-    // TODO: Add test logic here
-    CU_FAIL()
+    void * result = NULL;
+
+    result = list_pick_random_item(NULL);
+    CU_ASSERT_PTR_EQUAL(result, NULL);
 }
 
 void test_list_pick_random_item(void)
 {
-    // TODO: Add test logic here
-    CU_FAIL()
+    void * result = NULL;
+
+    list_push_head(test_list, &data[0]);
+    list_push_head(test_list, &data[1]);
+
+    result = list_pick_random_item(test_list);
+    CU_ASSERT_PTR_NOT_NULL(result);
 }
 
 void test_list_find_first_occurrence_null_list(void)
 {
-    // TODO: Add test logic here
-    CU_FAIL()
+    void * result = NULL;
+
+    result = list_find_first_occurrence(NULL, &data[0]);
+    CU_ASSERT_PTR_EQUAL(result, NULL);
 }
 
 void test_list_find_first_occurrence_null_search_data(void)
 {
-    // TODO: Add test logic here
-    CU_FAIL()
+    void * result = NULL;
+
+    result = list_find_first_occurrence(test_list, NULL);
+    CU_ASSERT_PTR_EQUAL(result, NULL);
 }
 
 void test_list_find_first_occurrence(void)
 {
-    // TODO: Add test logic here
-    CU_FAIL()
+    void * result = NULL;
+
+    list_push_head(test_list, &data[0]);
+    list_push_head(test_list, &data[1]);
+
+    result = list_find_first_occurrence(test_list, &data[0]);
+    CU_ASSERT_PTR_NOT_NULL(result);
+    CU_ASSERT_EQUAL(*(int *)(((list_node_t *)result)->data), data[0]);
 }
 
 void test_list_find_all_occurrences_null_list(void)
 {
-    // TODO: Add test logic here
-    CU_FAIL()
+    list_t * result = NULL;
+
+    result = list_find_all_occurrences(NULL, &data[0]);
+    CU_ASSERT_PTR_EQUAL(result, NULL);
 }
 
 void test_list_find_all_occurrences_null_search_data(void)
 {
-    // TODO: Add test logic here
-    CU_FAIL()
+    list_t * result = NULL;
+
+    result = list_find_all_occurrences(test_list, NULL);
+    CU_ASSERT_PTR_EQUAL(result, NULL);
 }
 
 void test_list_find_all_occurrences(void)
 {
-    // TODO: Add test logic here
-    CU_FAIL()
+    list_t * result = NULL;
+
+    list_push_head(test_list, &data[0]);
+    list_push_head(test_list, &data[0]);
+    list_push_head(test_list, &data[1]);
+
+    result = list_find_all_occurrences(test_list, &data[0]);
+    CU_ASSERT_PTR_NOT_NULL(result);
+    CU_ASSERT_EQUAL(result->size, 2);
+
+    list_delete(&result);
 }
 
 void test_list_sort_null_list(void)
 {
-    // TODO: Add test logic here
-    CU_FAIL()
+    int exit_code = E_FAILURE;
+
+    exit_code = list_sort(NULL);
+    CU_ASSERT_EQUAL(exit_code, E_NULL_POINTER);
 }
 
 void test_list_sort(void)
 {
-    // TODO: Add test logic here
-    CU_FAIL()
+    int exit_code = E_FAILURE;
+
+    list_push_head(test_list, &data[2]);
+    list_push_head(test_list, &data[0]);
+    list_push_head(test_list, &data[1]);
+
+    exit_code = list_sort(test_list);
+    CU_ASSERT_EQUAL(exit_code, E_SUCCESS);
+
+    CU_ASSERT_EQUAL(*(int *)list_peek_head(test_list), data[0]);
+    CU_ASSERT_EQUAL(*(int *)list_peek_tail(test_list), data[2]);
 }
 
 void test_list_clear_null_list(void)
 {
-    // TODO: Add test logic here
-    CU_FAIL()
+    int exit_code = E_FAILURE;
+
+    exit_code = list_clear(NULL);
+    CU_ASSERT_EQUAL(exit_code, E_NULL_POINTER);
 }
 
 void test_list_clear(void)
 {
-    // TODO: Add test logic here
-    CU_FAIL()
+    int exit_code = E_FAILURE;
+
+    list_push_head(test_list, &data[0]);
+    list_push_head(test_list, &data[1]);
+
+    exit_code = list_clear(test_list);
+    CU_ASSERT_EQUAL(exit_code, E_SUCCESS);
+    CU_ASSERT_EQUAL(test_list->size, 0);
+    CU_ASSERT_PTR_NULL(list_peek_head(test_list));
 }
 
 void test_list_delete_null_list_address(void)
 {
-    // TODO: Add test logic here
-    CU_FAIL()
+    int exit_code = E_FAILURE;
+
+    exit_code = list_delete(NULL);
+    CU_ASSERT_EQUAL(exit_code, E_NULL_POINTER);
 }
 
 void test_list_delete(void)
 {
-    // TODO: Add test logic here
-    CU_FAIL()
+    int exit_code = E_FAILURE;
+
+    list_push_head(test_list, &data[0]);
+    list_push_head(test_list, &data[1]);
+
+    exit_code = list_delete(&test_list);
+    CU_ASSERT_EQUAL(exit_code, E_SUCCESS);
+    CU_ASSERT_PTR_NULL(test_list);
 }
 
 static CU_TestInfo linked_list_tests[] = {
@@ -598,46 +802,46 @@ static CU_TestInfo linked_list_tests[] = {
     { "pop_tail_empty", test_list_pop_tail_empty },
     { "pop_tail_single", test_list_pop_tail_single },
     { "pop_tail_multiple", test_list_pop_tail_multiple },
-    // { "pop_position_null_list", test_list_pop_position_null_list },
-    // { "pop_position", test_list_pop_position },
-    // { "remove_head_null_list", test_list_remove_head_null_list },
-    // { "remove_head", test_list_remove_head },
-    // { "remove_tail_null_list", test_list_remove_tail_null_list },
-    // { "remove_tail", test_list_remove_tail },
-    // { "remove_position_null_list", test_list_remove_position_null_list },
-    // { "remove_position", test_list_remove_position },
-    // { "peek_head_null_list", test_list_peek_head_null_list },
-    // { "peek_head", test_list_peek_head },
-    // { "peek_tail_null_list", test_list_peek_tail_null_list },
-    // { "peek_tail", test_list_peek_tail },
-    // { "peek_position_null_list", test_list_peek_position_null_list },
-    // { "peek_position", test_list_peek_position },
-    // { "remove_data_null_list", test_list_remove_data_null_list },
-    // { "remove_data_null_data_p", test_list_remove_data_null_data_p },
-    // { "remove_data", test_list_remove_data },
-    // { "foreach_call_null_list", test_list_foreach_call_null_list },
-    // { "foreach_call", test_list_foreach_call },
-    // { "contains_null_list", test_list_contains_null_list },
-    // { "contains_null_data_p", test_list_contains_null_data_p },
-    // { "contains", test_list_contains },
-    // { "pick_random_item_null_list", test_list_pick_random_item_null_list },
-    // { "pick_random_item", test_list_pick_random_item },
-    // { "find_first_occurrence_null_list",
-    //   test_list_find_first_occurrence_null_list },
-    // { "find_first_occurrence_null_search_data",
-    //   test_list_find_first_occurrence_null_search_data },
-    // { "find_first_occurrence", test_list_find_first_occurrence },
-    // { "find_all_occurrences_null_list",
-    //   test_list_find_all_occurrences_null_list },
-    // { "find_all_occurrences_null_search_data",
-    //   test_list_find_all_occurrences_null_search_data },
-    // { "find_all_occurrences", test_list_find_all_occurrences },
-    // { "sort_null_list", test_list_sort_null_list },
-    // { "sort", test_list_sort },
-    // { "clear_null_list", test_list_clear_null_list },
-    // { "clear", test_list_clear },
-    // { "delete_null_list_address", test_list_delete_null_list_address },
-    // { "delete", test_list_delete },
+    { "pop_position_null_list", test_list_pop_position_null_list },
+    { "pop_position", test_list_pop_position },
+    { "remove_head_null_list", test_list_remove_head_null_list },
+    { "remove_head", test_list_remove_head },
+    { "remove_tail_null_list", test_list_remove_tail_null_list },
+    { "remove_tail", test_list_remove_tail },
+    { "remove_position_null_list", test_list_remove_position_null_list },
+    { "remove_position", test_list_remove_position },
+    { "peek_head_null_list", test_list_peek_head_null_list },
+    { "peek_head", test_list_peek_head },
+    { "peek_tail_null_list", test_list_peek_tail_null_list },
+    { "peek_tail", test_list_peek_tail },
+    { "peek_position_null_list", test_list_peek_position_null_list },
+    { "peek_position", test_list_peek_position },
+    { "remove_data_null_list", test_list_remove_data_null_list },
+    { "remove_data_null_data_p", test_list_remove_data_null_data_p },
+    { "remove_data", test_list_remove_data },
+    { "foreach_call_null_list", test_list_foreach_call_null_list },
+    { "foreach_call", test_list_foreach_call },
+    { "contains_null_list", test_list_contains_null_list },
+    { "contains_null_data_p", test_list_contains_null_data_p },
+    { "contains", test_list_contains },
+    { "pick_random_item_null_list", test_list_pick_random_item_null_list },
+    { "pick_random_item", test_list_pick_random_item },
+    { "find_first_occurrence_null_list",
+      test_list_find_first_occurrence_null_list },
+    { "find_first_occurrence_null_search_data",
+      test_list_find_first_occurrence_null_search_data },
+    { "find_first_occurrence", test_list_find_first_occurrence },
+    { "find_all_occurrences_null_list",
+      test_list_find_all_occurrences_null_list },
+    { "find_all_occurrences_null_search_data",
+      test_list_find_all_occurrences_null_search_data },
+    { "find_all_occurrences", test_list_find_all_occurrences },
+    { "sort_null_list", test_list_sort_null_list },
+    { "sort", test_list_sort },
+    { "clear_null_list", test_list_clear_null_list },
+    { "clear", test_list_clear },
+    { "delete_null_list_address", test_list_delete_null_list_address },
+    { "delete", test_list_delete },
     CU_TEST_INFO_NULL
 };
 

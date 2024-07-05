@@ -1,36 +1,83 @@
 #include "adjacency_list.h"
 #include "utilities.h"
 
-void edge_list_free(void * data_p)
+void edge_list_free(void * data)
 {
-    (void)data_p;
+    (void)data;
     return;
 }
+
+comp_rtns_t edge_compare(void * a, void * b)
+{
+    const edge_t * edge_a = (const edge_t *)a;
+    const edge_t * edge_b = (const edge_t *)b;
+
+    if (edge_a->node_1 == edge_b->node_1 && edge_a->node_2 == edge_b->node_2)
+    {
+        return EQUAL;
+    }
+    else if (edge_a->node_1 == edge_b->node_2 &&
+             edge_a->node_2 == edge_b->node_1 && !edge_a->is_directed)
+    {
+        return EQUAL;
+    }
+
+    return NOT_EQUAL;
+}
+
+/**
+ * @brief Creates a new node with the given data.
+ *
+ * @param data A pointer to the data to be stored in the node.
+ * @return node_t* A pointer to the newly created node or NULL on failure.
+ */
+static node_t * graph_create_node(void * data);
+
+/**
+ * @brief Finds a node in the graph with the given data.
+ *
+ * @param graph A pointer to the graph.
+ * @param data A pointer to the data of the node to find.
+ * @return node_t* A pointer to the found node or NULL if not found.
+ */
+static node_t * graph_find_node(graph_t * graph, void * data);
+
+/**
+ * @brief Finds an edge between two nodes in the graph.
+ *
+ * @param graph A pointer to the graph.
+ * @param node_1 A pointer to the first node.
+ * @param node_2 A pointer to the second node.
+ * @return edge_t* A pointer to the found edge or NULL if not found.
+ */
+static edge_t * graph_find_edge(graph_t * graph,
+                                node_t *  node_1,
+                                node_t *  node_2);
 
 /**
  * @brief Collects all edges connected to a given node.
  *
  * This function is static and intended for internal use only.
  *
- * @param node_p A pointer to the node whose edges are to be collected.
+ * @param node A pointer to the node whose edges are to be collected.
  * @param num_edges A pointer to size_t to store the number of edges found.
  * @return edge_t** A pointer to an array of pointers to the collected edges.
  */
-static edge_t ** collect_edges(node_t * node_p, size_t * num_edges);
+static edge_t ** collect_edges(node_t * node, uint32_t * num_edges);
 
 /**
  * @brief Removes a set of edges from a graph.
  *
  * This function is static and intended for internal use only.
  *
- * @param graph_p A pointer to the graph from which edges are to be removed.
- * @param edges_to_remove_pp A pointer to an array of pointers to edges to be
+ * @param graph A pointer to the graph from which edges are to be removed.
+ * @param edges_to_remove A pointer to an array of pointers to edges to be
  * removed.
  * @param num_edges The number of edges to remove.
  * @return int An integer indicating success (E_SUCCESS) or failure (E_FAILURE).
  */
-static int remove_edges(graph_t * graph_p,
-                        edge_t ** edges_to_remove_pp,
+static int remove_edges(graph_t * graph,
+                        edge_t ** edges_to_remove,
                         size_t    num_edges);
 
 /**
@@ -38,14 +85,14 @@ static int remove_edges(graph_t * graph_p,
  *
  * This function is static and intended for internal use only.
  *
- * @param graph_p A pointer to the graph containing the node.
- * @param node_p A pointer to the node to clean up.
+ * @param graph A pointer to the graph containing the node.
+ * @param node A pointer to the node to clean up.
  */
-static void cleanup_node(graph_t * graph_p, node_t * node_p);
+static void cleanup_node(graph_t * graph, node_t * node);
 
 graph_t * graph_create(FREE_F custom_free, CMP_F custom_compare)
 {
-    graph_t * graph_p = NULL;
+    graph_t * graph = NULL;
 
     if ((NULL == custom_free) || (NULL == custom_compare))
     {
@@ -53,126 +100,95 @@ graph_t * graph_create(FREE_F custom_free, CMP_F custom_compare)
         goto END;
     }
 
-    graph_p = calloc(1, sizeof(graph_t));
-    if (NULL == graph_p)
+    graph = calloc(1, sizeof(graph_t));
+    if (NULL == graph)
     {
         print_error("graph_create(): CMR failure.");
         goto END;
     }
 
-    graph_p->node_count     = 0;
-    graph_p->custom_free    = custom_free;
-    graph_p->custom_compare = custom_compare;
-    graph_p->node_list_p =
-        list_new(graph_p->custom_free, graph_p->custom_compare);
-    if (NULL == graph_p->node_list_p)
+    graph->node_count     = 0;
+    graph->custom_free    = custom_free;
+    graph->custom_compare = custom_compare;
+    graph->node_list      = list_new(graph->custom_free, graph->custom_compare);
+    if (NULL == graph->node_list)
     {
         print_error("graph_add_node(): Unable to create node list.");
-        free(graph_p);
-        graph_p = NULL;
+        free(graph);
+        graph = NULL;
         goto END;
     }
 
 END:
-    return graph_p;
+    return graph;
 }
 
-node_t * graph_create_node(void * data_p)
-{
-    node_t * new_node_p = NULL;
-
-    if (NULL == data_p)
-    {
-        print_error("graph_create_node(): NULL data passed.");
-        goto END;
-    }
-
-    new_node_p = calloc(1, sizeof(node_t));
-    if (NULL == new_node_p)
-    {
-        print_error("graph_create_node(): CMR failure.");
-        goto END;
-    }
-
-    new_node_p->data_p      = data_p;
-    new_node_p->edge_count  = 0;
-    new_node_p->edge_list_p = list_new(edge_list_free, NULL);
-    if (NULL == new_node_p->edge_list_p)
-    {
-        print_error("graph_create_node(): CMR failure.");
-        goto END;
-    }
-
-END:
-    return new_node_p;
-}
-
-int graph_add_node(graph_t * graph_p, void * data_p)
+int graph_add_node(graph_t * graph, void * data)
 {
     int      exit_code = E_FAILURE;
-    node_t * node_p    = NULL;
+    node_t * node      = NULL;
 
-    if ((NULL == graph_p) || (NULL == data_p))
+    if ((NULL == graph) || (NULL == data))
     {
         print_error("graph_add_node(): NULL argument passed.");
         goto END;
     }
 
-    node_p = graph_create_node(data_p);
-    if (NULL == node_p)
+    node = graph_create_node(data);
+    if (NULL == node)
     {
         print_error("graph_add_node(): Unable to create node.");
         goto END;
     }
 
     // Add the new node to the list
-    exit_code = list_push_head(graph_p->node_list_p, node_p);
+    exit_code = list_push_head(graph->node_list, node);
     if (E_SUCCESS != exit_code)
     {
         print_error("graph_add_node(): Unable to add new node to the list.");
         goto END;
     }
 
-    graph_p->node_count += 1;
+    graph->node_count += 1;
 
     exit_code = E_SUCCESS;
 END:
     if (E_SUCCESS != exit_code)
     {
-        free(node_p);
-        node_p = NULL;
+        free(node);
+        node = NULL;
     }
     return exit_code;
 }
 
-int graph_remove_node(graph_t * graph_p, void * data_p)
+int graph_remove_node(graph_t * graph, void * data)
 {
-    int       exit_code          = E_FAILURE;
-    node_t *  node_p             = NULL;
-    size_t    num_edges          = 0;
-    edge_t ** edges_to_remove_pp = NULL;
+    int       exit_code       = E_FAILURE;
+    node_t *  node            = NULL;
+    uint32_t  num_edges       = 0;
+    edge_t ** edges_to_remove = NULL;
 
-    if ((NULL == graph_p) || (NULL == data_p))
+    if ((NULL == graph) || (NULL == data))
     {
         print_error("graph_remove_node(): NULL argument passed.");
         goto END;
     }
 
-    node_p = graph_find_node(graph_p, data_p);
-    if (NULL == node_p)
+    node = graph_find_node(graph, data);
+    if (NULL == node)
     {
         print_error("graph_remove_node(): Unable to find node.");
         goto END;
     }
 
-    edges_to_remove_pp = collect_edges(node_p, &num_edges);
-    if (NULL == edges_to_remove_pp)
+    edges_to_remove = collect_edges(node, &num_edges);
+    if (NULL == edges_to_remove)
     {
         print_error("graph_remove_node(): Unable to collect edges.");
         goto END;
     }
 
-    exit_code = remove_edges(graph_p, edges_to_remove_pp, num_edges);
+    exit_code = remove_edges(graph, edges_to_remove, num_edges);
     if (E_SUCCESS != exit_code)
     {
         print_error("graph_remove_node(): Unable to remove edges.");
@@ -180,7 +196,7 @@ int graph_remove_node(graph_t * graph_p, void * data_p)
     }
 
     // Remove the node from the list of nodes
-    exit_code = list_remove_data(graph_p->node_list_p, node_p->data_p);
+    exit_code = list_remove_data(graph->node_list, &(node->data));
     if (E_SUCCESS != exit_code)
     {
         print_error(
@@ -188,135 +204,127 @@ int graph_remove_node(graph_t * graph_p, void * data_p)
         goto END;
     }
 
-    graph_p->node_count -= 1;
+    graph->node_count -= 1;
 
-    cleanup_node(graph_p, node_p);
+    cleanup_node(graph, node);
 
     exit_code = E_SUCCESS;
 END:
-    free(edges_to_remove_pp);
-    edges_to_remove_pp = NULL;
+    free(edges_to_remove);
+    edges_to_remove = NULL;
     return exit_code;
 }
 
-int graph_add_edge(graph_t * graph_p,
-                   void *    data_1_p,
-                   void *    data_2_p,
+int graph_add_edge(graph_t * graph,
+                   void *    data_1,
+                   void *    data_2,
                    size_t    weight,
                    bool      is_bidirectional)
 {
     int      exit_code = E_FAILURE;
-    node_t * node_1_p  = NULL;
-    node_t * node_2_p  = NULL;
-    edge_t * edge_p    = NULL;
+    node_t * node_1    = NULL;
+    node_t * node_2    = NULL;
+    edge_t * edge      = NULL;
 
-    if ((NULL == graph_p) || (NULL == data_1_p) || (NULL == data_2_p))
+    if ((NULL == graph) || (NULL == data_1) || (NULL == data_2))
     {
         print_error("graph_add_edge(): NULL argument passed.");
         goto END;
     }
 
-    node_1_p = graph_find_node(graph_p, data_1_p);
-    if (NULL == node_1_p)
+    node_1 = graph_find_node(graph, data_1);
+    if (NULL == node_1)
     {
         print_error("graph_add_edge(): Node 1 does not exist.");
         goto END;
     }
 
-    node_2_p = graph_find_node(graph_p, data_2_p);
-    if (NULL == node_2_p)
+    node_2 = graph_find_node(graph, data_2);
+    if (NULL == node_2)
     {
         print_error("graph_add_edge(): Node 2 does not exist.");
         goto END;
     }
 
-    edge_p = calloc(1, sizeof(edge_t));
-    if (NULL == edge_p)
+    edge = calloc(1, sizeof(edge_t));
+    if (NULL == edge)
     {
         print_error("graph_add_edge(): CMR failure.");
         goto END;
     }
 
-    edge_p->node_1_p    = node_1_p;
-    edge_p->node_2_p    = node_2_p;
-    edge_p->weight      = weight;
-    edge_p->is_directed = !is_bidirectional;
+    edge->node_1      = node_1;
+    edge->node_2      = node_2;
+    edge->weight      = weight;
+    edge->is_directed = !is_bidirectional;
 
-    exit_code = list_push_head(node_1_p->edge_list_p, edge_p);
+    exit_code = list_push_head(node_1->edge_list, edge);
     if (E_SUCCESS != exit_code)
     {
         print_error(
             "graph_add_edge(): Unable to add edge to node 1's edge list.");
+        free(edge);
         goto END;
     }
-    node_1_p->edge_count += 1;
+    node_1->edge_count += 1;
 
     if (true == is_bidirectional)
     {
-        exit_code = list_push_head(node_2_p->edge_list_p, edge_p);
+        exit_code = list_push_head(node_2->edge_list, edge);
         if (E_SUCCESS != exit_code)
         {
             print_error(
                 "graph_add_edge(): Unable to add edge to node 2's edge list.");
-            exit_code = list_remove_data(node_1_p->edge_list_p, edge_p);
-            if (E_SUCCESS != exit_code)
-            {
-                print_error(
-                    "graph_add_edge(): Unable to rollback previous add.");
-            }
-            node_1_p->edge_count -= 1;
-            exit_code = E_FAILURE;
+            // Rollback
+            list_remove_data(node_1->edge_list, edge);
+            node_1->edge_count -= 1;
+            free(edge);
             goto END;
         }
-        node_2_p->edge_count += 1;
+        node_2->edge_count += 1;
     }
 
     exit_code = E_SUCCESS;
 END:
-    if (E_SUCCESS != exit_code)
-    {
-        free(edge_p);
-        edge_p = NULL;
-    }
     return exit_code;
 }
 
-int graph_remove_edge(graph_t * graph_p, void * data_1_p, void * data_2_p)
+int graph_remove_edge(graph_t * graph, void * data_1, void * data_2)
 {
     int      exit_code = E_FAILURE;
-    node_t * node_1_p  = NULL;
-    node_t * node_2_p  = NULL;
-    edge_t * edge_p    = NULL;
+    node_t * node_1    = NULL;
+    node_t * node_2    = NULL;
+    edge_t * edge      = NULL;
 
-    if ((NULL == graph_p) || (NULL == data_1_p) || (NULL == data_2_p))
+    if ((NULL == graph) || (NULL == data_1) || (NULL == data_2))
     {
         print_error("graph_remove_edge(): NULL argument passed.");
         goto END;
     }
 
-    node_1_p = graph_find_node(graph_p, data_1_p);
-    if (NULL == node_1_p)
+    node_1 = graph_find_node(graph, data_1);
+    if (NULL == node_1)
     {
         print_error("graph_remove_edge(): Unable to find node 1.");
         goto END;
     }
 
-    node_2_p = graph_find_node(graph_p, data_2_p);
-    if (NULL == node_2_p)
+    node_2 = graph_find_node(graph, data_2);
+    if (NULL == node_2)
     {
         print_error("graph_remove_edge(): Unable to find node 2.");
         goto END;
     }
 
-    edge_p = graph_find_edge(graph_p, node_1_p, node_2_p);
-    if (NULL == edge_p)
+    edge = graph_find_edge(graph, node_1, node_2);
+    if (NULL == edge)
     {
         print_error("graph_remove_edge(): Unable to find edge.");
         goto END;
     }
 
-    // Remove the edge
-    exit_code = list_remove_data(node_1_p->edge_list_p, edge_p);
+    // Remove the edge from node 1's edge list
+    exit_code = list_remove_data(node_1->edge_list, edge);
     if (E_SUCCESS != exit_code)
     {
         print_error(
@@ -324,187 +332,126 @@ int graph_remove_edge(graph_t * graph_p, void * data_1_p, void * data_2_p)
             "list.");
         goto END;
     }
-    node_1_p->edge_count -= 1;
+    node_1->edge_count -= 1;
 
-    // Remove the edge from node 2's list if non-directed
-    if (false == edge_p->is_directed)
+    // Remove the edge from node 2's edge list if the edge is bidirectional
+    if (!edge->is_directed)
     {
-        exit_code = list_remove_data(node_2_p->edge_list_p, edge_p);
+        exit_code = list_remove_data(node_2->edge_list, edge);
         if (E_SUCCESS != exit_code)
         {
             print_error(
                 "graph_remove_edge(): Unable to remove edge from node 2's edge "
                 "list.");
+            // Rollback previous removal from node 1's list
+            list_push_head(node_1->edge_list, edge);
+            node_1->edge_count += 1;
             goto END;
         }
-        node_2_p->edge_count -= 1;
+        node_2->edge_count -= 1;
     }
 
-    free(edge_p);
-    edge_p = NULL;
+    // Free the edge memory
+    free(edge);
+    edge = NULL;
 
     exit_code = E_SUCCESS;
 END:
     return exit_code;
 }
-size_t graph_get_size(graph_t * graph_p)
+
+size_t graph_get_size(graph_t * graph)
 {
     size_t size = 0;
 
-    if (NULL == graph_p)
+    if (NULL == graph)
     {
         print_error("graph_get_size(): NULL argument passed.");
         goto END;
     }
 
-    size = graph_p->node_count;
+    size = graph->node_count;
 
 END:
     return size;
 }
 
-node_t * graph_find_node(graph_t * graph_p, void * data_p)
+void graph_print(graph_t * graph, PRINT_F custom_print)
 {
-    list_node_t * list_node_p = NULL;
-    node_t *      node_p      = NULL;
+    list_node_t * current    = NULL;
+    node_t *      graph_node = NULL;
 
-    if ((NULL == graph_p) || (NULL == data_p))
-    {
-        print_error("graph_find_node(): NULL argument passed.");
-        goto END;
-    }
-
-    list_node_p = list_find_first_occurrence(graph_p->node_list_p, &data_p);
-    if (NULL == list_node_p)
-    {
-        print_error("graph_find_node(): Unable to find first occurrence.");
-    }
-
-    node_p = (node_t *)list_node_p->data;
-
-END:
-    return node_p;
-}
-edge_t * graph_find_edge(graph_t * graph_p,
-                         node_t *  node_1_p,
-                         node_t *  node_2_p)
-{
-    edge_t *      edge_p      = NULL;
-    list_t *      edge_list_p = NULL;
-    list_node_t * current_p   = NULL;
-
-    if ((NULL == graph_p) || (NULL == node_1_p) || (NULL == node_2_p))
-    {
-        print_error("graph_find_edge(): NULL argument passed.");
-        goto END;
-    }
-
-    edge_list_p = node_1_p->edge_list_p;
-    if (NULL == edge_list_p)
-    {
-        print_error("graph_find_edge(): Node 1 does not have an edge list.");
-        goto END;
-    }
-
-    // Find the edge that connects to node 2
-    current_p = edge_list_p->head;
-    while (NULL != current_p)
-    {
-        edge_p = (edge_t *)current_p->data;
-
-        // Check if the current edge connects to node 2
-        if (((edge_p->node_1_p == node_1_p) &&
-             (edge_p->node_2_p == node_2_p)) ||
-            ((edge_p->node_1_p == node_2_p) && (edge_p->node_2_p == node_1_p) &&
-             false == edge_p->is_directed))
-        {
-            // Found the edge
-            goto END;
-        }
-
-        current_p = current_p->next;
-    }
-
-END:
-    return edge_p;
-}
-
-void graph_print(graph_t * graph_p, PRINT_F custom_print)
-{
-    list_node_t * current_p    = NULL;
-    node_t *      graph_node_p = NULL;
-
-    if ((NULL == graph_p) || (NULL == custom_print))
+    if ((NULL == graph) || (NULL == custom_print))
     {
         print_error("graph_print(): NULL argument passed.");
         goto END;
     }
 
-    current_p = graph_p->node_list_p->head;
-    while (NULL != current_p)
+    current = graph->node_list->head;
+    while (NULL != current)
     {
-        graph_node_p = (node_t *)(current_p->data);
+        graph_node = (node_t *)(current->data);
         printf("Node: ");
-        custom_print(graph_node_p->data_p);
-        printf(" with %zu edges.\n", graph_node_p->edge_count);
+        custom_print(graph_node->data);
+        printf(" with %zu edges.\n", graph_node->edge_count);
 
-        current_p = current_p->next;
+        current = current->next;
     }
 
 END:
     return;
 }
 
-int graph_clear(graph_t * graph_p)
+int graph_clear(graph_t * graph)
 {
     int           exit_code = E_FAILURE;
-    list_node_t * current_p = NULL;
-    list_node_t * next_p    = NULL;
-    node_t *      node_p    = NULL;
+    list_node_t * current   = NULL;
+    list_node_t * next      = NULL;
+    node_t *      node      = NULL;
 
-    if (NULL == graph_p)
+    if (NULL == graph)
     {
         print_error("graph_clear(): NULL argument passed.");
         goto END;
     }
 
-    current_p = graph_p->node_list_p->head;
-    while (NULL != current_p)
+    current = graph->node_list->head;
+    while (NULL != current)
     {
-        node_p = (node_t *)current_p->data;
-        next_p = current_p->next;
+        node = (node_t *)current->data;
+        next = current->next;
 
-        cleanup_node(graph_p, node_p);
+        cleanup_node(graph, node);
 
-        current_p = next_p;
+        current = next;
     }
 
-    exit_code = list_delete(&(graph_p->node_list_p));
+    exit_code = list_delete(&(graph->node_list));
     if (E_SUCCESS != exit_code)
     {
         print_error("graph_clear(): Unable to reset graph's node list.");
         goto END;
     }
 
-    graph_p->node_list_p = NULL;
-    graph_p->node_count  = 0;
+    graph->node_list  = NULL;
+    graph->node_count = 0;
 
     exit_code = E_SUCCESS;
 END:
     return exit_code;
 }
 
-int graph_destroy(graph_t ** graph_pp)
+int graph_destroy(graph_t ** graph)
 {
     int exit_code = E_FAILURE;
 
-    if ((graph_pp == NULL) || (*graph_pp == NULL))
+    if ((graph == NULL) || (*graph == NULL))
     {
         print_error("graph_destroy(): NULL graph pointer.");
         goto END;
     }
 
-    exit_code = graph_clear(*graph_pp);
+    exit_code = graph_clear(*graph);
     if (E_SUCCESS != exit_code)
     {
         print_error("graph_destroy(): Unable to clear graph.");
@@ -512,54 +459,199 @@ int graph_destroy(graph_t ** graph_pp)
     }
 
     // Finally, free the graph structure
-    free(*graph_pp);
-    *graph_pp = NULL; // Avoid dangling pointer
+    free(*graph);
+    *graph = NULL; // Avoid dangling pointer
 
 END:
     return exit_code;
 }
 
+int graph_is_connected(graph_t * graph, bool * is_connected)
+{
+    int exit_code = E_FAILURE;
+
+    (void)graph;
+    (void)is_connected;
+
+    return exit_code;
+}
+
+int graph_is_cyclic(graph_t * graph, bool * is_cyclic)
+{
+    int exit_code = E_FAILURE;
+
+    (void)graph;
+    (void)is_cyclic;
+
+    return exit_code;
+}
+
+list_t * graph_find_connected_components(graph_t * graph)
+{
+    list_t * connected_components = NULL;
+
+    (void)graph;
+
+    return connected_components;
+}
+
+int graph_node_degree(graph_t * graph, void * data, size_t * degree)
+{
+    int exit_code = E_FAILURE;
+
+    (void)graph;
+    (void)data;
+    (void)degree;
+
+    return exit_code;
+}
+
 // STATIC FUNCTIONS
 
-static edge_t ** collect_edges(node_t * node_p, size_t * num_edges)
+static node_t * graph_create_node(void * data)
 {
-    edge_t **     edge_list_pp = NULL;
-    list_node_t * current_p    = NULL;
-    size_t        index        = 0;
+    node_t * new_node = NULL;
 
-    if ((NULL == node_p) || (NULL == num_edges))
+    if (NULL == data)
+    {
+        print_error("graph_create_node(): NULL data passed.");
+        goto END;
+    }
+
+    new_node = calloc(1, sizeof(node_t));
+    if (NULL == new_node)
+    {
+        print_error("graph_create_node(): CMR failure.");
+        goto END;
+    }
+
+    new_node->data       = data;
+    new_node->edge_count = 0;
+    new_node->edge_list  = list_new(edge_list_free, edge_compare);
+    if (NULL == new_node->edge_list)
+    {
+        print_error("graph_create_node(): CMR failure.");
+        free(new_node);
+        new_node = NULL;
+        goto END;
+    }
+
+END:
+    return new_node;
+}
+
+static node_t * graph_find_node(graph_t * graph, void * data)
+{
+    list_node_t * list_node = NULL;
+    node_t *      node      = NULL;
+
+    if ((NULL == graph) || (NULL == data))
+    {
+        print_error("graph_find_node(): NULL argument passed.");
+        goto END;
+    }
+
+    list_node = list_find_first_occurrence(graph->node_list, &data);
+    if (NULL == list_node)
+    {
+        print_error("graph_find_node(): Unable to find first occurrence.");
+        goto END;
+    }
+
+    node = ((node_t *)list_node->data);
+
+END:
+    return node;
+}
+
+static edge_t * graph_find_edge(graph_t * graph,
+                                node_t *  node_1,
+                                node_t *  node_2)
+{
+    edge_t *      edge      = NULL;
+    list_t *      edge_list = NULL;
+    list_node_t * current   = NULL;
+
+    if ((NULL == graph) || (NULL == node_1) || (NULL == node_2))
+    {
+        print_error("graph_find_edge(): NULL argument passed.");
+        goto END;
+    }
+
+    edge_list = node_1->edge_list;
+    if (NULL == edge_list)
+    {
+        print_error("graph_find_edge(): Node 1 does not have an edge list.");
+        goto END;
+    }
+
+    // Find the edge that connects to node 2
+    current = edge_list->head;
+    while (NULL != current)
+    {
+        edge = (edge_t *)current->data;
+
+        // Check if the current edge connects to node 2
+        if (((edge->node_1 == node_1) && (edge->node_2 == node_2)) ||
+            ((edge->node_1 == node_2) && (edge->node_2 == node_1) &&
+             false == edge->is_directed))
+        {
+            // Found the edge
+            goto END;
+        }
+
+        current = current->next;
+    }
+
+END:
+    return edge;
+}
+
+static edge_t ** collect_edges(node_t * node, uint32_t * num_edges)
+{
+    edge_t **     edge_list = NULL;
+    list_node_t * current   = NULL;
+    size_t        index     = 0;
+
+    if ((NULL == node) || (NULL == num_edges))
     {
         print_error("collect_edges(): NULL argument passed.");
         goto END;
     }
 
-    *num_edges = node_p->edge_list_p->size;
+    if (NULL == node->edge_list)
+    {
+        print_error("collect_edges(): NULL edge list.");
+        goto END;
+    }
 
-    edge_list_pp = calloc(*num_edges, sizeof(edge_t *));
-    if (NULL == edge_list_pp)
+    *num_edges = node->edge_list->size;
+
+    edge_list = calloc(*num_edges, sizeof(edge_t *));
+    if (NULL == edge_list)
     {
         print_error("collect_edges(): CMR failure.");
         goto END;
     }
 
-    current_p = node_p->edge_list_p->head;
-    while ((NULL != current_p) && (index < *num_edges))
+    current = node->edge_list->head;
+    while ((NULL != current) && (index < *num_edges))
     {
-        edge_list_pp[index++] = (edge_t *)current_p->data;
-        current_p             = current_p->next;
+        edge_list[index++] = (edge_t *)current->data;
+        current            = current->next;
     }
 
 END:
-    return edge_list_pp;
+    return edge_list;
 }
 
-static int remove_edges(graph_t * graph_p,
-                        edge_t ** edges_to_remove_pp,
+static int remove_edges(graph_t * graph,
+                        edge_t ** edges_to_remove,
                         size_t    num_edges)
 {
     int exit_code = E_FAILURE;
 
-    if ((NULL == graph_p) || (NULL == edges_to_remove_pp))
+    if ((NULL == graph) || (NULL == edges_to_remove))
     {
         print_error("remove_edges(): NULL argument passed.");
         goto END;
@@ -567,10 +659,9 @@ static int remove_edges(graph_t * graph_p,
 
     for (size_t idx = 0; idx < num_edges; ++idx)
     {
-        exit_code =
-            graph_remove_edge(graph_p,
-                              edges_to_remove_pp[idx]->node_1_p->data_p,
-                              edges_to_remove_pp[idx]->node_2_p->data_p);
+        exit_code = graph_remove_edge(graph,
+                                      edges_to_remove[idx]->node_1->data,
+                                      edges_to_remove[idx]->node_2->data);
         if (E_SUCCESS != exit_code)
         {
             print_error("remove_edges(): Unable to remove edge.");
@@ -583,26 +674,25 @@ END:
     return exit_code;
 }
 
-static void cleanup_node(graph_t * graph_p, node_t * node_p)
+static void cleanup_node(graph_t * graph, node_t * node)
 {
     int exit_code = E_FAILURE;
 
-    if ((NULL == graph_p) || (NULL == node_p))
+    if ((NULL == graph) || (NULL == node))
     {
         print_error("cleanup_node(): NULL argument passed.");
         goto END;
     }
 
     // Free the nodes data and the node itself, and remove the edge list
-    graph_p->custom_free(node_p->data_p);
-    node_p->data_p     = NULL;
-    node_p->edge_count = 0;
+    graph->custom_free(node->data);
+    node->data = NULL;
 
-    free(node_p->edge_list_p);
-    node_p->edge_list_p = NULL;
+    node->edge_count = 0;
 
-    free(node_p);
-    node_p = NULL;
+    list_delete(&(node->edge_list));
+    free(node);
+    node = NULL;
 
     (void)exit_code;
 END:
