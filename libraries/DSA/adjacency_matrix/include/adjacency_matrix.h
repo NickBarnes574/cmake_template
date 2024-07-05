@@ -11,16 +11,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "comparisons.h"
+#include "callback_types.h"
 
 typedef void (*FREE_F)(void *);
-typedef void (*ACTION_F)(const void *, const char *);
 typedef bool (*PREDICATE_F)(const void *, const char *);
 typedef size_t (*HEURISTIC_F)(const char *, const char *);
 
 typedef struct matrix matrix_t;
-typedef struct node node_t;
-typedef struct edge edge_t;
+typedef struct node   node_t;
+typedef struct edge   edge_t;
 
 // Primary API functions
 
@@ -34,17 +33,17 @@ typedef struct edge edge_t;
  * @return A pointer to the newly created graph, or NULL if initialization
  * fails.
  */
-matrix_t *matrix_init(size_t num_nodes,
-                      bool is_directed,
-                      CMP_F custom_compare,
-                      FREE_F custom_free);
+matrix_t * matrix_init(size_t num_nodes,
+                       bool   is_directed,
+                       CMP_F  custom_compare,
+                       FREE_F custom_free);
 
 /**
  * @brief Destroys the graph and frees all associated memory.
  *
  * @param graph_address Pointer to the graph to be destroyed.
  */
-void matrix_destroy(matrix_t **graph_address);
+void matrix_destroy(matrix_t ** graph_address);
 
 /**
  * @brief Populates a pre-allocated node in the graph with data and a label.
@@ -55,10 +54,10 @@ void matrix_destroy(matrix_t **graph_address);
  * @param label The label to assign to the node.
  * @return Status code indicating success or failure.
  */
-int matrix_populate_node(matrix_t *graph,
-                         size_t index,
-                         void *data,
-                         char *label);
+int matrix_populate_node(matrix_t * graph,
+                         size_t     index,
+                         void *     data,
+                         char *     label);
 
 /**
  * @brief Depopulates a node in the graph by freeing the data and the label.
@@ -67,7 +66,7 @@ int matrix_populate_node(matrix_t *graph,
  * @param index The index of the node to depopulate.
  * @return Status code indicating success or failure.
  */
-int matrix_depopulate_node(matrix_t *graph, size_t index);
+int matrix_depopulate_node(matrix_t * graph, size_t index);
 
 /**
  * @brief Adds a new node to the graph.
@@ -77,7 +76,7 @@ int matrix_depopulate_node(matrix_t *graph, size_t index);
  * @param label The label of the node.
  * @return Status code indicating success or failure.
  */
-int matrix_add_node(matrix_t *graph, const void *data, char *label);
+int matrix_add_node(matrix_t * graph, const void * data, char * label);
 
 /**
  * @brief Removes a node and its associated edges from the graph.
@@ -86,7 +85,7 @@ int matrix_add_node(matrix_t *graph, const void *data, char *label);
  * @param label The label of the node to remove.
  * @return Status code indicating success or failure.
  */
-int matrix_remove_node(matrix_t *graph, char *label);
+int matrix_remove_node(matrix_t * graph, char * label);
 
 /**
  * @brief Retrieves the data associated with a specific node.
@@ -96,9 +95,9 @@ int matrix_remove_node(matrix_t *graph, char *label);
  * @param data Out parameter for the node's data.
  * @return Status code indicating success or failure.
  */
-int matrix_get_node_data(const matrix_t *graph,
-                         const char *label,
-                         void **data);
+int matrix_get_node_data(const matrix_t * graph,
+                         const char *     label,
+                         void **          data);
 
 /**
  * @brief Adds an edge between two nodes specified by their labels.
@@ -109,10 +108,10 @@ int matrix_get_node_data(const matrix_t *graph,
  * @param weight The weight of the edge.
  * @return Status code indicating success or failure.
  */
-int matrix_add_edge_by_label(matrix_t *graph,
-                             const char *src_label,
-                             const char *dst_label,
-                             size_t weight);
+int matrix_add_edge_by_label(matrix_t *   graph,
+                             const char * src_label,
+                             const char * dst_label,
+                             size_t       weight);
 
 /**
  * @brief Removes an edge between two nodes specified by their labels.
@@ -122,9 +121,9 @@ int matrix_add_edge_by_label(matrix_t *graph,
  * @param dst_label The label of the destination node.
  * @return Status code indicating success or failure.
  */
-int matrix_remove_edge_by_label(matrix_t *graph,
-                                const char *src_label,
-                                const char *dst_label);
+int matrix_remove_edge_by_label(matrix_t *   graph,
+                                const char * src_label,
+                                const char * dst_label);
 
 /**
  * @brief Sets the weight of an existing edge between two nodes.
@@ -135,10 +134,10 @@ int matrix_remove_edge_by_label(matrix_t *graph,
  * @param edge_weight The new weight of the edge.
  * @return Status code indicating success or failure.
  */
-int matrix_set_edge_weight_by_label(matrix_t *graph,
-                                    const char *src_label,
-                                    const char *dst_label,
-                                    size_t edge_weight);
+int matrix_set_edge_weight_by_label(matrix_t *   graph,
+                                    const char * src_label,
+                                    const char * dst_label,
+                                    size_t       edge_weight);
 
 /**
  * @brief Gets the weight of an edge between two nodes.
@@ -149,10 +148,10 @@ int matrix_set_edge_weight_by_label(matrix_t *graph,
  * @param edge_weight Out parameter for the weight of the edge.
  * @return Status code indicating success or failure.
  */
-int matrix_get_edge_weight_by_label(const matrix_t *graph,
-                                    const char *src_label,
-                                    const char *dst_label,
-                                    size_t *edge_weight);
+int matrix_get_edge_weight_by_label(const matrix_t * graph,
+                                    const char *     src_label,
+                                    const char *     dst_label,
+                                    size_t *         edge_weight);
 
 /**
  * @brief Checks if there is an edge between two nodes.
@@ -162,9 +161,9 @@ int matrix_get_edge_weight_by_label(const matrix_t *graph,
  * @param dst_label The label of the destination node.
  * @return 'true' if an edge exists, 'false' otherwise.
  */
-int matrix_has_edge_by_label(const matrix_t *graph,
-                             const char *src_label,
-                             const char *dst_label);
+int matrix_has_edge_by_label(const matrix_t * graph,
+                             const char *     src_label,
+                             const char *     dst_label);
 
 /**
  * @brief Retrieves the indices of all neighbors of a node.
@@ -175,10 +174,10 @@ int matrix_has_edge_by_label(const matrix_t *graph,
  * @param neighbors Out parameter for an array of indices of neighboring nodes.
  * @return Status code indicating success or failure.
  */
-int matrix_get_neighbors_by_label(const matrix_t *graph,
-                                  const char *node_label,
-                                  size_t *num_neighbors,
-                                  size_t **neighbors);
+int matrix_get_neighbors_by_label(const matrix_t * graph,
+                                  const char *     node_label,
+                                  size_t *         num_neighbors,
+                                  size_t **        neighbors);
 
 /**
  * @brief Returns a deep copy of a graph, without affecting the original.
@@ -186,7 +185,7 @@ int matrix_get_neighbors_by_label(const matrix_t *graph,
  * @param graph Pointer to the graph.
  * @return A new copy of the graph
  */
-matrix_t *matrix_copy(const matrix_t *graph);
+matrix_t * matrix_copy(const matrix_t * graph);
 
 /**
  * @brief Performs a Breadth-First Search (BFS) starting from a given node.
@@ -198,9 +197,9 @@ matrix_t *matrix_copy(const matrix_t *graph);
  *                     the node's data and its label.
  * @return Status code indicating success or failure.
  */
-int matrix_bfs(const matrix_t *graph,
-               const char *start_label,
-               ACTION_F visit_action);
+int matrix_bfs(const matrix_t * graph,
+               const char *     start_label,
+               ACTION_F         visit_action);
 
 /**
  * @brief Performs a Depth-First Search (DFS) starting from a given node.
@@ -212,9 +211,9 @@ int matrix_bfs(const matrix_t *graph,
  *                     the node's data and its label.
  * @return Status code indicating success or failure.
  */
-int matrix_dfs(const matrix_t *graph,
-               const char *start_label,
-               ACTION_F visit_action);
+int matrix_dfs(const matrix_t * graph,
+               const char *     start_label,
+               ACTION_F         visit_action);
 
 /**
  * @brief Performs a flood fill starting from a given node, applying an action
@@ -228,10 +227,10 @@ int matrix_dfs(const matrix_t *graph,
  * filled. This might involve setting a value or marking the node.
  * @return Status code indicating success or failure.
  */
-int matrix_flood_fill(matrix_t *graph,
-                      const char *start_label,
-                      PREDICATE_F predicate,
-                      ACTION_F fill_action);
+int matrix_flood_fill(matrix_t *   graph,
+                      const char * start_label,
+                      PREDICATE_F  predicate,
+                      ACTION_F     fill_action);
 
 /**
  * @brief Finds the shortest path between two nodes in a graph using Dijkstra's
@@ -249,12 +248,12 @@ int matrix_flood_fill(matrix_t *graph,
  * populating `path`, `path_length`, and `total_weight` with the shortest path
  * information.
  */
-int matrix_dijkstra_shortest_path(const matrix_t *graph,
-                                  const char *start_label,
-                                  const char *target_label,
-                                  char ***path,
-                                  int *path_length,
-                                  size_t *total_weight);
+int matrix_dijkstra_shortest_path(const matrix_t * graph,
+                                  const char *     start_label,
+                                  const char *     target_label,
+                                  char ***         path,
+                                  int *            path_length,
+                                  size_t *         total_weight);
 
 /**
  * @brief Finds the shortest path between two nodes in a graph using the A*
@@ -276,13 +275,13 @@ int matrix_dijkstra_shortest_path(const matrix_t *graph,
  * populating `path`, `path_length`, and `total_weight` with the shortest path
  * information.
  */
-int matrix_astar_shortest_path(const matrix_t *graph,
-                               const char *start_label,
-                               const char *target_label,
-                               HEURISTIC_F heuristic,
-                               char ***path,
-                               int *path_length,
-                               size_t *total_weight);
+int matrix_astar_shortest_path(const matrix_t * graph,
+                               const char *     start_label,
+                               const char *     target_label,
+                               HEURISTIC_F      heuristic,
+                               char ***         path,
+                               int *            path_length,
+                               size_t *         total_weight);
 
 /**
  * @brief Prints the graph's adjacency matrix and node labels to standard
@@ -290,36 +289,36 @@ int matrix_astar_shortest_path(const matrix_t *graph,
  *
  * @param graph Pointer to the graph.
  */
-void matrix_print(const matrix_t *graph);
+void matrix_print(const matrix_t * graph);
 
 // Secondary API functions
 
-int matrix_add_edge_by_index(matrix_t *graph,
-                             size_t src_index,
-                             size_t dst_index,
-                             size_t weight);
+int matrix_add_edge_by_index(matrix_t * graph,
+                             size_t     src_index,
+                             size_t     dst_index,
+                             size_t     weight);
 
-int matrix_remove_edge_by_index(matrix_t *graph,
-                                size_t src_index,
-                                size_t dst_index);
+int matrix_remove_edge_by_index(matrix_t * graph,
+                                size_t     src_index,
+                                size_t     dst_index);
 
-int matrix_set_edge_weight_by_index(matrix_t *graph,
-                                    size_t src_index,
-                                    size_t dst_index,
-                                    size_t edge_weight);
+int matrix_set_edge_weight_by_index(matrix_t * graph,
+                                    size_t     src_index,
+                                    size_t     dst_index,
+                                    size_t     edge_weight);
 
-int matrix_get_edge_weight_by_index(matrix_t *graph,
-                                    size_t src_index,
-                                    size_t dst_index,
-                                    size_t *edge_weight);
+int matrix_get_edge_weight_by_index(matrix_t * graph,
+                                    size_t     src_index,
+                                    size_t     dst_index,
+                                    size_t *   edge_weight);
 
-int matrix_has_edge_by_index(const matrix_t *graph,
-                             size_t src_index,
-                             size_t dst_index);
+int matrix_has_edge_by_index(const matrix_t * graph,
+                             size_t           src_index,
+                             size_t           dst_index);
 
-int matrix_get_neighbors_by_index(const matrix_t *graph,
-                                  size_t node_index,
-                                  size_t **neighbors);
+int matrix_get_neighbors_by_index(const matrix_t * graph,
+                                  size_t           node_index,
+                                  size_t **        neighbors);
 #endif /* _ADJACENCY_MATRIX_H */
 
 /*** end of file ***/

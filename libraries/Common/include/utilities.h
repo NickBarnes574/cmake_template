@@ -112,6 +112,8 @@ int message_log(const char * prefix_p,
 
 int log_system_info();
 
+void noop_free(void * data);
+
 #endif /* _UTILITIES_H */
 
 /*** end of file ***/

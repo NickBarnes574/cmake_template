@@ -1,24 +1,11 @@
 #ifndef _ADJACENCY_LIST_H
 #define _ADJACENCY_LIST_H
 
-#include "linked_list.h"
 #include <stdbool.h>
 #include <stdint.h>
 
-/**
- * @brief Function pointer type for custom free functions.
- */
-typedef void (*FREE_F)(void *);
-
-/**
- * @brief Function pointer type for custom print functions.
- */
-typedef void (*ACTION_F)(const void *);
-
-/**
- * @brief Function pointer type for custom compare functions.
- */
-typedef int (*CMP_F)(const void *, const void *);
+#include "callback_types.h"
+#include "linked_list.h"
 
 /**
  * @brief Structure representing a node in the graph.

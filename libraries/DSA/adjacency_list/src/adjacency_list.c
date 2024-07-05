@@ -1,5 +1,9 @@
 #include "adjacency_list.h"
+#include "queue.h"
+#include "stack.h"
 #include "utilities.h"
+
+#define MAX_STACK_SIZE 100
 
 void edge_list_free(void * data)
 {
@@ -376,7 +380,7 @@ END:
     return size;
 }
 
-void graph_print(graph_t * graph, PRINT_F custom_print)
+void graph_print(graph_t * graph, ACTION_F custom_print)
 {
     list_node_t * current    = NULL;
     node_t *      graph_node = NULL;
@@ -466,6 +470,207 @@ END:
     return exit_code;
 }
 
+static int initialize_dfs(graph_t *  graph,
+                          void *     start_data,
+                          list_t **  visited_list,
+                          stack_t ** stack,
+                          node_t **  start_node)
+{
+    int exit_code = E_FAILURE;
+
+    if ((NULL == graph) || (NULL == start_data) || (NULL == visited_list) ||
+        (NULL == stack) || (NULL == start_node))
+    {
+        print_error("initialize_dfs(): NULL argument passed.");
+        goto END;
+    }
+
+    *start_node = graph_find_node(graph, start_data);
+    if (NULL == *start_node)
+    {
+        print_error("initialize_dfs(): Start node not found.");
+        goto END;
+    }
+
+    *visited_list = list_new(noop_free, node_ptr_comp);
+    if (NULL == *visited_list)
+    {
+        print_error("initialize_dfs(): Failed to create visited list.");
+        goto END;
+    }
+
+    *stack = stack_init(MAX_STACK_SIZE, free);
+    if (NULL == *stack)
+    {
+        print_error("initialize_dfs(): Failed to create stack.");
+        list_delete(visited_list);
+        goto END;
+    }
+
+    exit_code = E_SUCCESS;
+END:
+    return exit_code;
+}
+
+static int visit_node(stack_t * stack, list_t * visited_list, node_t * node)
+{
+    int exit_code = E_FAILURE;
+
+    if ((NULL == stack) || (NULL == visited_list) || (NULL == node))
+    {
+        print_error("visit_node(): NULL argument passed.");
+        goto END;
+    }
+
+    exit_code = stack_push(stack, node);
+    if (E_SUCCESS != exit_code)
+    {
+        print_error("visit_node(): Unable to push node onto stack.");
+        goto END;
+    }
+
+    exit_code = list_push_tail(visited_list, node);
+    if (E_SUCCESS != exit_code)
+    {
+        print_error("visit_node(): Unable to push node onto visited list.");
+        goto END;
+    }
+
+    exit_code = E_SUCCESS;
+END:
+    return exit_code;
+}
+
+static int traverse_dfs(stack_t * stack, list_t * visited_list, ACTION_F action)
+{
+    int           exit_code = E_FAILURE;
+    node_t *      current   = NULL;
+    list_node_t * edge_node = NULL;
+    edge_t *      edge      = NULL;
+    node_t *      neighbor  = NULL;
+
+    if ((NULL == stack) || (NULL == visited_list) || (NULL == action))
+    {
+        print_error("traverse_dfs(): NULL argument passed.");
+        goto END;
+    }
+
+    while (E_FAILURE == stack_is_empty(stack))
+    {
+        current = (node_t *)stack_pop(stack);
+        if (NULL == current)
+        {
+            print_error("traverse_dfs(): NULL data popped from stack.");
+            goto END;
+        }
+
+        action(current->data);
+
+        edge_node = current->edge_list->head;
+        while (NULL != edge_node)
+        {
+            edge     = (edge_t *)edge_node->data;
+            neighbor = edge->node_2;
+
+            if (false == list_contains(visited_list, neighbor))
+            {
+                if (E_SUCCESS != visit_node(stack, visited_list, neighbor))
+                {
+                    print_error(
+                        "traverse_dfs(): Unable to visit neighbor node.");
+                    goto END;
+                }
+            }
+
+            edge_node = edge_node->next;
+        }
+    }
+
+    exit_code = E_SUCCESS;
+END:
+    return exit_code;
+}
+
+int graph_dfs(graph_t * graph, void * start_data, ACTION_F action)
+{
+    int       exit_code    = E_FAILURE;
+    list_t *  visited_list = NULL;
+    stack_t * stack        = NULL;
+    node_t *  start_node   = NULL;
+
+    if ((NULL == graph) || (NULL == start_data) || (NULL == action))
+    {
+        print_error("graph_dfs(): NULL argument passed.");
+        goto END;
+    }
+
+    exit_code =
+        initialize_dfs(graph, start_data, &visited_list, &stack, &start_node);
+    if (E_SUCCESS != exit_code)
+    {
+        print_error("graph_dfs(): Unable to initialize DFS.");
+        goto END;
+    }
+
+    exit_code = visit_node(stack, visited_list, start_node);
+    if (E_SUCCESS != exit_code)
+    {
+        print_error("graph_dfs(): Unable to visit node.");
+        goto END;
+    }
+
+    exit_code = traverse_dfs(stack, visited_list, action);
+    if (E_SUCCESS != exit_code)
+    {
+        print_error("graph_dfs(): Unable to perform DFS traversal.");
+        goto END;
+    }
+
+END:
+    stack_destroy(&stack);
+    list_delete(&visited_list);
+    return exit_code;
+}
+
+int graph_bfs(graph_t * graph, void * start_data, ACTION_F action)
+{
+    (void)graph;
+    (void)start_data;
+    (void)action;
+    return -1;
+}
+
+int graph_dijkstra(graph_t * graph,
+                   void *    start_data,
+                   void *    end_data,
+                   list_t ** path)
+{
+    (void)graph;
+    (void)start_data;
+    (void)end_data;
+    (void)path;
+    return -1;
+}
+
+int graph_a_star(graph_t * graph,
+                 void *    start_data,
+                 void *    end_data,
+                 list_t ** path)
+{
+    (void)graph;
+    (void)start_data;
+    (void)end_data;
+    (void)path;
+    return -1;
+}
+
+int graph_floyd_warshall(graph_t * graph, size_t *** distances)
+{
+    (void)graph;
+    (void)distances;
+    return -1;
+}
+
 int graph_is_connected(graph_t * graph, bool * is_connected)
 {
     int exit_code = E_FAILURE;
@@ -504,6 +709,35 @@ int graph_node_degree(graph_t * graph, void * data, size_t * degree)
     (void)degree;
 
     return exit_code;
+}
+
+list_t * graph_get_adjacent_nodes(graph_t * graph, void * data)
+{
+    (void)graph;
+    (void)data;
+    return NULL;
+}
+
+bool graph_edge_exists(graph_t * graph, void * data_1, void * data_2)
+{
+    (void)graph;
+    (void)data_1;
+    (void)data_2;
+    return false;
+}
+
+size_t graph_get_edge_weight(graph_t * graph, void * data_1, void * data_2)
+{
+    (void)graph;
+    (void)data_1;
+    (void)data_2;
+    return -1;
+}
+
+graph_t * graph_clone(graph_t * graph)
+{
+    (void)graph;
+    return NULL;
 }
 
 // STATIC FUNCTIONS

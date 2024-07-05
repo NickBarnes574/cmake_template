@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "comparisons.h"
+#include "callback_types.h"
 
 /**
  * @brief structure of a list node
