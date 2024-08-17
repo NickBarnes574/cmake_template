@@ -1,181 +1,258 @@
-/**
- * @file adjacency_list.h
- *
- * @brief
- */
 #ifndef _ADJACENCY_LIST_H
 #define _ADJACENCY_LIST_H
 
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "callback_types.h"
 #include "linked_list.h"
 
 /**
- * @brief A function pointer type for custom free operations on graph data.
- *
- * @param data_p A pointer to the data to be freed.
- */
-typedef void (*FREE_F)(void *);
-
-/**
- * @brief A function pointer type for custom print operations on graph data.
- *
- * @param data_p A pointer to the data to print.
- */
-typedef void (*PRINT_F)(const void *);
-
-/**
- * @brief Represents a node in the graph.
- *
- * A node contains user-defined data, a count of its outgoing/incoming edges,
- * and a pointer to a list of its edges.
+ * @brief Structure representing a node in the graph.
  */
 typedef struct
 {
-    void *   data_p;      /**< Pointer to the data for this node. */
-    size_t   edge_count;  /**< The number of edges connected to this node. */
-    list_t * edge_list_p; /**< Pointer to a list of edges for this node. */
+    void *   data;       // Pointer to the data stored in the node
+    size_t   edge_count; // Number of edges connected to the node
+    list_t * edge_list;  // List of edges connected to the node
 } node_t;
 
 /**
- * @brief Represents an edge in the graph.
- *
- * An edge connects two nodes, has an associated weight, and can be directed or
- * undirected.
+ * @brief Structure representing an edge in the graph.
  */
 typedef struct
 {
-    node_t * node_1_p;    /**< Pointer to the first node in the edge. */
-    node_t * node_2_p;    /**< Pointer to the second node in the edge. */
-    size_t   weight;      /**< Weight of the edge. */
-    bool     is_directed; /**< Flag indicating if the edge is directed. */
+    node_t * node_1;      // Pointer to the first node of the edge
+    node_t * node_2;      // Pointer to the second node of the edge
+    size_t   weight;      // Weight of the edge
+    bool     is_directed; // Flag indicating if the edge is directed
 } edge_t;
 
 /**
- * @brief Represents a graph structure.
- *
- * A graph contains a count of its nodes, a pointer to a list of its nodes, and
- * function pointers for custom free and compare operations.
+ * @brief Structure representing a graph.
  */
 typedef struct
 {
-    size_t   node_count;  /**< The number of nodes in the graph. */
-    list_t * node_list_p; /**< Pointer to a list containing all nodes in the
-                             graph. */
-    FREE_F custom_free;   /**< Function pointer for custom free operation on
-                             graph's nodes. */
-    CMP_F custom_compare; /**< Function pointer for custom comparison operation
-                             on graph's nodes. */
+    size_t   node_count;     // Number of nodes in the graph
+    list_t * node_list;      // List of nodes in the graph
+    FREE_F   custom_free;    // Custom free function
+    CMP_F    custom_compare; // Custom compare function
 } graph_t;
 
 /**
  * @brief Creates a new graph.
  *
- * @param custom_free A function pointer for custom free operation.
- * @param custom_compare A function pointer for custom comparison operation.
- * @return graph_t* A pointer to the newly created graph or NULL on failure.
+ * @param custom_free Function pointer to the custom free function.
+ * @param custom_compare Function pointer to the custom compare function.
+ * @return Pointer to the newly created graph, or NULL on failure.
  */
 graph_t * graph_create(FREE_F custom_free, CMP_F custom_compare);
 
 /**
- * @brief Creates a new node with the given data.
+ * @brief Adds a node to the graph.
  *
- * @param data_p A pointer to the data to be stored in the node.
- * @return node_t* A pointer to the newly created node or NULL on failure.
+ * @param graph Pointer to the graph.
+ * @param data Pointer to the data to be added.
+ * @return E_SUCCESS on success, or E_FAILURE on failure.
  */
-node_t * graph_create_node(void * data_p);
+int graph_add_node(graph_t * graph, void * data);
 
 /**
- * @brief Adds a new node with the given data to the graph.
+ * @brief Removes a node from the graph.
  *
- * @param graph_p A pointer to the graph.
- * @param data_p A pointer to the data to be added.
- * @return int An integer indicating success (E_SUCCESS) or failure (E_FAILURE).
+ * @param graph Pointer to the graph.
+ * @param data Pointer to the data of the node to be removed.
+ * @return E_SUCCESS on success, or E_FAILURE on failure.
  */
-int graph_add_node(graph_t * graph_p, void * data_p);
-
-/**
- * @brief Removes a node with the given data from the graph.
- *
- * @param graph_p A pointer to the graph.
- * @param data_p A pointer to the data identifying the node to be removed.
- * @return int An integer indicating success (E_SUCCESS) or failure (E_FAILURE).
- */
-int graph_remove_node(graph_t * graph_p, void * data_p);
+int graph_remove_node(graph_t * graph, void * data);
 
 /**
  * @brief Adds an edge between two nodes in the graph.
  *
- * @param graph_p A pointer to the graph.
- * @param data_1_p A pointer to the data of the first node.
- * @param data_2_p A pointer to the data of the second node.
- * @param weight The weight of the edge.
- * @param is_bidirectional A boolean indicating if the edge is bidirectional.
- * @return int An integer indicating success (E_SUCCESS) or failure (E_FAILURE).
+ * @param graph Pointer to the graph.
+ * @param data_1 Pointer to the data of the first node.
+ * @param data_2 Pointer to the data of the second node.
+ * @param weight Weight of the edge.
+ * @param is_bidirectional Flag indicating if the edge is bidirectional.
+ * @return E_SUCCESS on success, or E_FAILURE on failure.
  */
-int graph_add_edge(graph_t * graph_p,
-                   void *    data_1_p,
-                   void *    data_2_p,
+int graph_add_edge(graph_t * graph,
+                   void *    data_1,
+                   void *    data_2,
                    size_t    weight,
                    bool      is_bidirectional);
 
 /**
  * @brief Removes an edge between two nodes in the graph.
  *
- * @param graph_p A pointer to the graph.
- * @param data_1_p A pointer to the data of the first node.
- * @param data_2_p A pointer to the data of the second node.
- * @return int An integer indicating success (E_SUCCESS) or failure (E_FAILURE).
+ * @param graph Pointer to the graph.
+ * @param data_1 Pointer to the data of the first node.
+ * @param data_2 Pointer to the data of the second node.
+ * @return E_SUCCESS on success, or E_FAILURE on failure.
  */
-int graph_remove_edge(graph_t * graph_p, void * data_1_p, void * data_2_p);
+int graph_remove_edge(graph_t * graph, void * data_1, void * data_2);
 
 /**
- * @brief Returns the number of nodes in the graph.
+ * @brief Gets the size of the graph.
  *
- * @param graph_p A pointer to the graph.
- * @return size_t The number of nodes in the graph.
+ * @param graph Pointer to the graph.
+ * @return Size of the graph (number of nodes).
  */
-size_t graph_get_size(graph_t * graph_p);
+size_t graph_get_size(graph_t * graph);
 
 /**
- * @brief Finds a node in the graph with the given data.
+ * @brief Prints the graph using a custom print function.
  *
- * @param graph_p A pointer to the graph.
- * @param data_p A pointer to the data of the node to find.
- * @return node_t* A pointer to the found node or NULL if not found.
+ * @param graph Pointer to the graph.
+ * @param custom_print Function pointer to the custom print function.
  */
-node_t * graph_find_node(graph_t * graph_p, void * data_p);
+void graph_print(graph_t * graph, ACTION_F custom_print);
 
 /**
- * @brief Finds an edge between two nodes in the graph.
+ * @brief Clears all nodes and edges from the graph.
  *
- * @param graph_p A pointer to the graph.
- * @param node_1_p A pointer to the first node.
- * @param node_2_p A pointer to the second node.
- * @return edge_t* A pointer to the found edge or NULL if not found.
+ * @param graph Pointer to the graph.
+ * @return E_SUCCESS on success, or E_FAILURE on failure.
  */
-edge_t * graph_find_edge(graph_t * graph_p,
-                         node_t *  node_1_p,
-                         node_t *  node_2_p);
-
-void graph_print(graph_t * graph_p, PRINT_F custom_print);
+int graph_clear(graph_t * graph);
 
 /**
- * @brief Clears the graph, removing all nodes and edges.
+ * @brief Destroys the graph and frees all associated memory.
  *
- * @param graph_p A pointer to the graph to clear.
- * @return int An integer indicating success (E_SUCCESS) or failure (E_FAILURE).
+ * @param graph Pointer to the pointer to the graph.
+ * @return E_SUCCESS on success, or E_FAILURE on failure.
  */
-int graph_clear(graph_t * graph_p);
+int graph_destroy(graph_t ** graph);
 
 /**
- * @brief Destroys the graph, freeing all resources.
+ * @brief Performs depth-first search (DFS) on the graph.
  *
- * @param graph_pp A pointer to a pointer to the graph to be destroyed.
- * @return int An integer indicating success (E_SUCCESS) or failure (E_FAILURE).
+ * @param graph Pointer to the graph.
+ * @param start_data Pointer to the data of the starting node.
+ * @param action Function pointer to the custom action function.
+ * @return E_SUCCESS on success, or E_FAILURE on failure.
  */
-int graph_destroy(graph_t ** graph_pp);
+int graph_dfs(graph_t * graph, void * start_data, ACTION_F action);
+
+/**
+ * @brief Performs breadth-first search (BFS) on the graph.
+ *
+ * @param graph Pointer to the graph.
+ * @param start_data Pointer to the data of the starting node.
+ * @param action Function pointer to the custom action function.
+ * @return E_SUCCESS on success, or E_FAILURE on failure.
+ */
+int graph_bfs(graph_t * graph, void * start_data, ACTION_F action);
+
+/**
+ * @brief Finds the shortest path between two nodes using Dijkstra's algorithm.
+ *
+ * @param graph Pointer to the graph.
+ * @param start_data Pointer to the data of the starting node.
+ * @param end_data Pointer to the data of the ending node.
+ * @param path Pointer to the list to store the path.
+ * @return E_SUCCESS on success, or E_FAILURE on failure.
+ */
+int graph_dijkstra(graph_t * graph,
+                   void *    start_data,
+                   void *    end_data,
+                   list_t ** path);
+
+/**
+ * @brief Finds the shortest path between two nodes using A* algorithm.
+ *
+ * @param graph Pointer to the graph.
+ * @param start_data Pointer to the data of the starting node.
+ * @param end_data Pointer to the data of the ending node.
+ * @param path Pointer to the list to store the path.
+ * @return E_SUCCESS on success, or E_FAILURE on failure.
+ */
+int graph_a_star(graph_t * graph,
+                 void *    start_data,
+                 void *    end_data,
+                 list_t ** path);
+
+/**
+ * @brief Computes the shortest paths between all pairs of nodes using
+ * Floyd-Warshall algorithm.
+ *
+ * @param graph Pointer to the graph.
+ * @param distances Pointer to the 2D array to store the distances.
+ * @return E_SUCCESS on success, or E_FAILURE on failure.
+ */
+int graph_floyd_warshall(graph_t * graph, size_t *** distances);
+
+/**
+ * @brief Checks if the graph is connected.
+ *
+ * @param graph Pointer to the graph.
+ * @param is_connected Pointer to the boolean to store the result.
+ * @return E_SUCCESS on success, or E_FAILURE on failure.
+ */
+int graph_is_connected(graph_t * graph, bool * is_connected);
+
+/**
+ * @brief Checks if the graph contains a cycle.
+ *
+ * @param graph Pointer to the graph.
+ * @param is_cyclic Pointer to the boolean to store the result.
+ * @return E_SUCCESS on success, or E_FAILURE on failure.
+ */
+int graph_is_cyclic(graph_t * graph, bool * is_cyclic);
+
+/**
+ * @brief Finds the connected components in the graph.
+ *
+ * @param graph Pointer to the graph.
+ * @return Pointer to the list of connected components.
+ */
+list_t * graph_find_connected_components(graph_t * graph);
+
+/**
+ * @brief Gets the degree of a node in the graph.
+ *
+ * @param graph Pointer to the graph.
+ * @param data Pointer to the data of the node.
+ * @param degree Pointer to the size_t to store the degree.
+ * @return E_SUCCESS on success, or E_FAILURE on failure.
+ */
+int graph_node_degree(graph_t * graph, void * data, size_t * degree);
+
+/**
+ * @brief Gets the adjacent nodes of a given node in the graph.
+ *
+ * @param graph Pointer to the graph.
+ * @param data Pointer to the data of the node.
+ * @return Pointer to the list of adjacent nodes.
+ */
+list_t * graph_get_adjacent_nodes(graph_t * graph, void * data);
+
+/**
+ * @brief Checks if an edge exists between two nodes in the graph.
+ *
+ * @param graph Pointer to the graph.
+ * @param data_1 Pointer to the data of the first node.
+ * @param data_2 Pointer to the data of the second node.
+ * @return true if the edge exists, false otherwise.
+ */
+bool graph_edge_exists(graph_t * graph, void * data_1, void * data_2);
+
+/**
+ * @brief Gets the weight of an edge between two nodes in the graph.
+ *
+ * @param graph Pointer to the graph.
+ * @param data_1 Pointer to the data of the first node.
+ * @param data_2 Pointer to the data of the second node.
+ * @return Weight of the edge.
+ */
+size_t graph_get_edge_weight(graph_t * graph, void * data_1, void * data_2);
+
+/**
+ * @brief Creates a clone of the graph.
+ *
+ * @param graph Pointer to the graph.
+ * @return Pointer to the cloned graph.
+ */
+graph_t * graph_clone(graph_t * graph);
+
 #endif /* _ADJACENCY_LIST_H */
-
-/*** end of file ***/

@@ -1,7 +1,7 @@
 #include "queue.h"
 #include "utilities.h"
 
-queue_t * queue_init(uint32_t capacity, FREE_F customfree)
+queue_t * queue_init(FREE_F customfree)
 {
     queue_t * queue = calloc(1, sizeof(queue_t));
     if (NULL == queue)
@@ -10,75 +10,38 @@ queue_t * queue_init(uint32_t capacity, FREE_F customfree)
         goto END;
     }
 
-    queue->capacity  = capacity;
-    queue->currentsz = 0;
-    queue->arr       = calloc(capacity, sizeof(queue_node_t *));
-    if (NULL == queue->arr)
-    {
-        print_error("CMR failure.");
-        free(queue);
-        queue = NULL;
-        goto END;
-    }
-
+    queue->currentsz  = 0;
+    queue->head       = NULL;
+    queue->tail       = NULL;
     queue->customfree = (NULL == customfree) ? free : customfree;
 
 END:
     return queue;
 }
 
-int queue_fullcheck(queue_t * queue)
+bool queue_is_empty(queue_t * queue)
 {
-    int exit_code = E_FAILURE;
-
-    if (NULL == queue)
-    {
-        print_error("NULL argument passed.");
-        goto END;
-    }
-
-    if (queue->currentsz == queue->capacity)
-    {
-        exit_code = E_SUCCESS;
-    }
-
-END:
-    return exit_code;
-}
-
-int queue_emptycheck(queue_t * queue)
-{
-    int exit_code = E_FAILURE;
-
-    if (NULL == queue)
-    {
-        print_error("NULL argument passed.");
-        goto END;
-    }
+    bool result = false;
 
     if (0 == queue->currentsz)
     {
-        exit_code = E_SUCCESS;
+        result = true;
+        goto END;
     }
 
 END:
-    return exit_code;
+    return result;
 }
 
 int queue_enqueue(queue_t * queue, void * data)
 {
     int            exit_code = E_FAILURE;
     queue_node_t * new_node  = NULL;
+    bool           is_empty  = false;
 
     if ((NULL == queue) || (NULL == data))
     {
         print_error("NULL argument passed.");
-        goto END;
-    }
-
-    if (0 == queue_fullcheck(queue))
-    {
-        print_error("Queue is full.");
         goto END;
     }
 
@@ -90,17 +53,32 @@ int queue_enqueue(queue_t * queue, void * data)
     }
 
     new_node->data = data;
+    new_node->next = NULL;
 
-    queue->arr[queue->currentsz++] = new_node;
+    is_empty = queue_is_empty(queue);
+    if (true == is_empty)
+    {
+        queue->head = new_node;
+        queue->tail = new_node;
+    }
+    else
+    {
+        queue->tail->next = new_node;
+        queue->tail       = new_node;
+    }
+
+    queue->currentsz++;
 
     exit_code = E_SUCCESS;
 END:
     return exit_code;
 }
 
-queue_node_t * queue_dequeue(queue_t * queue)
+void * queue_dequeue(queue_t * queue)
 {
-    queue_node_t * node = NULL;
+    void *         data           = NULL;
+    queue_node_t * node_to_remove = NULL;
+    bool           is_empty       = false;
 
     if (NULL == queue)
     {
@@ -108,30 +86,35 @@ queue_node_t * queue_dequeue(queue_t * queue)
         goto END;
     }
 
-    if (0 == queue_emptycheck(queue))
+    is_empty = queue_is_empty(queue);
+    if (true == is_empty)
     {
-        print_error("Queue is empty.");
+        print_error("queue_dequeue(): Queue is empty.");
         goto END;
     }
 
-    node = queue->arr[0];
+    node_to_remove = queue->head;
+    data           = node_to_remove->data;
+    queue->head    = queue->head->next;
 
-    for (size_t idx = 0; idx < (queue->currentsz - 1); idx++)
+    free(node_to_remove);
+    node_to_remove = NULL;
+
+    if (queue->head == NULL)
     {
-        queue->arr[idx] = queue->arr[idx + 1];
+        queue->tail = NULL;
     }
-
-    queue->arr[queue->currentsz - 1] = NULL;
 
     queue->currentsz--;
 
 END:
-    return node;
+    return data;
 }
 
-queue_node_t * queue_peek(queue_t * queue)
+void * queue_peek(queue_t * queue)
 {
-    queue_node_t * node = NULL;
+    void * data     = NULL;
+    bool   is_empty = false;
 
     if (NULL == queue)
     {
@@ -139,15 +122,20 @@ queue_node_t * queue_peek(queue_t * queue)
         goto END;
     }
 
-    node = queue->arr[0];
+    is_empty = queue_is_empty(queue);
+    if (false == is_empty)
+    {
+        data = queue->head->data;
+    }
 
 END:
-    return node;
+    return data;
 }
 
 int queue_clear(queue_t * queue)
 {
-    int exit_code = E_FAILURE;
+    int    exit_code = E_FAILURE;
+    void * data      = NULL;
 
     if (NULL == queue)
     {
@@ -155,13 +143,11 @@ int queue_clear(queue_t * queue)
         goto END;
     }
 
-    while (-1 == queue_emptycheck(queue))
+    while (false == queue_is_empty(queue))
     {
-        queue->customfree(queue->arr[queue->currentsz - 1]->data);
-        queue->arr[queue->currentsz - 1]->data = NULL;
-        free(queue->arr[queue->currentsz - 1]);
-        queue->arr[queue->currentsz - 1] = NULL;
-        queue->currentsz--;
+        data = queue_dequeue(queue);
+        queue->customfree(data);
+        data = NULL;
     }
 
     exit_code = E_SUCCESS;
@@ -169,7 +155,7 @@ END:
     return exit_code;
 }
 
-int queue_destroy(queue_t ** queue_addr)
+void queue_destroy(queue_t ** queue_addr)
 {
     int exit_code = E_FAILURE;
 
@@ -186,14 +172,11 @@ int queue_destroy(queue_t ** queue_addr)
         goto END;
     }
 
-    free((*queue_addr)->arr);
-    (*queue_addr)->arr = NULL;
     free(*queue_addr);
     *queue_addr = NULL;
 
-    exit_code = E_SUCCESS;
 END:
-    return exit_code;
+    return;
 }
 
 /*** end of file ***/

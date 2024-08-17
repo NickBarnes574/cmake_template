@@ -7,7 +7,7 @@
 
 // return values all comparison functions should use for standardizing
 // behavior
-typedef enum comp_rtns
+typedef enum
 {
     ERROR = -1,
     EQUAL,
@@ -17,11 +17,16 @@ typedef enum comp_rtns
 } comp_rtns_t;
 
 /**
- * @brief A pointer to a user-defined function for comparing data in void
- * sources
+ * @brief Compare function for node pointers.
  *
+ * Compares two node pointers for equality. Returns EQUAL if the pointers are
+ * the same, and NOT_EQUAL otherwise.
+ *
+ * @param ptr_1 Pointer to the first node.
+ * @param ptr_2 Pointer to the second node.
+ * @return EQUAL if the pointers are the same, NOT_EQUAL otherwise.
  */
-typedef comp_rtns_t (*CMP_F)(void *, void *);
+comp_rtns_t node_ptr_comp(void * ptr_1, void * ptr_2);
 
 /**
  * @brief Fuction to compare integer data inside two void sources

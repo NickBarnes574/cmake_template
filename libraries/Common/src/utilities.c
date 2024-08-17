@@ -275,4 +275,10 @@ END:
     return exit_code;
 }
 
+void noop_free(void * data)
+{
+    // No operation
+    (void)data;
+}
+
 /*** end of file ***/

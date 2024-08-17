@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "comparisons.h"
+#include "callback_types.h"
 
 /**
  * @brief structure of a list node
@@ -225,7 +225,7 @@ void * list_pick_random_item(list_t * list);
  * searched for
  * @return pointer to node found on success, NULL on failure
  */
-void * list_find_first_occurrence(list_t * list, void ** search_data);
+void * list_find_first_occurrence(list_t * list, void * search_data);
 
 /**
  * @brief find the first occurrance of a node containing the search_data as
@@ -237,7 +237,7 @@ void * list_find_first_occurrence(list_t * list, void ** search_data);
  *                    for
  * @return pointer to list of all found occurrecnces on success, NULL on failure
  */
-list_t * list_find_all_occurrences(list_t * list, void ** search_data);
+list_t * list_find_all_occurrences(list_t * list, void * search_data);
 
 /**
  * @brief sort list as per user defined compare function

@@ -7,12 +7,11 @@
 #include "threadpool.h"
 #include "utilities.h"
 
-#define QUEUE_MAX_CAPACITY 1024 // Maximum size for a queue
-#define ACTIVATE           1    // Activate the threadpool
-#define SHUTDOWN           0    // Shutdown the threadpool
-#define EMPTY              0    // Work queue is empty
-#define NOT_EMPTY          1    // Work queue is not empty
-#define KEEP_RUNNING       0    // Default signal for the signal handler
+#define ACTIVATE     1 // Activate the threadpool
+#define SHUTDOWN     0 // Shutdown the threadpool
+#define EMPTY        0 // Work queue is empty
+#define NOT_EMPTY    1 // Work queue is not empty
+#define KEEP_RUNNING 0 // Default signal for the signal handler
 
 /**
  * @brief A struct for a job
@@ -301,7 +300,7 @@ static int threadpool_setup(threadpool_t * threadpool_p, size_t thread_count)
     threadpool_p->condition_initialized = true;
 
     // 3. Setup the job queue
-    threadpool_p->job_queue = queue_init(QUEUE_MAX_CAPACITY, NULL);
+    threadpool_p->job_queue = queue_init(NULL);
     if (NULL == threadpool_p->job_queue)
     {
         print_error("threadpool_create(): Unable to initialize queue.");
@@ -424,7 +423,7 @@ static int wait_for_job(threadpool_t * threadpool_p)
         goto END;
     }
 
-    while ((EMPTY == queue_emptycheck(threadpool_p->job_queue)) &&
+    while ((true == queue_is_empty(threadpool_p->job_queue)) &&
            (SHUTDOWN != threadpool_p->signal))
     {
         pthread_mutex_lock(&signal_flag_mutex);
@@ -463,7 +462,7 @@ static int get_next_job(threadpool_t ** threadpool_p,
     }
 
     if ((SHUTDOWN == (*threadpool_p)->signal) &&
-        (EMPTY == queue_emptycheck((*threadpool_p)->job_queue)))
+        (true == queue_is_empty((*threadpool_p)->job_queue)))
     {
         goto END;
     }

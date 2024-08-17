@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "comparisons.h"
+#include "callback_types.h"
 
 /**
  * @brief A pointer to a user-defined function that gets called in the
