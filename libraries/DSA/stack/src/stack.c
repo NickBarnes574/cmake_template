@@ -1,18 +1,18 @@
 #include "stack.h"
 #include "utilities.h"
 
-stack_t *stack_init(uint32_t capacity, FREE_F customfree)
+stack_t * stack_init(uint32_t capacity, FREE_F customfree)
 {
-    stack_t *stack = calloc(1, sizeof(stack_t));
+    stack_t * stack = calloc(1, sizeof(stack_t));
     if (NULL == stack)
     {
         print_error("CMR failure.");
         goto END;
     }
 
-    stack->capacity = capacity;
+    stack->capacity  = capacity;
     stack->currentsz = 0;
-    stack->arr = calloc(capacity, sizeof(stack_node_t *));
+    stack->arr       = calloc(capacity, sizeof(stack_node_t *));
     if (NULL == stack->arr)
     {
         print_error("CMR failure.");
@@ -27,7 +27,7 @@ END:
     return stack;
 }
 
-int stack_is_full(stack_t *stack)
+int stack_is_full(stack_t * stack)
 {
     int exit_code = E_FAILURE;
 
@@ -47,7 +47,7 @@ END:
     return exit_code;
 }
 
-int stack_is_empty(stack_t *stack)
+int stack_is_empty(stack_t * stack)
 {
     int exit_code = E_FAILURE;
 
@@ -67,10 +67,10 @@ END:
     return exit_code;
 }
 
-int stack_push(stack_t *stack, void *data)
+int stack_push(stack_t * stack, void * data)
 {
-    int exit_code = E_FAILURE;
-    stack_node_t *new_element = NULL;
+    int            exit_code   = E_FAILURE;
+    stack_node_t * new_element = NULL;
 
     if ((NULL == stack) || (NULL == data))
     {
@@ -101,9 +101,9 @@ END:
     return exit_code;
 }
 
-void *stack_pop(stack_t *stack)
+void * stack_pop(stack_t * stack)
 {
-    void *data = NULL;
+    void * data = NULL;
 
     if (NULL == stack)
     {
@@ -128,9 +128,9 @@ END:
     return data;
 }
 
-void *stack_peek(stack_t *stack)
+void * stack_peek(stack_t * stack)
 {
-    stack_node_t *element = NULL;
+    stack_node_t * element = NULL;
 
     if (NULL == stack)
     {
@@ -151,7 +151,7 @@ END:
 }
 
 // Covers 4.1.11: Make use of a function pointer to call another function
-int stack_clear(stack_t *stack)
+int stack_clear(stack_t * stack)
 {
     int exit_code = E_FAILURE;
 
@@ -176,7 +176,7 @@ END:
     return exit_code;
 }
 
-int stack_destroy(stack_t **stack)
+int stack_destroy(stack_t ** stack)
 {
     int exit_code = E_FAILURE;
 

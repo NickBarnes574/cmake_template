@@ -6,7 +6,7 @@
 #include "stack.h"
 #include "utilities.h"
 
-void custom_free(void *data)
+void custom_free(void * data)
 {
     (void)data;
     return;
@@ -16,7 +16,7 @@ void test_stack_init(void)
 {
     uint32_t capacity = 10;
 
-    stack_t *stack = stack_init(capacity, custom_free);
+    stack_t * stack = stack_init(capacity, custom_free);
     CU_ASSERT_PTR_NOT_NULL_FATAL(stack);
     CU_ASSERT_EQUAL(stack->capacity, capacity);
     CU_ASSERT_EQUAL(stack->currentsz, 0);
@@ -37,10 +37,10 @@ void test_stack_is_full__NULL_ARG__(void)
 
 void test_stack_is_full__FALSE__(void)
 {
-    int exit_code = E_FAILURE;
-    uint32_t capacity = 10;
+    int      exit_code = E_FAILURE;
+    uint32_t capacity  = 10;
 
-    stack_t *stack = stack_init(capacity, custom_free);
+    stack_t * stack = stack_init(capacity, custom_free);
     CU_ASSERT_PTR_NOT_NULL_FATAL(stack);
 
     exit_code = stack_is_full(stack);
@@ -51,11 +51,11 @@ void test_stack_is_full__FALSE__(void)
 
 void test_stack_is_full__TRUE__(void)
 {
-    int exit_code = E_FAILURE;
-    uint32_t capacity = 10;
-    uint32_t result = 0;
+    int      exit_code = E_FAILURE;
+    uint32_t capacity  = 10;
+    uint32_t result    = 0;
 
-    stack_t *stack = stack_init(capacity, custom_free);
+    stack_t * stack = stack_init(capacity, custom_free);
     CU_ASSERT_PTR_NOT_NULL_FATAL(stack);
 
     for (uint32_t idx = 0; idx < capacity; idx++)
@@ -86,11 +86,11 @@ void test_stack_is_empty__NULL_ARG__(void)
 
 void test_stack_is_empty__FALSE__(void)
 {
-    int exit_code = E_FAILURE;
-    uint32_t capacity = 10;
-    uint32_t result = 0;
+    int      exit_code = E_FAILURE;
+    uint32_t capacity  = 10;
+    uint32_t result    = 0;
 
-    stack_t *stack = stack_init(capacity, custom_free);
+    stack_t * stack = stack_init(capacity, custom_free);
     CU_ASSERT_PTR_NOT_NULL_FATAL(stack);
 
     for (uint32_t idx = 0; idx < capacity; idx++)
@@ -110,10 +110,10 @@ void test_stack_is_empty__FALSE__(void)
 
 void test_stack_is_empty__TRUE__(void)
 {
-    int exit_code = E_FAILURE;
-    uint32_t capacity = 10;
+    int      exit_code = E_FAILURE;
+    uint32_t capacity  = 10;
 
-    stack_t *stack = stack_init(capacity, custom_free);
+    stack_t * stack = stack_init(capacity, custom_free);
     CU_ASSERT_PTR_NOT_NULL_FATAL(stack);
 
     exit_code = stack_is_empty(stack);
@@ -126,8 +126,8 @@ void test_stack_is_empty__TRUE__(void)
 
 void test_stack_push__NULL_ARG_STACK__(void)
 {
-    int exit_code = E_FAILURE;
-    uint32_t data = 1;
+    int      exit_code = E_FAILURE;
+    uint32_t data      = 1;
 
     exit_code = stack_push(NULL, &data);
     CU_ASSERT_EQUAL(exit_code, E_NULL_POINTER);
@@ -135,10 +135,10 @@ void test_stack_push__NULL_ARG_STACK__(void)
 
 void test_stack_push__NULL_ARG_DATA__(void)
 {
-    int exit_code = E_FAILURE;
-    uint32_t capacity = 10;
+    int      exit_code = E_FAILURE;
+    uint32_t capacity  = 10;
 
-    stack_t *stack = stack_init(capacity, custom_free);
+    stack_t * stack = stack_init(capacity, custom_free);
     CU_ASSERT_PTR_NOT_NULL_FATAL(stack);
 
     exit_code = stack_push(stack, NULL);
@@ -149,12 +149,12 @@ void test_stack_push__NULL_ARG_DATA__(void)
 
 void test_stack_push__SINGLE_DATA__(void)
 {
-    int exit_code = E_FAILURE;
-    uint32_t capacity = 10;
-    uint32_t data = 1;
-    uint32_t result = 0;
+    int      exit_code = E_FAILURE;
+    uint32_t capacity  = 10;
+    uint32_t data      = 1;
+    uint32_t result    = 0;
 
-    stack_t *stack = stack_init(capacity, custom_free);
+    stack_t * stack = stack_init(capacity, custom_free);
     CU_ASSERT_PTR_NOT_NULL_FATAL(stack);
 
     exit_code = stack_push(stack, &data);
@@ -168,11 +168,11 @@ void test_stack_push__SINGLE_DATA__(void)
 
 void test_stack_push__MULTI_DATA__(void)
 {
-    int exit_code = E_FAILURE;
-    uint32_t capacity = 10;
-    uint32_t result = 0;
+    int      exit_code = E_FAILURE;
+    uint32_t capacity  = 10;
+    uint32_t result    = 0;
 
-    stack_t *stack = stack_init(capacity, custom_free);
+    stack_t * stack = stack_init(capacity, custom_free);
     CU_ASSERT_PTR_NOT_NULL_FATAL(stack);
 
     for (uint32_t idx = 0; idx < capacity; idx++)
@@ -191,7 +191,7 @@ void test_stack_push__MULTI_DATA__(void)
 
 void test_stack_pop__NULL_ARG_STACK__(void)
 {
-    void *result = NULL;
+    void * result = NULL;
 
     result = stack_pop(NULL);
     CU_ASSERT_PTR_NULL(result);
@@ -199,12 +199,12 @@ void test_stack_pop__NULL_ARG_STACK__(void)
 
 void test_stack_pop__SINGLE_DATA__(void)
 {
-    int exit_code = E_FAILURE;
-    uint32_t capacity = 10;
-    uint32_t data = 1;
-    uint32_t result = 0;
+    int      exit_code = E_FAILURE;
+    uint32_t capacity  = 10;
+    uint32_t data      = 1;
+    uint32_t result    = 0;
 
-    stack_t *stack = stack_init(capacity, custom_free);
+    stack_t * stack = stack_init(capacity, custom_free);
     CU_ASSERT_PTR_NOT_NULL_FATAL(stack);
 
     exit_code = stack_push(stack, &data);
@@ -224,11 +224,11 @@ void test_stack_pop__SINGLE_DATA__(void)
 
 void test_stack_pop__MULTI_DATA__(void)
 {
-    int exit_code = E_FAILURE;
-    uint32_t capacity = 10;
-    uint32_t result = 0;
+    int      exit_code = E_FAILURE;
+    uint32_t capacity  = 10;
+    uint32_t result    = 0;
 
-    stack_t *stack = stack_init(capacity, custom_free);
+    stack_t * stack = stack_init(capacity, custom_free);
     CU_ASSERT_PTR_NOT_NULL_FATAL(stack);
 
     for (uint32_t idx = 0; idx < capacity; idx++)
@@ -262,11 +262,11 @@ void test_stack_clear__NULL_ARG_STACK__(void)
 
 void test_stack_clear__SUCCESS__(void)
 {
-    int exit_code = E_FAILURE;
-    uint32_t capacity = 10;
-    uint32_t result = 0;
+    int      exit_code = E_FAILURE;
+    uint32_t capacity  = 10;
+    uint32_t result    = 0;
 
-    stack_t *stack = stack_init(capacity, custom_free);
+    stack_t * stack = stack_init(capacity, custom_free);
     CU_ASSERT_PTR_NOT_NULL_FATAL(stack);
 
     for (uint32_t idx = 0; idx < capacity; idx++)
@@ -288,26 +288,44 @@ void test_stack_clear__SUCCESS__(void)
 }
 
 static CU_TestInfo stack_tests[] = {
-    {"Stack - stack_init()", test_stack_init},
-    {"Stack - stack_is_full() - NULL argument: stack", test_stack_is_full__NULL_ARG__},
-    {"Stack - stack_is_full() - not full ", test_stack_is_full__FALSE__},
-    {"Stack - stack_is_full() - is full ", test_stack_is_full__TRUE__},
-    {"Stack - stack_is_empty() - NULL argument: stack", test_stack_is_empty__NULL_ARG__},
-    {"Stack - stack_is_empty() - not empty", test_stack_is_empty__FALSE__},
-    {"Stack - stack_is_empty() - is empty", test_stack_is_empty__TRUE__},
-    {"Stack - stack_push() - NULL argument: stack", test_stack_push__NULL_ARG_STACK__},
-    {"Stack - stack_push() - NULL argument: data", test_stack_push__NULL_ARG_DATA__},
-    {"Stack - stack_push() - push one integer", test_stack_push__SINGLE_DATA__},
-    {"Stack - stack_push() - push multiple integers", test_stack_push__MULTI_DATA__},
-    {"Stack - stack_pop() - NULL argument: stack", test_stack_pop__NULL_ARG_STACK__},
-    {"Stack - stack_pop() - pop one integer", test_stack_pop__SINGLE_DATA__},
-    {"Stack - stack_pop() - pop multiple integers", test_stack_pop__MULTI_DATA__},
-    {"Stack - stack_clear() - NULL argument: stack", test_stack_clear__NULL_ARG_STACK__},
-    {"Stack - stack_clear() - successfully clear stack", test_stack_clear__SUCCESS__},
+    // Tests for stack initialization
+    { "stack_init", test_stack_init },
 
-    CU_TEST_INFO_NULL};
+    // Tests for checking if the stack is full
+    { "stack_is_full_null", test_stack_is_full__NULL_ARG__ },
+    { "stack_is_full_false", test_stack_is_full__FALSE__ },
+    { "stack_is_full_true", test_stack_is_full__TRUE__ },
+
+    // Tests for checking if the stack is empty
+    { "stack_is_empty_null", test_stack_is_empty__NULL_ARG__ },
+    { "stack_is_empty_false", test_stack_is_empty__FALSE__ },
+    { "stack_is_empty_true", test_stack_is_empty__TRUE__ },
+
+    // Tests for pushing onto the stack
+    { "stack_push_null_stack", test_stack_push__NULL_ARG_STACK__ },
+    { "stack_push_null_data", test_stack_push__NULL_ARG_DATA__ },
+    { "stack_push_single", test_stack_push__SINGLE_DATA__ },
+    { "stack_push_multi", test_stack_push__MULTI_DATA__ },
+
+    // Tests for popping from the stack
+    { "stack_pop_null_stack", test_stack_pop__NULL_ARG_STACK__ },
+    { "stack_pop_single", test_stack_pop__SINGLE_DATA__ },
+    { "stack_pop_multi", test_stack_pop__MULTI_DATA__ },
+
+    // Tests for clearing the stack
+    { "stack_clear_null", test_stack_clear__NULL_ARG_STACK__ },
+    { "stack_clear", test_stack_clear__SUCCESS__ },
+
+    CU_TEST_INFO_NULL
+};
 
 CU_SuiteInfo stack_test_suite = {
-    "Stack Tests", NULL, NULL, NULL, NULL, stack_tests};
+    "Stack Tests",
+    NULL,       // Suite initialization function
+    NULL,       // Suite cleanup function
+    NULL,       // Suite setup function
+    NULL,       // Suite teardown function
+    stack_tests // The combined array of all tests
+};
 
 /*** end of file ***/

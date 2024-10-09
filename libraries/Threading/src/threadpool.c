@@ -7,12 +7,11 @@
 #include "threadpool.h"
 #include "utilities.h"
 
-#define QUEUE_MAX_CAPACITY 1024 // Maximum size for a queue
-#define ACTIVATE           1    // Activate the threadpool
-#define SHUTDOWN           0    // Shutdown the threadpool
-#define EMPTY              0    // Work queue is empty
-#define NOT_EMPTY          1    // Work queue is not empty
-#define KEEP_RUNNING       0    // Default signal for the signal handler
+#define ACTIVATE     1 // Activate the threadpool
+#define SHUTDOWN     0 // Shutdown the threadpool
+#define EMPTY        0 // Work queue is empty
+#define NOT_EMPTY    1 // Work queue is not empty
+#define KEEP_RUNNING 0 // Default signal for the signal handler
 
 /**
  * @brief A struct for a job
@@ -166,7 +165,9 @@ int threadpool_shutdown(threadpool_t * pool_p)
         goto END;
     }
 
+    pthread_mutex_lock(&signal_flag_mutex);
     pool_p->signal = SHUTDOWN;
+    pthread_mutex_unlock(&signal_flag_mutex);
 
     pthread_mutex_lock(&pool_p->mutex);
     exit_code = pthread_cond_broadcast(&pool_p->condition);
@@ -299,7 +300,7 @@ static int threadpool_setup(threadpool_t * threadpool_p, size_t thread_count)
     threadpool_p->condition_initialized = true;
 
     // 3. Setup the job queue
-    threadpool_p->job_queue = queue_init(QUEUE_MAX_CAPACITY, NULL);
+    threadpool_p->job_queue = queue_init(NULL);
     if (NULL == threadpool_p->job_queue)
     {
         print_error("threadpool_create(): Unable to initialize queue.");
@@ -339,12 +340,23 @@ static void * start_thread(void * pool_p)
     {
         pthread_mutex_lock(&threadpool_p->mutex);
 
+        // Check for signal to stop running
+        pthread_mutex_lock(&signal_flag_mutex);
+        if (SHUTDOWN == threadpool_p->signal)
+        {
+            pthread_mutex_unlock(&threadpool_p->mutex);
+            pthread_mutex_unlock(&signal_flag_mutex);
+            break;
+        }
+
         if (KEEP_RUNNING != signal_flag_g)
         {
             print_error("start_thread(): Signal caught.");
             pthread_mutex_unlock(&threadpool_p->mutex);
+            pthread_mutex_unlock(&signal_flag_mutex);
             goto END;
         }
+        pthread_mutex_unlock(&signal_flag_mutex);
 
         exit_code = wait_for_job(threadpool_p);
         if (E_SUCCESS != exit_code)
@@ -411,14 +423,17 @@ static int wait_for_job(threadpool_t * threadpool_p)
         goto END;
     }
 
-    while ((EMPTY == queue_emptycheck(threadpool_p->job_queue)) &&
+    while ((true == queue_is_empty(threadpool_p->job_queue)) &&
            (SHUTDOWN != threadpool_p->signal))
     {
+        pthread_mutex_lock(&signal_flag_mutex);
         if (KEEP_RUNNING != signal_flag_g)
         {
             print_error("wait_for_job(): Signal caught.");
+            pthread_mutex_unlock(&signal_flag_mutex);
             goto END;
         }
+        pthread_mutex_unlock(&signal_flag_mutex);
 
         exit_code =
             pthread_cond_wait(&threadpool_p->condition, &threadpool_p->mutex);
@@ -447,7 +462,7 @@ static int get_next_job(threadpool_t ** threadpool_p,
     }
 
     if ((SHUTDOWN == (*threadpool_p)->signal) &&
-        (EMPTY == queue_emptycheck((*threadpool_p)->job_queue)))
+        (true == queue_is_empty((*threadpool_p)->job_queue)))
     {
         goto END;
     }

@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "comparisons.h"
+#include "callback_types.h"
 
 /**
  * @brief structure of a list node
@@ -113,7 +113,7 @@ int list_push_position(list_t * list, void * data, uint32_t position);
  * @param list pointer to linked list object to be checked
  * @returns non-zero if list is empty, 0 value if not empty
  */
-int list_emptycheck(list_t * list);
+int list_is_empty(list_t * list);
 
 /**
  * @brief pops the head node out of the list
@@ -225,7 +225,7 @@ void * list_pick_random_item(list_t * list);
  * searched for
  * @return pointer to node found on success, NULL on failure
  */
-void * list_find_first_occurrence(list_t * list, void ** search_data);
+void * list_find_first_occurrence(list_t * list, void * search_data);
 
 /**
  * @brief find the first occurrance of a node containing the search_data as
@@ -237,7 +237,7 @@ void * list_find_first_occurrence(list_t * list, void ** search_data);
  *                    for
  * @return pointer to list of all found occurrecnces on success, NULL on failure
  */
-list_t * list_find_all_occurrences(list_t * list, void ** search_data);
+list_t * list_find_all_occurrences(list_t * list, void * search_data);
 
 /**
  * @brief sort list as per user defined compare function
@@ -262,12 +262,5 @@ int list_clear(list_t * list);
  * @return 0 on success, non-zero value on failure
  */
 int list_delete(list_t ** list_address);
-
-/**
- * @brief frees an item and its associated memory
- *
- * @param mem_addr pointer of the item to be free'd
- */
-void custom_free(void * mem_addr);
 
 #endif

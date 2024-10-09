@@ -11,10 +11,11 @@
 #include <stdint.h>
 
 // Exit codes
-#define E_SUCCESS      0
-#define E_FAILURE      -1
-#define E_EOF          -2
-#define E_NULL_POINTER -3
+#define E_SUCCESS           0
+#define E_FAILURE           -1
+#define E_EOF               -2
+#define E_NULL_POINTER      -3
+#define E_CONNECTION_CLOSED -4
 
 // Color codes
 typedef enum
@@ -26,7 +27,46 @@ typedef enum
     COLOR_BLUE
 } color_code_t;
 
+typedef enum
+{
+    LOG_CONSOLE,
+    LOG_FILE,
+    LOG_BOTH
+} log_dest_t;
+
 #define MAX_MSG_SIZE 500
+#define LOGFILE      "server.log"
+
+#ifdef DEBUG
+
+#define RED   "\x1B[31m"
+#define GREEN "\x1B[32m"
+#define RESET "\x1B[0m"
+
+#define __FILENAME__ \
+    (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+
+#define PRINT_DEBUG(...)             \
+    do                               \
+    {                                \
+        printf("%s@ %s%s:%s%d%s | ", \
+               RED,                  \
+               __FILENAME__,         \
+               RESET,                \
+               GREEN,                \
+               __LINE__,             \
+               RESET);               \
+        printf(__VA_ARGS__);         \
+    } while (0);
+
+#else
+#define PRINT_DEBUG(...)    \
+    do                      \
+    {                       \
+        printf(__VA_ARGS__) \
+    } while (0);
+
+#endif // DEBUG
 
 /**
  * @brief Prints a custom error message to `stderr` using `fprintf()`.
@@ -66,8 +106,13 @@ void print_strerror(const char * p_message);
  */
 int message_log(const char * prefix_p,
                 color_code_t color,
+                log_dest_t   destination,
                 const char * format,
                 ...);
+
+int log_system_info();
+
+void noop_free(void * data);
 
 #endif /* _UTILITIES_H */
 

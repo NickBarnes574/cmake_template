@@ -11,6 +11,27 @@ typedef struct
     int col;
 } cell_t;
 
+comp_rtns_t node_ptr_comp(void * ptr_1, void * ptr_2)
+{
+    comp_rtns_t result = ERROR;
+
+    if ((NULL == ptr_1) || (NULL == ptr_2))
+    {
+        print_error("node_ptr_comp(): NULL argument passed.");
+        goto END;
+    }
+
+    if (ptr_1 == ptr_2)
+    {
+        result = EQUAL;
+    }
+
+    result = NOT_EQUAL;
+
+END:
+    return result;
+}
+
 comp_rtns_t int_comp(void * p_node_one_data, void * p_node_two_data)
 {
     comp_rtns_t result   = ERROR;

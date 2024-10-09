@@ -29,7 +29,7 @@ static list_node_t * find_node(list_t * list, void * data);
  * @param list Pointer to the linked list.
  * @param node Pointer to the node to be removed.
  */
-static void remove_node(list_t * list, list_node_t * node);
+static int remove_node(list_t * list, list_node_t * node);
 
 /**
  * @brief Splits a list into two equal halves
@@ -76,8 +76,8 @@ list_t * list_new(FREE_F free_func, CMP_F comp_func)
     new_list->size         = 0;
     new_list->head         = NULL;
     new_list->tail         = NULL;
-    new_list->custom_free  = (NULL == free_func) ? free : free_func;
-    new_list->compare_func = (NULL == comp_func) ? int_comp : comp_func;
+    new_list->custom_free  = free_func;
+    new_list->compare_func = comp_func;
 
 END:
     return new_list;
@@ -91,6 +91,7 @@ int list_push_head(list_t * list, void * data)
     if ((NULL == list) || (NULL == data))
     {
         print_error("NULL argument passed.");
+        exit_code = E_NULL_POINTER;
         goto END;
     }
 
@@ -134,6 +135,7 @@ int list_push_tail(list_t * list, void * data)
     if ((NULL == list) || (NULL == data))
     {
         print_error("NULL argument passed.");
+        exit_code = E_NULL_POINTER;
         goto END;
     }
 
@@ -170,13 +172,14 @@ END:
 
 int list_push_position(list_t * list, void * data, uint32_t position)
 {
-    int           exit_code    = E_FAILURE;
-    list_node_t * new_node     = NULL;
-    list_node_t * current_node = NULL;
+    int           exit_code = E_FAILURE;
+    list_node_t * new_node  = NULL;
+    list_node_t * current   = NULL;
 
     if ((NULL == list) || (NULL == data))
     {
         print_error("NULL argument passed.");
+        exit_code = E_NULL_POINTER;
         goto END;
     }
 
@@ -192,7 +195,7 @@ int list_push_position(list_t * list, void * data, uint32_t position)
         exit_code = list_push_head(list, data);
         goto END;
     }
-    if (position == list->size - 1)
+    if (position == list->size)
     {
         exit_code = list_push_tail(list, data);
         goto END;
@@ -206,17 +209,20 @@ int list_push_position(list_t * list, void * data, uint32_t position)
     }
 
     // Navigate to the specified position
-    current_node = list->head;
+    current = list->head;
     for (uint32_t idx = 0; idx < position - 1; idx++)
     {
-        current_node = current_node->next;
+        current = current->next;
     }
 
     // Insert the new node at the specified position
-    new_node->next           = current_node->next;
-    new_node->prev           = current_node;
-    current_node->next->prev = new_node;
-    current_node->next       = new_node;
+    new_node->next = current->next;
+    new_node->prev = current;
+    if (NULL != current->next)
+    {
+        current->next->prev = new_node;
+    }
+    current->next = new_node;
 
     list->size += 1;
 
@@ -225,7 +231,7 @@ END:
     return exit_code;
 }
 
-int list_emptycheck(list_t * list)
+int list_is_empty(list_t * list)
 {
     int exit_code = E_FAILURE;
 
@@ -246,7 +252,8 @@ END:
 
 void * list_pop_head(list_t * list)
 {
-    list_node_t * head_node = NULL;
+    list_node_t * head = NULL;
+    void *        data = NULL;
 
     if ((NULL == list) || (NULL == list->head))
     {
@@ -254,7 +261,8 @@ void * list_pop_head(list_t * list)
         goto END;
     }
 
-    head_node = list->head;
+    head = list->head;
+    data = list->head->data;
 
     if (list->head == list->tail)
     {
@@ -269,13 +277,17 @@ void * list_pop_head(list_t * list)
 
     list->size--;
 
+    free(head);
+    head = NULL;
+
 END:
-    return head_node->data;
+    return data;
 }
 
 void * list_pop_tail(list_t * list)
 {
-    list_node_t * tail_node = NULL;
+    list_node_t * tail = NULL;
+    void *        data = NULL;
 
     if ((NULL == list) || (NULL == list->tail))
     {
@@ -283,7 +295,8 @@ void * list_pop_tail(list_t * list)
         goto END;
     }
 
-    tail_node = list->tail;
+    tail = list->tail;
+    data = list->tail->data;
 
     if (list->head == list->tail)
     {
@@ -298,14 +311,17 @@ void * list_pop_tail(list_t * list)
 
     list->size--;
 
+    free(tail);
+    tail = NULL;
+
 END:
-    return tail_node->data;
+    return data;
 }
 
 void * list_pop_position(list_t * list, uint32_t position)
 {
-    list_node_t * current     = NULL;
-    list_node_t * node_to_pop = NULL;
+    list_node_t * current = NULL;
+    void *        data    = NULL;
 
     if (NULL == list)
     {
@@ -319,15 +335,177 @@ void * list_pop_position(list_t * list, uint32_t position)
         goto END;
     }
 
+    // Handle special cases for head and tail
     if (0 == position)
     {
-        node_to_pop = list_pop_head(list);
+        data = list_pop_head(list);
+        goto END;
+    }
+    if (position == list->size - 1)
+    {
+        data = list_pop_tail(list);
         goto END;
     }
 
-    if (position == list->size - 1)
+    // Navigate to the specified position
+    current = list->head;
+    for (uint32_t idx = 0; idx < position; idx++)
     {
-        node_to_pop = list_pop_tail(list);
+        current = current->next;
+    }
+
+    // Pop the node at the specified position
+    data                = current->data;
+    current->prev->next = current->next;
+    if (NULL != current->next)
+    {
+        current->next->prev = current->prev;
+    }
+
+    list->size--;
+
+    list->custom_free(current->data);
+    current->data = NULL;
+    free(current);
+    current = NULL;
+
+END:
+    return data;
+}
+
+int list_remove_head(list_t * list)
+{
+    int    exit_code = E_FAILURE;
+    void * data      = NULL;
+
+    if (NULL == list)
+    {
+        print_error("List is empty.");
+        exit_code = E_NULL_POINTER;
+        goto END;
+    }
+
+    data = list_pop_head(list);
+    list->custom_free(data);
+    data = NULL;
+
+    exit_code = E_SUCCESS;
+END:
+    return exit_code;
+}
+
+int list_remove_tail(list_t * list)
+{
+    int    exit_code = E_FAILURE;
+    void * data      = NULL;
+
+    if (NULL == list)
+    {
+        print_error("List is empty.");
+        exit_code = E_NULL_POINTER;
+        goto END;
+    }
+
+    data = list_pop_tail(list);
+    list->custom_free(data);
+    data = NULL;
+
+    exit_code = E_SUCCESS;
+END:
+    return exit_code;
+}
+
+int list_remove_position(list_t * list, uint32_t position)
+{
+    int    exit_code = E_FAILURE;
+    void * data      = NULL;
+
+    if (NULL == list)
+    {
+        print_error("List is empty.");
+        exit_code = E_NULL_POINTER;
+        goto END;
+    }
+
+    if (position >= list->size)
+    {
+        print_error("Position out of bounds.");
+        goto END;
+    }
+
+    data = list_pop_position(list, position);
+    list->custom_free(data);
+    data = NULL;
+
+    exit_code = E_SUCCESS;
+END:
+    return exit_code;
+}
+
+void * list_peek_head(list_t * list)
+{
+    void * data = NULL;
+
+    if (NULL == list)
+    {
+        print_error("list_peek_head(): NULL argument passed.");
+        goto END;
+    }
+
+    if (NULL == list->head)
+    {
+        print_error("list_peek_head(): Empty list.");
+        goto END;
+    }
+
+    data = list->head->data;
+
+END:
+    return data;
+}
+
+void * list_peek_tail(list_t * list)
+{
+    void * data = NULL;
+
+    if (NULL == list)
+    {
+        print_error("NULL argument passed.");
+        goto END;
+    }
+
+    if (NULL == list->tail)
+    {
+        print_error("list_peek_tail(): Empty list.");
+        goto END;
+    }
+
+    data = list->tail->data;
+
+END:
+    return data;
+}
+
+void * list_peek_position(list_t * list, uint32_t position)
+{
+    list_node_t * current = NULL;
+    void *        data    = NULL;
+
+    if (NULL == list)
+    {
+        print_error("NULL argument passed.");
+        goto END;
+    }
+
+    if (0 == list->size)
+    {
+        print_error("list_peek_position(): Empty list.");
+        goto END;
+    }
+
+    if (position >= list->size)
+    {
+        print_error("Position out of bounds.");
         goto END;
     }
 
@@ -337,150 +515,10 @@ void * list_pop_position(list_t * list, uint32_t position)
         current = current->next;
     }
 
-    node_to_pop         = current;
-    current->prev->next = current->next;
-    if (NULL != current->next)
-    {
-        current->next->prev = current->prev;
-    }
-
-    node_to_pop->prev = NULL;
-    node_to_pop->next = NULL;
-
-    list->size--;
+    data = current->data;
 
 END:
-    return node_to_pop->data;
-}
-
-int list_remove_head(list_t * list)
-{
-    int           exit_code      = E_FAILURE;
-    list_node_t * node_to_remove = NULL;
-
-    if (NULL == list)
-    {
-        print_error("List is empty.");
-        goto END;
-    }
-
-    node_to_remove = list_pop_head(list);
-    list->custom_free(node_to_remove->data);
-    node_to_remove->data = NULL;
-    free(node_to_remove);
-    node_to_remove = NULL;
-
-    exit_code = E_SUCCESS;
-END:
-    return exit_code;
-}
-
-int list_remove_tail(list_t * list)
-{
-    int           exit_code      = E_FAILURE;
-    list_node_t * node_to_remove = NULL;
-
-    if (NULL == list)
-    {
-        print_error("List is empty.");
-        goto END;
-    }
-
-    node_to_remove = list_pop_tail(list);
-    list->custom_free(node_to_remove->data);
-    node_to_remove->data = NULL;
-    free(node_to_remove);
-    node_to_remove = NULL;
-
-    exit_code = E_SUCCESS;
-END:
-    return exit_code;
-}
-
-int list_remove_position(list_t * list, uint32_t position)
-{
-    int           exit_code      = E_FAILURE;
-    list_node_t * node_to_remove = NULL;
-
-    if (NULL == list)
-    {
-        print_error("List is empty.");
-        goto END;
-    }
-
-    if (position >= list->size)
-    {
-        print_error("Position out of bounds.");
-        goto END;
-    }
-
-    node_to_remove = list_pop_position(list, position);
-    list->custom_free(node_to_remove->data);
-    node_to_remove->data = NULL;
-    free(node_to_remove);
-    node_to_remove = NULL;
-
-    exit_code = E_SUCCESS;
-END:
-    return exit_code;
-}
-
-void * list_peek_head(list_t * list)
-{
-    list_node_t * node = NULL;
-
-    if (NULL == list)
-    {
-        print_error("NULL argument passed.");
-        goto END;
-    }
-
-    node = list->head;
-
-END:
-    return node->data;
-}
-
-void * list_peek_tail(list_t * list)
-{
-    list_node_t * node = NULL;
-
-    if (NULL == list)
-    {
-        print_error("NULL argument passed.");
-        goto END;
-    }
-
-    node = list->tail;
-
-END:
-    return node->data;
-}
-
-void * list_peek_position(list_t * list, uint32_t position)
-{
-    list_node_t * current_node = NULL;
-
-    if (NULL == list)
-    {
-        print_error("NULL argument passed.");
-        goto END;
-    }
-
-    if (position >= list->size)
-    {
-        print_error("Position out of bounds.");
-        goto END;
-    }
-
-    current_node = list->head;
-    for (uint32_t idx = 0; idx < position; idx++)
-    {
-        current_node = current_node->next;
-    }
-
-END:
-    return current_node->data;
+    return data;
 }
 
 int list_remove_data(list_t * list, void * data_p)
@@ -491,13 +529,22 @@ int list_remove_data(list_t * list, void * data_p)
     if ((NULL == list) || (NULL == data_p))
     {
         print_error("NULL argument passed.");
+        exit_code = E_NULL_POINTER;
         goto END;
     }
 
     node_to_remove = find_node(list, data_p);
-    if (NULL != node_to_remove)
+    if (NULL == node_to_remove)
     {
-        remove_node(list, node_to_remove);
+        print_error("list_remove_data(): Node not found.");
+        goto END;
+    }
+
+    exit_code = remove_node(list, node_to_remove);
+    if (E_SUCCESS != exit_code)
+    {
+        print_error("list_remove_data(): Unable to remove node.");
+        goto END;
     }
 
     exit_code = E_SUCCESS;
@@ -513,6 +560,7 @@ int list_foreach_call(list_t * list, ACT_F action_function)
     if ((NULL == list) || (NULL == action_function))
     {
         print_error("NULL argument passed.");
+        exit_code = E_NULL_POINTER;
         goto END;
     }
 
@@ -520,7 +568,7 @@ int list_foreach_call(list_t * list, ACT_F action_function)
 
     for (size_t idx = 0; idx < list->size; idx++)
     {
-        action_function(current_node);
+        action_function(current_node->data);
         current_node = current_node->next;
     }
 
@@ -529,7 +577,7 @@ END:
     return exit_code;
 }
 
-void * list_find_first_occurrence(list_t * list, void ** search_data)
+void * list_find_first_occurrence(list_t * list, void * search_data)
 {
     list_node_t * current_node = NULL;
 
@@ -543,9 +591,7 @@ void * list_find_first_occurrence(list_t * list, void ** search_data)
 
     for (size_t idx = 0; idx < list->size; idx++)
     {
-        if (EQUAL ==
-            (list->compare_func(*search_data,
-                                ((list_node_t *)(current_node->data))->data)))
+        if (EQUAL == list->compare_func(search_data, current_node->data))
         {
             goto END;
         }
@@ -555,7 +601,7 @@ void * list_find_first_occurrence(list_t * list, void ** search_data)
 
     current_node = NULL; // Set back to NULL if no match was found
 END:
-    return current_node->data;
+    return current_node;
 }
 
 bool list_contains(list_t * list, void * data_p)
@@ -590,10 +636,12 @@ void * list_pick_random_item(list_t * list)
     int           exit_code    = E_FAILURE;
     list_node_t * node_p       = NULL;
     int           random_index = 0;
+    void *        data         = NULL;
 
     if (NULL == list)
     {
         print_error("list_pick_random_item(): NULL argument passed.");
+        exit_code = E_NULL_POINTER;
         goto END;
     }
 
@@ -624,11 +672,13 @@ void * list_pick_random_item(list_t * list)
         goto END;
     }
 
+    data = node_p->data;
+
 END:
-    return node_p->data;
+    return data;
 }
 
-list_t * list_find_all_occurrences(list_t * list, void ** search_data)
+list_t * list_find_all_occurrences(list_t * list, void * search_data)
 {
     list_t *      new_list     = NULL;
     list_node_t * current_node = NULL;
@@ -658,7 +708,7 @@ list_t * list_find_all_occurrences(list_t * list, void ** search_data)
     // Iterate over the whole list and store any matches in 'new_list'
     for (size_t idx = 0; idx < list->size; idx++)
     {
-        if (ERROR != (list->compare_func(search_data, current_node)))
+        if (EQUAL == (list->compare_func(search_data, current_node->data)))
         {
             check = list_push_head(new_list, current_node->data);
             if (E_SUCCESS != check)
@@ -668,7 +718,10 @@ list_t * list_find_all_occurrences(list_t * list, void ** search_data)
                 goto END;
             }
         }
+        current_node = current_node->next;
     }
+
+    printf("new list size = %d\n", new_list->size);
 
 END:
     return new_list;
@@ -678,12 +731,17 @@ int list_sort(list_t * list)
 {
     int exit_code = E_FAILURE;
 
-    if (NULL != list)
+    if (NULL == list)
     {
-        merge_sort(&(list->head), list->compare_func);
-        exit_code = E_SUCCESS;
+        print_error("list_sort(): NULL argument passed.");
+        exit_code = E_NULL_POINTER;
+        goto END;
     }
 
+    merge_sort(&(list->head), list->compare_func);
+
+    exit_code = E_SUCCESS;
+END:
     return exit_code;
 }
 
@@ -696,24 +754,20 @@ int list_clear(list_t * list)
     if (NULL == list)
     {
         print_error("list_clear(): NULL argument passed.");
+        exit_code = E_NULL_POINTER;
         goto END;
     }
 
     current_node = list->head;
-    if (NULL == current_node)
-    {
-        print_error("list_clear(): Empty list.");
-        goto END;
-    }
-
-    for (size_t idx = 0; idx < list->size; idx++)
+    while (NULL != current_node)
     {
         next_node = current_node->next;
-
-        list->custom_free(current_node->data);
-        current_node->data = NULL;
+        if (list->custom_free != NULL)
+        {
+            list->custom_free(current_node->data);
+            current_node->data = NULL;
+        }
         free(current_node);
-        current_node = NULL;
         current_node = next_node;
     }
 
@@ -730,10 +784,10 @@ int list_delete(list_t ** list_address)
 {
     int exit_code = E_FAILURE;
 
-    if (NULL == *list_address)
+    if ((list_address == NULL) || (*list_address == NULL))
     {
         print_error("list_delete(): NULL argument passed.");
-        goto END;
+        return E_NULL_POINTER;
     }
 
     exit_code = list_clear(*list_address);
@@ -746,15 +800,8 @@ int list_delete(list_t ** list_address)
     free(*list_address);
     *list_address = NULL;
 
-    exit_code = E_SUCCESS;
 END:
     return exit_code;
-}
-
-void custom_free(void * mem_addr)
-{
-    free(mem_addr);
-    mem_addr = NULL;
 }
 
 /***********************************************************************
@@ -807,15 +854,20 @@ static list_node_t * find_node(list_t * list, void * data)
         current_node = current_node->next;
     }
 
+    // Node not found
+    current_node = NULL;
 END:
     return current_node;
 }
 
-static void remove_node(list_t * list, list_node_t * node)
+static int remove_node(list_t * list, list_node_t * node)
 {
+    int exit_code = E_FAILURE;
+
     if ((NULL == list) || (NULL == node))
     {
         print_error("NULL argument passed.");
+        exit_code = E_NULL_POINTER;
         goto END;
     }
 
@@ -844,8 +896,9 @@ static void remove_node(list_t * list, list_node_t * node)
 
     list->size--;
 
+    exit_code = E_SUCCESS;
 END:
-    return;
+    return exit_code;
 }
 
 static void split(list_node_t *  head,

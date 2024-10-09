@@ -7,11 +7,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+typedef enum
+{
+    CONTINUE_RUNNING = 0, // Indicates operations should continue running
+    SHUTDOWN         = 1  // Indicates a shutdown signal has been received
+} signal_response_t;
+
 /**
  * @brief Global signal flag to store a value set by the signal handler.
  * Default value should be 0
  **/
 extern volatile sig_atomic_t signal_flag_g;
+extern pthread_mutex_t       signal_flag_mutex;
 
 /**
  * @brief This will be the function used to handle the signals.
@@ -34,5 +41,9 @@ void signal_handler(int signal);
  *         FAILURE: ERROR
  */
 int signal_action_setup(void);
+
+int check_for_signals(void);
+
+void reset_signal_flag();
 
 #endif

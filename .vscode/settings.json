@@ -1,0 +1,13 @@
+{
+    "files.associations": {
+        "tcp_server.h": "c",
+        "stdint.h": "c",
+        "server_structs.h": "c",
+        "connection_manager.h": "c",
+        "server_ops.h": "c",
+        "socket_io.h": "c",
+        "socket_manager.h": "c",
+        "event_handler.h": "c",
+        "utilities.h": "c"
+    }
+}
