@@ -41,16 +41,16 @@ Run the `bootstrap` script to prepare the build configuration:
 
 ### 4. Set Environment Variables for Cross-Compilation
 
-Set the environment variables to point to your aarch64 toolchain. Adjust the paths according to the location of your toolchain. For example, if you have the `glibc 2024.02-1` version installed in the `/opt/` directory:
+Set the environment variables to point to your aarch64 toolchain. Adjust the paths according to the location of your toolchain. For example, if you have the `glibc 2024.05-1` version installed in the `/opt/` directory:
 
 ```bash
-export CC=/opt/aarch64--glibc--stable-2024.02-1/bin/aarch64-linux-gcc
-export CXX=/opt/aarch64--glibc--stable-2024.02-1/bin/aarch64-linux-g++
-export AR=/opt/aarch64--glibc--stable-2024.02-1/bin/aarch64-linux-ar
-export AS=/opt/aarch64--glibc--stable-2024.02-1/bin/aarch64-linux-as
-export LD=/opt/aarch64--glibc--stable-2024.02-1/bin/aarch64-linux-ld
-export RANLIB=/opt/aarch64--glibc--stable-2024.02-1/bin/aarch64-linux-ranlib
-export PKG_CONFIG_PATH=/opt/aarch64--glibc--stable-2024.02-1/aarch64-buildroot-linux-gnu/sysroot/usr/lib/pkgconfig
+export CC=/opt/aarch64--glibc--stable-2024.05-1/bin/aarch64-linux-gcc
+export CXX=/opt/aarch64--glibc--stable-2024.05-1/bin/aarch64-linux-g++
+export AR=/opt/aarch64--glibc--stable-2024.05-1/bin/aarch64-linux-ar
+export AS=/opt/aarch64--glibc--stable-2024.05-1/bin/aarch64-linux-as
+export LD=/opt/aarch64--glibc--stable-2024.05-1/bin/aarch64-linux-ld
+export RANLIB=/opt/aarch64--glibc--stable-2024.05-1/bin/aarch64-linux-ranlib
+export PKG_CONFIG_PATH=/opt/aarch64--glibc--stable-2024.05-1/aarch64-buildroot-linux-gnu/sysroot/usr/lib/pkgconfig
 ```
 
 ### 5. Configure CUnit for Cross-Compilation
@@ -58,7 +58,7 @@ export PKG_CONFIG_PATH=/opt/aarch64--glibc--stable-2024.02-1/aarch64-buildroot-l
 Configure CUnit with the correct `--host` and `--prefix` options to match your target architecture and the location of your toolchain:
 
 ```bash
-./configure --host=aarch64-linux-gnu --prefix=/opt/aarch64--glibc--stable-2024.02-1/aarch64-buildroot-linux-gnu/sysroot/usr
+./configure --host=aarch64-linux-gnu --prefix=/opt/aarch64--glibc--stable-2024.05-1/aarch64-buildroot-linux-gnu/sysroot/usr
 ```
 
 ### 6. Compile and Install CUnit

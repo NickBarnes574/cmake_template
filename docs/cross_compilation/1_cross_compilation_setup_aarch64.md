@@ -17,7 +17,7 @@ Before starting, ensure you have CMake and Make installed on your development ma
 2. Move the extracted folder to the `/opt` directory. This location is typical for toolchains and external libraries, ensuring system-wide accessibility.
 
    ```bash
-   sudo mv <your-extracted-folder> /opt/aarch64--glibc--stable-2024.02-1
+   sudo mv <your-extracted-folder> /opt/aarch64--glibc--stable-2024.05-1 # Change this to whatever version you are installing
    ```
 
 ## Step 3: Project Directory Structure
@@ -52,7 +52,7 @@ Ensure your main project directory is organized as follows, which is a common st
 
 set(CMAKE_SYSTEM_NAME Linux)
 set(CMAKE_SYSTEM_PROCESSOR aarch64)
-set(tools /opt/aarch64--glibc--stable-2024.02-1)
+set(tools /opt/aarch64--glibc--stable-2024.05-1) # Change this to whatever version you are installing
 set(CMAKE_C_COMPILER ${tools}/bin/aarch64-linux-gcc)
 set(CMAKE_CXX_COMPILER ${tools}/bin/aarch64-linux-g++)
 set(CMAKE_FIND_ROOT_PATH ${tools})
@@ -90,7 +90,7 @@ AARCH64_TOOLCHAIN = cmake/toolchains/aarch64-glibc-toolchain.cmake
 
 default: release
 
-all: 
+all:
 	@$(MAKE) release
 	@$(MAKE) debug
 	@$(MAKE) aarch64
