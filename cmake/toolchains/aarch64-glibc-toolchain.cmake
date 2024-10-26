@@ -10,7 +10,7 @@
 
 set(CMAKE_SYSTEM_NAME Linux)
 set(CMAKE_SYSTEM_PROCESSOR aarch64)
-set(tools /opt/aarch64--glibc--stable-2024.05-1)
+set(tools /opt/aarch64--glibc--stable-2022.08-1)
 set(CMAKE_C_COMPILER ${tools}/bin/aarch64-linux-gcc)
 set(CMAKE_CXX_COMPILER ${tools}/bin/aarch64-linux-g++)
 set(CMAKE_FIND_ROOT_PATH ${tools})

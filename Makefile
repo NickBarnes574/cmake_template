@@ -41,10 +41,16 @@ debug: ARCH = x86_64
 debug: build
 
 # aarch64
-aarch64: BUILD_TYPE = Release
-aarch64: ARCH = aarch64
-aarch64: TOOLCHAIN = -DCMAKE_TOOLCHAIN_FILE=$(AARCH64_TOOLCHAIN)
-aarch64: build
+aarch64_release: BUILD_TYPE = Release
+aarch64_release: ARCH = aarch64
+aarch64_release: TOOLCHAIN = -DCMAKE_TOOLCHAIN_FILE=$(AARCH64_TOOLCHAIN)
+aarch64_release: build
+
+# aarch64
+aarch64_debug: BUILD_TYPE = Debug
+aarch64_debug: ARCH = aarch64
+aarch64_debug: TOOLCHAIN = -DCMAKE_TOOLCHAIN_FILE=$(AARCH64_TOOLCHAIN)
+aarch64_debug: build
 
 build:
 	@cmake -S . -B $(BUILD_DIR)/$(ARCH) -DCMAKE_BUILD_TYPE=$(BUILD_TYPE) $(TOOLCHAIN)

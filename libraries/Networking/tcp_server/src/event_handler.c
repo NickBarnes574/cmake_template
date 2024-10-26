@@ -180,6 +180,8 @@ int handle_client_event(server_context_t * server, int index)
                 "handling event on client fd [%d]...",
                 client_fd);
 
+    printf("DEBUG: CREATING JOB ARGS\n");
+
     exit_code = create_job_args(
         client_fd, &server->sock_mgr->fd_mutex, server->sock_mgr, &job_args);
     if (E_SUCCESS != exit_code)
@@ -187,6 +189,8 @@ int handle_client_event(server_context_t * server, int index)
         print_error("handle_client_event(): Unable to create job args.");
         goto END;
     }
+
+    printf("DEBUG: ADDING JOB TO THREADPOOL\n");
 
     exit_code = threadpool_add_job(server->thread_pool,
                                    server->config->client_request,
@@ -199,6 +203,8 @@ int handle_client_event(server_context_t * server, int index)
         job_args = NULL;
         goto END;
     }
+
+    printf("DEBUG: REMOVING FD FROM SOCKET MANAGER\n");
 
     exit_code = sock_fd_remove(server->sock_mgr, index);
     if (E_SUCCESS != exit_code)
@@ -214,6 +220,7 @@ END:
 
 void * process_client_request(void * arg)
 {
+    printf("DEBUG 1: INSIDE PROCESS CLIENT REQUEST\n");
     int         exit_code = E_FAILURE;
     job_arg_t * job_args  = NULL;
 
@@ -287,6 +294,7 @@ END:
 
 static void free_job_args(void * arg)
 {
+    printf("DEBUG: IN FREE JOB ARGS!");
     job_arg_t * job_args = NULL;
 
     if (NULL == arg)

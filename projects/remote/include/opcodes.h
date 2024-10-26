@@ -16,6 +16,12 @@
 #define AUTHENTICATION   0x01
 #define MESSAGE          0x02
 #define CLOSE_CONNECTION 0x03
+#define GREEN_ON         0x04
+#define GREEN_OFF        0x05
+#define RED_ON           0x06
+#define RED_OFF          0x07
+#define YELLOW_ON        0x08
+#define YELLOW_OFF       0x09
 
 //
 // --------------------------------RETURN CODES--------------------------------

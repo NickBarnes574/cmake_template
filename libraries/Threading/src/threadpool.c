@@ -247,6 +247,8 @@ int threadpool_add_job(threadpool_t * pool_p,
         goto END;
     }
 
+    printf("DEBUG: Job function pointer address: %p\n", (void *)(uintptr_t)job);
+
     new_job = create_job(job, del_f, arg_p);
     if (NULL == new_job)
     {
@@ -267,6 +269,7 @@ int threadpool_add_job(threadpool_t * pool_p,
     pthread_mutex_unlock(&pool_p->mutex);
 
     exit_code = E_SUCCESS;
+    printf("DEBUG ADDED JOB TO THREADPOOL\n");
 END:
     return exit_code;
 }
@@ -372,6 +375,14 @@ static void * start_thread(void * pool_p)
         }
 
         pthread_mutex_unlock(&threadpool_p->mutex);
+
+        printf("DEBUG ABOUT TO PROCESS JOB\n");
+
+        if (NULL == job_p)
+        {
+            print_error("start_thread(): NULL JOB WTF!");
+            goto END;
+        }
 
         exit_code = process_job(job_p);
         if (E_SUCCESS != exit_code)
@@ -490,7 +501,7 @@ static int process_job(job_t * job_p)
 {
     int exit_code = E_FAILURE;
 
-    if (NULL == job_p)
+    if ((NULL == job_p) || (NULL == job_p->job) || (NULL == job_p->args_p))
     {
         print_error("process_job(): NULL job passed.");
         goto END;
@@ -499,6 +510,8 @@ static int process_job(job_t * job_p)
     if (NULL != job_p->job)
     {
         // Attempt to run the job
+        printf("DEBUG: Executing job function at: %p\n",
+               (void *)(uintptr_t)job_p->job);
         job_p->job(job_p->args_p);
     }
 

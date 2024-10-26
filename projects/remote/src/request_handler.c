@@ -4,17 +4,18 @@
 #include <unistd.h>
 
 #include "job_handler.h"
+#include "lights.h"
 #include "opcodes.h"
 #include "packets.h"
 #include "socket_io.h"
 #include "utilities.h"
 
-int message(int client_fd);
-
 int process_job(int client_fd)
 {
     int     exit_code = E_FAILURE;
     uint8_t opcode    = -1;
+
+    printf("DEBUG 2: INSIDE PROCESS JOB\n");
 
     exit_code = recv_all_data(client_fd, &opcode, sizeof(uint8_t));
     if (E_SUCCESS != exit_code)
@@ -24,11 +25,56 @@ int process_job(int client_fd)
 
     switch (opcode)
     {
-        case MESSAGE:
-            exit_code = message(client_fd);
+        case GREEN_ON:
+            exit_code = light_green_on();
             if (E_SUCCESS != exit_code)
             {
-                print_error("process_job(): Unable to process message.");
+                print_error("process_job(): failed to turn green light on.");
+                goto END;
+            }
+            break;
+
+        case GREEN_OFF:
+            exit_code = light_green_off();
+            if (E_SUCCESS != exit_code)
+            {
+                print_error("process_job(): failed to turn green light off.");
+                goto END;
+            }
+            break;
+
+        case RED_ON:
+            exit_code = light_red_on();
+            if (E_SUCCESS != exit_code)
+            {
+                print_error("process_job(): failed to turn red light on.");
+                goto END;
+            }
+            break;
+
+        case RED_OFF:
+            exit_code = light_red_off();
+            if (E_SUCCESS != exit_code)
+            {
+                print_error("process_job(): failed to turn red light off.");
+                goto END;
+            }
+            break;
+
+        case YELLOW_ON:
+            exit_code = light_yellow_on();
+            if (E_SUCCESS != exit_code)
+            {
+                print_error("process_job(): failed to turn yellow light on.");
+                goto END;
+            }
+            break;
+
+        case YELLOW_OFF:
+            exit_code = light_yellow_off();
+            if (E_SUCCESS != exit_code)
+            {
+                print_error("process_job(): failed to turn yellow light off.");
                 goto END;
             }
             break;
@@ -45,77 +91,5 @@ int process_job(int client_fd)
     }
 
 END:
-    return exit_code;
-}
-
-int message(int client_fd)
-{
-    int           exit_code   = E_FAILURE;
-    uint32_t      message_len = 0;
-    unsigned char padding[3]  = { 0 };
-    char *        message     = NULL;
-
-    // Read padding
-    exit_code = recv_all_data(client_fd, padding, sizeof(padding));
-    if (E_SUCCESS != exit_code)
-    {
-        print_error("message(): Unable to get padding.");
-        goto END;
-    }
-
-    // Read message length
-    exit_code = recv_all_data(client_fd, &message_len, sizeof(message_len));
-    if (E_SUCCESS != exit_code)
-    {
-        print_error("message(): Unable to get message length.");
-        goto END;
-    }
-
-    message_len = ntohl(message_len);
-
-    // Verify the message length to ensure it is within a reasonable range
-    if (message_len >
-        1024) // Assuming 1024 is the maximum reasonable length for a message
-    {
-        print_error("message(): Message length is unreasonably large.");
-        goto END;
-    }
-
-    // Allocate memory for the message
-    message = calloc(1, message_len + 1);
-    if (NULL == message)
-    {
-        exit_code = E_FAILURE;
-        print_error("message(): Memory allocation failure.");
-        goto END;
-    }
-
-    exit_code = recv_all_data(client_fd, message, message_len);
-    if (E_SUCCESS != exit_code)
-    {
-        print_error("message(): Unable to get message.");
-        goto END;
-    }
-
-    if (MAX_MSG_SIZE > message_len)
-    {
-        message_log("INFO",
-                    COLOR_YELLOW,
-                    LOG_BOTH,
-                    "MESSAGE from [%d]: %s",
-                    client_fd,
-                    message);
-    }
-    else
-    {
-        message_log(
-            "INFO", COLOR_YELLOW, LOG_BOTH, "message is too long to display");
-    }
-
-    exit_code = E_SUCCESS;
-
-END:
-    free(message);
-    message = NULL;
     return exit_code;
 }

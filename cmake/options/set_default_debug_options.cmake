@@ -6,7 +6,7 @@
 # -----------------------------------------------------------------------------
 
 # Adds an option to CMake to control the use of Address Sanitizer
-option(USE_ADDRESS_SANITIZER "Use Address Sanitizer for Debug Builds" OFF)
+option(USE_ADDRESS_SANITIZER "Use Address Sanitizer for Debug Builds" ON)
 
 function(set_default_debug_options)
     # Common compiler options

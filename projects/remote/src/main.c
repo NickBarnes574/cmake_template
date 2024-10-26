@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #include "job_handler.h"
+#include "lights.h"
 #include "signal_handler.h"
 #include "tcp_server.h"
 #include "utilities.h"
@@ -31,12 +32,19 @@ int main(void)
         goto END;
     }
 
+    exit_code = lights_init();
+    if (E_SUCCESS != exit_code)
+    {
+        print_error("main(): Unable to initialize lights.");
+        goto END;
+    }
+
     config->port           = "17337";
     config->max_clients    = MAX_CLIENTS;
     config->num_threads    = NUM_THREADS;
     config->backlog_size   = BACKLOG_SIZE;
     config->timeout        = TIMEOUT;
-    config->client_request = process_client_request;
+    config->client_request = (JOB_F)process_client_request;
 
     exit_code = start_tcp_server(config);
     if (E_SUCCESS != exit_code)
@@ -46,6 +54,7 @@ int main(void)
     }
 
 END:
+    lights_destroy();
     free(config);
     config = NULL;
     return exit_code;
