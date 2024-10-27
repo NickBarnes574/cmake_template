@@ -13,13 +13,13 @@
  * @note JOB_F must know and validate the internals of its singular argument,
  * void * arg. arg may be NULL.
  */
-typedef void *(*JOB_F)(void *arg);
+typedef void * (*JOB_F)(void * arg);
 
 /**
  * @brief a custom free function for an arg
  * @note FREE_F must be safe if a NULL pointer is provided to it.
  */
-typedef void (*FREE_F)(void *data);
+typedef void (*FREE_F)(void * data);
 
 /**
  * @brief A threadpool type. Internals to be implemented by trainee.
@@ -34,7 +34,7 @@ typedef struct threadpool threadpool_t;
  * @return SUCCESS: A threadpool instance of type threadpool_t.
  *         FAILURE: NULL
  */
-threadpool_t *threadpool_create(size_t thread_count);
+threadpool_t * threadpool_create(size_t thread_count);
 
 /**
  * @brief Nice shutdown of threadpool. Do not take any more work.
@@ -45,7 +45,7 @@ threadpool_t *threadpool_create(size_t thread_count);
  * @return SUCCESS: SUCCESS
  *         FAILURE: ERROR
  */
-int threadpool_shutdown(threadpool_t *pool_p);
+int threadpool_shutdown(threadpool_t * pool_p);
 
 /**
  * @brief Destroy a threadpool. Clean up all resources and memory.
@@ -56,7 +56,7 @@ int threadpool_shutdown(threadpool_t *pool_p);
  * @return SUCCESS: SUCCESS
  *         FAILURE: ERROR
  */
-int threadpool_destroy(threadpool_t **pool_pp);
+int threadpool_destroy(threadpool_t ** pool_pp);
 
 /**
  * @brief Add a job to to the threadpool to work on.
@@ -76,9 +76,9 @@ int threadpool_destroy(threadpool_t **pool_pp);
  * @return SUCCESS: SUCCESS
  *         FAILURE: ERROR
  */
-int threadpool_add_job(threadpool_t *pool_p,
-                       JOB_F job,
-                       FREE_F del_f,
-                       void *arg_p);
+int threadpool_add_job(threadpool_t * pool_p,
+                       JOB_F          job,
+                       FREE_F         del_f,
+                       void *         arg_p);
 
 #endif

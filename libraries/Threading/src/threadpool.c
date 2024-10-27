@@ -89,13 +89,10 @@ static int wait_for_job(threadpool_t * threadpool_p);
  * @brief Gets the next job from a job queue.
  *
  * @param threadpool_p The threadpool to pass in
- * @param node_p The queue node to pass in
  * @param job_p The job to process
  * @return int Returns 0 on success, -1 on failure
  */
-static int get_next_job(threadpool_t ** threadpool_p,
-                        queue_node_t ** node_p,
-                        job_t **        job_p);
+static int get_next_job(threadpool_t ** threadpool_p, job_t ** job_p);
 
 /**
  * @brief Runs a job.
@@ -235,7 +232,7 @@ int threadpool_add_job(threadpool_t * pool_p,
     int     exit_code = E_FAILURE;
     job_t * new_job   = NULL;
 
-    if ((NULL == pool_p) || (NULL == job) || (NULL == arg_p))
+    if ((NULL == pool_p) || (NULL == job))
     {
         print_error("threadpool_add_job(): NULL argument passed.");
         goto END;
@@ -246,8 +243,6 @@ int threadpool_add_job(threadpool_t * pool_p,
         print_error("threadpool_add_job(): Threadpool already shutdown.");
         goto END;
     }
-
-    printf("DEBUG: Job function pointer address: %p\n", (void *)(uintptr_t)job);
 
     new_job = create_job(job, del_f, arg_p);
     if (NULL == new_job)
@@ -269,7 +264,6 @@ int threadpool_add_job(threadpool_t * pool_p,
     pthread_mutex_unlock(&pool_p->mutex);
 
     exit_code = E_SUCCESS;
-    printf("DEBUG ADDED JOB TO THREADPOOL\n");
 END:
     return exit_code;
 }
@@ -328,7 +322,6 @@ static void * start_thread(void * pool_p)
     // Initialize
     int            exit_code    = E_FAILURE;
     threadpool_t * threadpool_p = NULL;
-    queue_node_t * node_p       = NULL;
     job_t *        job_p        = NULL;
 
     if (NULL == pool_p)
@@ -367,7 +360,7 @@ static void * start_thread(void * pool_p)
             pthread_mutex_unlock(&threadpool_p->mutex);
         }
 
-        exit_code = get_next_job(&threadpool_p, &node_p, &job_p);
+        exit_code = get_next_job(&threadpool_p, &job_p);
         if (E_SUCCESS != exit_code)
         {
             pthread_mutex_unlock(&threadpool_p->mutex);
@@ -375,14 +368,6 @@ static void * start_thread(void * pool_p)
         }
 
         pthread_mutex_unlock(&threadpool_p->mutex);
-
-        printf("DEBUG ABOUT TO PROCESS JOB\n");
-
-        if (NULL == job_p)
-        {
-            print_error("start_thread(): NULL JOB WTF!");
-            goto END;
-        }
 
         exit_code = process_job(job_p);
         if (E_SUCCESS != exit_code)
@@ -392,7 +377,6 @@ static void * start_thread(void * pool_p)
         }
 
         free(job_p);
-        free(node_p);
     }
 
 END:
@@ -403,7 +387,7 @@ static job_t * create_job(JOB_F job, FREE_F del_f, void * arg_p)
 {
     job_t * new_job = NULL;
 
-    if ((NULL == job) || (NULL == arg_p))
+    if (NULL == job)
     {
         print_error("threadpool_new_job(): NULL job passed.");
         goto END;
@@ -460,13 +444,12 @@ END:
     return exit_code;
 }
 
-static int get_next_job(threadpool_t ** threadpool_p,
-                        queue_node_t ** node_p,
-                        job_t **        job_p)
+static int get_next_job(threadpool_t ** threadpool_p, job_t ** job_p)
 {
-    int exit_code = E_FAILURE;
+    int    exit_code = E_FAILURE;
+    void * data      = NULL;
 
-    if ((NULL == threadpool_p) || (NULL == node_p) || (NULL == job_p))
+    if ((NULL == threadpool_p) || (NULL == job_p))
     {
         print_error("get_next_job(): NULL argument passed.");
         goto END;
@@ -478,14 +461,14 @@ static int get_next_job(threadpool_t ** threadpool_p,
         goto END;
     }
 
-    *node_p = queue_dequeue((*threadpool_p)->job_queue);
-    if (NULL == *node_p)
+    data = queue_dequeue((*threadpool_p)->job_queue);
+    if (NULL == data)
     {
         print_error("get_next_job(): NULL node.");
         goto END;
     }
 
-    *job_p = (*node_p)->data;
+    *job_p = data;
     if (NULL == *job_p)
     {
         print_error("get_next_job(): NULL job.");
@@ -500,8 +483,8 @@ END:
 static int process_job(job_t * job_p)
 {
     int exit_code = E_FAILURE;
-    printf("DEBUG: INSIDE PROCESS JOB\n");
-    if ((NULL == job_p) || (NULL == job_p->job) || (NULL == job_p->args_p))
+
+    if (NULL == job_p)
     {
         print_error("process_job(): NULL job passed.");
         goto END;

@@ -15,8 +15,6 @@ int process_job(int client_fd)
     int     exit_code = E_FAILURE;
     uint8_t opcode    = -1;
 
-    printf("DEBUG 2: INSIDE PROCESS JOB\n");
-
     exit_code = recv_all_data(client_fd, &opcode, sizeof(uint8_t));
     if (E_SUCCESS != exit_code)
     {
