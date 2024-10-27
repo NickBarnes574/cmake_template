@@ -89,13 +89,10 @@ static int wait_for_job(threadpool_t * threadpool_p);
  * @brief Gets the next job from a job queue.
  *
  * @param threadpool_p The threadpool to pass in
- * @param node_p The queue node to pass in
  * @param job_p The job to process
  * @return int Returns 0 on success, -1 on failure
  */
-static int get_next_job(threadpool_t ** threadpool_p,
-                        queue_node_t ** node_p,
-                        job_t **        job_p);
+static int get_next_job(threadpool_t ** threadpool_p, job_t ** job_p);
 
 /**
  * @brief Runs a job.
@@ -325,7 +322,6 @@ static void * start_thread(void * pool_p)
     // Initialize
     int            exit_code    = E_FAILURE;
     threadpool_t * threadpool_p = NULL;
-    queue_node_t * node_p       = NULL;
     job_t *        job_p        = NULL;
 
     if (NULL == pool_p)
@@ -364,7 +360,7 @@ static void * start_thread(void * pool_p)
             pthread_mutex_unlock(&threadpool_p->mutex);
         }
 
-        exit_code = get_next_job(&threadpool_p, &node_p, &job_p);
+        exit_code = get_next_job(&threadpool_p, &job_p);
         if (E_SUCCESS != exit_code)
         {
             pthread_mutex_unlock(&threadpool_p->mutex);
@@ -381,7 +377,6 @@ static void * start_thread(void * pool_p)
         }
 
         free(job_p);
-        free(node_p);
     }
 
 END:
@@ -449,13 +444,12 @@ END:
     return exit_code;
 }
 
-static int get_next_job(threadpool_t ** threadpool_p,
-                        queue_node_t ** node_p,
-                        job_t **        job_p)
+static int get_next_job(threadpool_t ** threadpool_p, job_t ** job_p)
 {
-    int exit_code = E_FAILURE;
+    int    exit_code = E_FAILURE;
+    void * data      = NULL;
 
-    if ((NULL == threadpool_p) || (NULL == node_p) || (NULL == job_p))
+    if ((NULL == threadpool_p) || (NULL == job_p))
     {
         print_error("get_next_job(): NULL argument passed.");
         goto END;
@@ -467,14 +461,14 @@ static int get_next_job(threadpool_t ** threadpool_p,
         goto END;
     }
 
-    *node_p = queue_dequeue((*threadpool_p)->job_queue);
-    if (NULL == *node_p)
+    data = queue_dequeue((*threadpool_p)->job_queue);
+    if (NULL == data)
     {
         print_error("get_next_job(): NULL node.");
         goto END;
     }
 
-    *job_p = (*node_p)->data;
+    *job_p = data;
     if (NULL == *job_p)
     {
         print_error("get_next_job(): NULL job.");

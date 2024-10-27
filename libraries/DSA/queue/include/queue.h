@@ -1,6 +1,7 @@
 #ifndef _QUEUE_H
 #define _QUEUE_H
 
+#include <pthread.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -38,10 +39,11 @@ typedef void (*FREE_F)(void *);
  */
 typedef struct queue_t
 {
-    uint32_t       currentsz;
-    queue_node_t * head;
-    queue_node_t * tail;
-    FREE_F         customfree;
+    uint32_t        currentsz;
+    queue_node_t *  head;
+    queue_node_t *  tail;
+    FREE_F          customfree;
+    pthread_mutex_t mutex;
 } queue_t;
 
 /**

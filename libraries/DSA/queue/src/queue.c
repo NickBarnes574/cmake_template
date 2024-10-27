@@ -15,6 +15,15 @@ queue_t * queue_init(FREE_F customfree)
     queue->tail       = NULL;
     queue->customfree = (NULL == customfree) ? free : customfree;
 
+    // Initialize the mutex
+    if (pthread_mutex_init(&queue->mutex, NULL) != 0)
+    {
+        print_error("Failed to initialize mutex.");
+        free(queue);
+        queue = NULL;
+        goto END;
+    }
+
 END:
     return queue;
 }
@@ -23,13 +32,10 @@ bool queue_is_empty(queue_t * queue)
 {
     bool result = false;
 
-    if (0 == queue->currentsz)
-    {
-        result = true;
-        goto END;
-    }
+    pthread_mutex_lock(&queue->mutex);
+    result = (queue->currentsz == 0);
+    pthread_mutex_unlock(&queue->mutex);
 
-END:
     return result;
 }
 
@@ -37,7 +43,6 @@ int queue_enqueue(queue_t * queue, void * data)
 {
     int            exit_code = E_FAILURE;
     queue_node_t * new_node  = NULL;
-    bool           is_empty  = false;
 
     if ((NULL == queue) || (NULL == data))
     {
@@ -55,8 +60,9 @@ int queue_enqueue(queue_t * queue, void * data)
     new_node->data = data;
     new_node->next = NULL;
 
-    is_empty = queue_is_empty(queue);
-    if (true == is_empty)
+    pthread_mutex_lock(&queue->mutex);
+
+    if (queue->currentsz == 0)
     {
         queue->head = new_node;
         queue->tail = new_node;
@@ -68,8 +74,10 @@ int queue_enqueue(queue_t * queue, void * data)
     }
 
     queue->currentsz++;
+    pthread_mutex_unlock(&queue->mutex);
 
     exit_code = E_SUCCESS;
+
 END:
     return exit_code;
 }
@@ -78,7 +86,6 @@ void * queue_dequeue(queue_t * queue)
 {
     void *         data           = NULL;
     queue_node_t * node_to_remove = NULL;
-    bool           is_empty       = false;
 
     if (NULL == queue)
     {
@@ -86,10 +93,12 @@ void * queue_dequeue(queue_t * queue)
         goto END;
     }
 
-    is_empty = queue_is_empty(queue);
-    if (true == is_empty)
+    pthread_mutex_lock(&queue->mutex);
+
+    if (queue->currentsz == 0)
     {
         print_error("queue_dequeue(): Queue is empty.");
+        pthread_mutex_unlock(&queue->mutex);
         goto END;
     }
 
@@ -97,15 +106,15 @@ void * queue_dequeue(queue_t * queue)
     data           = node_to_remove->data;
     queue->head    = queue->head->next;
 
-    free(node_to_remove);
-    node_to_remove = NULL;
-
     if (queue->head == NULL)
     {
         queue->tail = NULL;
     }
 
     queue->currentsz--;
+    pthread_mutex_unlock(&queue->mutex);
+
+    free(node_to_remove);
 
 END:
     return data;
@@ -113,8 +122,7 @@ END:
 
 void * queue_peek(queue_t * queue)
 {
-    void * data     = NULL;
-    bool   is_empty = false;
+    void * data = NULL;
 
     if (NULL == queue)
     {
@@ -122,11 +130,12 @@ void * queue_peek(queue_t * queue)
         goto END;
     }
 
-    is_empty = queue_is_empty(queue);
-    if (false == is_empty)
+    pthread_mutex_lock(&queue->mutex);
+    if (queue->head != NULL)
     {
         data = queue->head->data;
     }
+    pthread_mutex_unlock(&queue->mutex);
 
 END:
     return data;
@@ -134,8 +143,7 @@ END:
 
 int queue_clear(queue_t * queue)
 {
-    int    exit_code = E_FAILURE;
-    void * data      = NULL;
+    int exit_code = E_FAILURE;
 
     if (NULL == queue)
     {
@@ -143,40 +151,33 @@ int queue_clear(queue_t * queue)
         goto END;
     }
 
-    while (false == queue_is_empty(queue))
+    pthread_mutex_lock(&queue->mutex);
+    while (queue->currentsz > 0)
     {
-        data = queue_dequeue(queue);
+        void * data = queue_dequeue(queue);
         queue->customfree(data);
-        data = NULL;
     }
+    pthread_mutex_unlock(&queue->mutex);
 
     exit_code = E_SUCCESS;
+
 END:
     return exit_code;
 }
 
 void queue_destroy(queue_t ** queue_addr)
 {
-    int exit_code = E_FAILURE;
-
     if (NULL == *queue_addr)
     {
         print_error("NULL argument passed.");
-        goto END;
+        return;
     }
 
-    exit_code = queue_clear(*queue_addr);
-    if (E_SUCCESS != exit_code)
-    {
-        print_error("Unable to clear queue.");
-        goto END;
-    }
+    queue_clear(*queue_addr);
+
+    // Destroy the mutex
+    pthread_mutex_destroy(&(*queue_addr)->mutex);
 
     free(*queue_addr);
     *queue_addr = NULL;
-
-END:
-    return;
 }
-
-/*** end of file ***/
