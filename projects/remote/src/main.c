@@ -44,7 +44,7 @@ int main(void)
     config->num_threads    = NUM_THREADS;
     config->backlog_size   = BACKLOG_SIZE;
     config->timeout        = TIMEOUT;
-    config->client_request = (JOB_F)process_client_request;
+    config->client_request = process_client_request;
 
     exit_code = start_tcp_server(config);
     if (E_SUCCESS != exit_code)

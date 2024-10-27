@@ -190,6 +190,12 @@ int handle_client_event(server_context_t * server, int index)
         goto END;
     }
 
+    if (NULL == job_args)
+    {
+        print_error("handle_client_event(): NULL job args");
+        goto END;
+    }
+
     printf("DEBUG: ADDING JOB TO THREADPOOL\n");
 
     exit_code = threadpool_add_job(server->thread_pool,

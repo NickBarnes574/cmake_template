@@ -235,7 +235,7 @@ int threadpool_add_job(threadpool_t * pool_p,
     int     exit_code = E_FAILURE;
     job_t * new_job   = NULL;
 
-    if ((NULL == pool_p) || (NULL == job))
+    if ((NULL == pool_p) || (NULL == job) || (NULL == arg_p))
     {
         print_error("threadpool_add_job(): NULL argument passed.");
         goto END;
@@ -403,7 +403,7 @@ static job_t * create_job(JOB_F job, FREE_F del_f, void * arg_p)
 {
     job_t * new_job = NULL;
 
-    if (NULL == job)
+    if ((NULL == job) || (NULL == arg_p))
     {
         print_error("threadpool_new_job(): NULL job passed.");
         goto END;
@@ -500,7 +500,7 @@ END:
 static int process_job(job_t * job_p)
 {
     int exit_code = E_FAILURE;
-
+    printf("DEBUG: INSIDE PROCESS JOB\n");
     if ((NULL == job_p) || (NULL == job_p->job) || (NULL == job_p->args_p))
     {
         print_error("process_job(): NULL job passed.");
@@ -510,8 +510,6 @@ static int process_job(job_t * job_p)
     if (NULL != job_p->job)
     {
         // Attempt to run the job
-        printf("DEBUG: Executing job function at: %p\n",
-               (void *)(uintptr_t)job_p->job);
         job_p->job(job_p->args_p);
     }
 
