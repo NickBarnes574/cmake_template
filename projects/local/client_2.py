@@ -4,8 +4,9 @@ import cmd
 import socket
 import struct
 
-HOST = "127.0.0.1"
-# HOST = "192.168.86.150"  # Replace with your server IP if needed
+# HOST = "127.0.0.1"
+# HOST = "192.168.86.150"  # Home WIFI
+HOST = "192.168.79.47"  # Work WIFI
 PORT = 17337  # Must match the port your server is listening on
 
 

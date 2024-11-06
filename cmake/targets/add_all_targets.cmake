@@ -29,7 +29,7 @@ function(add_remote_executables)
 
     add_target(
     #   [ FIELD ]-----------[ VALUE ]
-        TARGET_NAME         lights_server
+        TARGET_NAME         test_server
         ENDPOINT            remote
         TARGET_TYPE         EXE
         SOURCE_DIR          projects

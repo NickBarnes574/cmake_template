@@ -35,7 +35,7 @@ int lights_init()
 #endif
 
     exit_code = E_SUCCESS;
-    // END:
+END:
     return exit_code;
 }
 
@@ -62,7 +62,7 @@ int lights_destroy()
 #endif
 
     exit_code = E_SUCCESS;
-    // END:
+END:
     return exit_code;
 }
 

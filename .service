@@ -1,0 +1,13 @@
+[Unit]
+Description=Test Server Service
+After=network.target
+
+[Service]
+ExecStart=/home/admin/test_server
+WorkingDirectory=/home/admin/test_server
+Restart=always
+User=admin
+Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+[Install]
+WantedBy=multi-user.target

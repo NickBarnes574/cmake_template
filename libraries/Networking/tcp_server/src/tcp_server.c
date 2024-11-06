@@ -249,6 +249,7 @@ static int initialize_server(server_context_t * server)
         goto END;
     }
 
+    // Might not have to do non-blocking
     exit_code = set_fd_non_blocking(server->fd);
     if (E_SUCCESS != exit_code)
     {
@@ -257,6 +258,7 @@ static int initialize_server(server_context_t * server)
         goto END;
     }
 
+    // Move listen() into sock_mgr_init(), Also might not need listen()
     errno     = 0;
     exit_code = listen(server->fd, server->config->backlog_size);
     if (E_SUCCESS != exit_code)

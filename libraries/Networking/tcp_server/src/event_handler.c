@@ -66,7 +66,7 @@ int handle_connections(server_context_t * server)
         fd_entry = &server->sock_mgr->fd_arr[idx];
         pthread_mutex_unlock(&server->sock_mgr->fd_mutex);
 
-        if (fd_entry->revents & POLL_ERROR_EVENTS)
+        if (0 != (fd_entry->revents & POLL_ERROR_EVENTS))
         {
             print_error("handle_connections(): Error on socket.");
             close(fd_entry->fd);

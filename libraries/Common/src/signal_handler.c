@@ -43,7 +43,7 @@ END:
 
 void signal_handler(int signal)
 {
-    pthread_mutex_lock(&signal_flag_mutex);
+    pthread_mutex_lock(&signal_flag_mutex); // Can remove
     switch (signal)
     {
         case SIGUSR1:
@@ -68,6 +68,7 @@ void reset_signal_flag()
     pthread_mutex_unlock(&signal_flag_mutex);
 }
 
+// This is not needed
 int check_for_signals(void)
 {
     int current_signal = NO_SIGNAL;

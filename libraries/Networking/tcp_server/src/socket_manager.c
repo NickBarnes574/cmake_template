@@ -20,6 +20,7 @@ int sock_mgr_init(socket_manager_t * sock_mgr,
         goto END;
     }
 
+    // > not >=
     if (0 >= max_fds)
     {
         print_error("sock_fd_arr_init(): 'max_fds' must be greater than 0");
@@ -37,6 +38,8 @@ int sock_mgr_init(socket_manager_t * sock_mgr,
     sock_mgr->fd_capacity = fd_capacity;
     sock_mgr->max_fds     = max_fds;
 
+    // Init mutexes right before calling threadpool_create() and put them in a
+    // shared resources struct (need a mutex for resources such as lights)
     pthread_mutex_init(&sock_mgr->fd_mutex, NULL);
 
     exit_code = E_SUCCESS;
