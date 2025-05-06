@@ -1,0 +1,1102 @@
+<!-- --------------------------------------------------------------------------------------------------------------- -->
+
+<b>Login</b><br><br>
+
+<style>
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    th,
+    td {
+        border: 1px solid black;
+        text-align: center;
+        padding: 8px;
+    }
+
+    thead {
+        background-color: white;
+        color: black;
+    }
+
+    tbody {
+        background-color: white;
+        color: black;
+    }
+
+    col.byte {
+        width: 10%;
+    }
+
+    col.standard {
+        width: 11.25%;
+    }
+</style>
+
+<table>
+    <colgroup>
+        <col class="byte">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+    </colgroup>
+    <thead>
+        <tr>
+            <th colspan="9">REQUEST</th>
+        </tr>
+        <tr>
+            <th>Byte</th>
+            <th>0</th>
+            <th>1</th>
+            <th>2</th>
+            <th>3</th>
+            <th>4</th>
+            <th>5</th>
+            <th>6</th>
+            <th>7</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>+0</td>
+            <td>OPCODE<br>(uint8_t)</td>
+            <td colspan="3">RESERVED<br>(0x00 * 3)</td>
+            <td colspan="2">USERNAME LENGTH<br>(uint16_t)</td>
+            <td colspan="2">PASSWORD LENGTH<br>(uint16_t)</td>
+        </tr>
+        <tr>
+            <td>+8</td>
+            <td colspan="4">USERNAME...</td>
+            <td colspan="4">PASSWORD...</td>
+        </tr>
+    </tbody>
+</table>
+
+<br>
+
+<table>
+    <colgroup>
+        <col class="byte">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+    </colgroup>
+    <thead>
+        <tr>
+            <th colspan="9">RESPONSE</th>
+        </tr>
+        <tr>
+            <th>Byte</th>
+            <th>0</th>
+            <th>1</th>
+            <th>2</th>
+            <th>3</th>
+            <th>4</th>
+            <th>5</th>
+            <th>6</th>
+            <th>7</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>+0</td>
+            <td>REPCODE</td>
+            <td colspan="3">RESERVED<br>(0x00 * 3)</td>
+            <td colspan="4">SESSION ID<br>(uint32_t)</td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- --------------------------------------------------------------------------------------------------------------- -->
+
+<br><b>Logout</b><br><br>
+
+<style>
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    th,
+    td {
+        border: 1px solid black;
+        text-align: center;
+        padding: 8px;
+    }
+
+    thead {
+        background-color: white;
+        color: black;
+    }
+
+    tbody {
+        background-color: white;
+        color: black;
+    }
+
+    col.byte {
+        width: 10%;
+    }
+
+    col.standard {
+        width: 11.25%;
+    }
+</style>
+
+<table>
+    <colgroup>
+        <col class="byte">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+    </colgroup>
+    <thead>
+        <tr>
+            <th colspan="9">REQUEST</th>
+        </tr>
+        <tr>
+            <th>Byte</th>
+            <th>0</th>
+            <th>1</th>
+            <th>2</th>
+            <th>3</th>
+            <th>4</th>
+            <th>5</th>
+            <th>6</th>
+            <th>7</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>+0</td>
+            <td>OPCODE<br>(uint8_t)</td>
+            <td colspan="4">SESSION ID<br>(uint32_t)</td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+        </tr>
+    </tbody>
+</table>
+
+<br>
+
+<table>
+    <colgroup>
+        <col class="byte">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+    </colgroup>
+    <thead>
+        <tr>
+            <th colspan="9">RESPONSE</th>
+        </tr>
+        <tr>
+            <th>Byte</th>
+            <th>0</th>
+            <th>1</th>
+            <th>2</th>
+            <th>3</th>
+            <th>4</th>
+            <th>5</th>
+            <th>6</th>
+            <th>7</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>+0</td>
+            <td>REPCODE<br>(uint8_t)</td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- --------------------------------------------------------------------------------------------------------------- -->
+
+<br><b>Start Flow</b><br><br>
+
+<style>
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    th,
+    td {
+        border: 1px solid black;
+        text-align: center;
+        padding: 8px;
+    }
+
+    thead {
+        background-color: white;
+        color: black;
+    }
+
+    tbody {
+        background-color: white;
+        color: black;
+    }
+
+    col.byte {
+        width: 10%;
+    }
+
+    col.standard {
+        width: 11.25%;
+    }
+</style>
+
+<table>
+    <colgroup>
+        <col class="byte">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+    </colgroup>
+    <thead>
+        <tr>
+            <th colspan="9">REQUEST</th>
+        </tr>
+        <tr>
+            <th>Byte</th>
+            <th>0</th>
+            <th>1</th>
+            <th>2</th>
+            <th>3</th>
+            <th>4</th>
+            <th>5</th>
+            <th>6</th>
+            <th>7</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>+0</td>
+            <td>OPCODE<br>(uint8_t)</td>
+            <td>SERVER ID<br>(uint8_t)</td>
+            <td colspan="4">SESSION ID<br>(uint32_t)</td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+        </tr>
+    </tbody>
+</table>
+
+<br>
+
+<table>
+    <colgroup>
+        <col class="byte">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+    </colgroup>
+    <thead>
+        <tr>
+            <th colspan="9">RESPONSE</th>
+        </tr>
+        <tr>
+            <th>Byte</th>
+            <th>0</th>
+            <th>1</th>
+            <th>2</th>
+            <th>3</th>
+            <th>4</th>
+            <th>5</th>
+            <th>6</th>
+            <th>7</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>+0</td>
+            <td>REPCODE<br>(uint8_t)</td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- --------------------------------------------------------------------------------------------------------------- -->
+
+<br><b>Stop Flow</b><br><br>
+
+<style>
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    th,
+    td {
+        border: 1px solid black;
+        text-align: center;
+        padding: 8px;
+    }
+
+    thead {
+        background-color: white;
+        color: black;
+    }
+
+    tbody {
+        background-color: white;
+        color: black;
+    }
+
+    col.byte {
+        width: 10%;
+    }
+
+    col.standard {
+        width: 11.25%;
+    }
+</style>
+
+<table>
+    <colgroup>
+        <col class="byte">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+    </colgroup>
+    <thead>
+        <tr>
+            <th colspan="9">REQUEST</th>
+        </tr>
+        <tr>
+            <th>Byte</th>
+            <th>0</th>
+            <th>1</th>
+            <th>2</th>
+            <th>3</th>
+            <th>4</th>
+            <th>5</th>
+            <th>6</th>
+            <th>7</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>+0</td>
+            <td>OPCODE<br>(uint8_t)</td>
+            <td>SERVER ID<br>(uint8_t)</td>
+            <td colspan="4">SESSION ID<br>(uint32_t)</td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+        </tr>
+    </tbody>
+</table>
+
+<br>
+
+<table>
+    <colgroup>
+        <col class="byte">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+    </colgroup>
+    <thead>
+        <tr>
+            <th colspan="9">RESPONSE</th>
+        </tr>
+        <tr>
+            <th>Byte</th>
+            <th>0</th>
+            <th>1</th>
+            <th>2</th>
+            <th>3</th>
+            <th>4</th>
+            <th>5</th>
+            <th>6</th>
+            <th>7</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>+0</td>
+            <td>REPCODE<br>(uint8_t)</td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- --------------------------------------------------------------------------------------------------------------- -->
+
+<br><b>Set Flow Rate</b><br><br>
+
+<style>
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    th,
+    td {
+        border: 1px solid black;
+        text-align: center;
+        padding: 8px;
+    }
+
+    thead {
+        background-color: white;
+        color: black;
+    }
+
+    tbody {
+        background-color: white;
+        color: black;
+    }
+
+    col.byte {
+        width: 10%;
+    }
+
+    col.standard {
+        width: 11.25%;
+    }
+</style>
+
+<table>
+    <colgroup>
+        <col class="byte">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+    </colgroup>
+    <thead>
+        <tr>
+            <th colspan="9">REQUEST</th>
+        </tr>
+        <tr>
+            <th>Byte</th>
+            <th>0</th>
+            <th>1</th>
+            <th>2</th>
+            <th>3</th>
+            <th>4</th>
+            <th>5</th>
+            <th>6</th>
+            <th>7</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>+0</td>
+            <td>OPCODE<br>(uint8_t)</td>
+            <td>SERVER ID<br>(uint8_t)</td>
+            <td colspan="4">SESSION ID<br>(uint32_t)</td>
+            <td colspan="2">FLOW RATE<br>(uint16_t)</td>
+        </tr>
+    </tbody>
+</table>
+
+<br>
+
+<table>
+    <colgroup>
+        <col class="byte">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+    </colgroup>
+    <thead>
+        <tr>
+            <th colspan="9">RESPONSE</th>
+        </tr>
+        <tr>
+            <th>Byte</th>
+            <th>0</th>
+            <th>1</th>
+            <th>2</th>
+            <th>3</th>
+            <th>4</th>
+            <th>5</th>
+            <th>6</th>
+            <th>7</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>+0</td>
+            <td>REPCODE<br>(uint8_t)</td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- --------------------------------------------------------------------------------------------------------------- -->
+
+<br><b>Environmental Event</b><br><br>
+
+<style>
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    th,
+    td {
+        border: 1px solid black;
+        text-align: center;
+        padding: 8px;
+    }
+
+    thead {
+        background-color: white;
+        color: black;
+    }
+
+    tbody {
+        background-color: white;
+        color: black;
+    }
+
+    col.byte {
+        width: 10%;
+    }
+
+    col.standard {
+        width: 11.25%;
+    }
+</style>
+
+<table>
+    <colgroup>
+        <col class="byte">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+    </colgroup>
+    <thead>
+        <tr>
+            <th colspan="9">REQUEST</th>
+        </tr>
+        <tr>
+            <th>Byte</th>
+            <th>0</th>
+            <th>1</th>
+            <th>2</th>
+            <th>3</th>
+            <th>4</th>
+            <th>5</th>
+            <th>6</th>
+            <th>7</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>+0</td>
+            <td>OPCODE<br>(uint8_t)</td>
+            <td>SERVER ID<br>(uint8_t)</td>
+            <td colspan="4">SESSION ID<br>(uint32_t)</td>
+            <td>EVENT ID<br>(uint8_t)</td>
+            <td>SEVERITY<br>(uint8_t)</td>
+        </tr>
+        <tr>
+            <td>+8</td>
+            <td colspan="4">DURATION<br>(uint16_t)</td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+        </tr>
+    </tbody>
+</table>
+
+<br>
+
+<table>
+    <colgroup>
+        <col class="byte">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+    </colgroup>
+    <thead>
+        <tr>
+            <th colspan="9">RESPONSE</th>
+        </tr>
+        <tr>
+            <th>Byte</th>
+            <th>0</th>
+            <th>1</th>
+            <th>2</th>
+            <th>3</th>
+            <th>4</th>
+            <th>5</th>
+            <th>6</th>
+            <th>7</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>+0</td>
+            <td>REPCODE<br>(uint8_t)</td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- --------------------------------------------------------------------------------------------------------------- -->
+
+<br><b>Contaminate</b><br><br>
+
+<style>
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    th,
+    td {
+        border: 1px solid black;
+        text-align: center;
+        padding: 8px;
+    }
+
+    thead {
+        background-color: white;
+        color: black;
+    }
+
+    tbody {
+        background-color: white;
+        color: black;
+    }
+
+    col.byte {
+        width: 10%;
+    }
+
+    col.standard {
+        width: 11.25%;
+    }
+</style>
+
+<table>
+    <colgroup>
+        <col class="byte">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+    </colgroup>
+    <thead>
+        <tr>
+            <th colspan="9">REQUEST</th>
+        </tr>
+        <tr>
+            <th>Byte</th>
+            <th>0</th>
+            <th>1</th>
+            <th>2</th>
+            <th>3</th>
+            <th>4</th>
+            <th>5</th>
+            <th>6</th>
+            <th>7</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>+0</td>
+            <td>OPCODE<br>(uint8_t)</td>
+            <td>SERVER ID<br>(uint8_t)</td>
+            <td colspan="4">SESSION ID<br>(uint32_t)</td>
+            <td>CONTAMINANT ID<br>(uint8_t)</td>
+            <td>RESERVED<br>(0x00 * 1)</td>
+        </tr>
+        <tr>
+            <td>+8</td>
+            <td colspan="4">AMOUNT<br>(uint16_t)</td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+        </tr>
+    </tbody>
+</table>
+
+<br>
+
+<table>
+    <colgroup>
+        <col class="byte">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+    </colgroup>
+    <thead>
+        <tr>
+            <th colspan="9">RESPONSE</th>
+        </tr>
+        <tr>
+            <th>Byte</th>
+            <th>0</th>
+            <th>1</th>
+            <th>2</th>
+            <th>3</th>
+            <th>4</th>
+            <th>5</th>
+            <th>6</th>
+            <th>7</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>+0</td>
+            <td>REPCODE<br>(uint8_t)</td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- --------------------------------------------------------------------------------------------------------------- -->
+
+<br><b>Decontaminate</b><br><br>
+
+<style>
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    th,
+    td {
+        border: 1px solid black;
+        text-align: center;
+        padding: 8px;
+    }
+
+    thead {
+        background-color: white;
+        color: black;
+    }
+
+    tbody {
+        background-color: white;
+        color: black;
+    }
+
+    col.byte {
+        width: 10%;
+    }
+
+    col.standard {
+        width: 11.25%;
+    }
+</style>
+
+<table>
+    <colgroup>
+        <col class="byte">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+    </colgroup>
+    <thead>
+        <tr>
+            <th colspan="9">REQUEST</th>
+        </tr>
+        <tr>
+            <th>Byte</th>
+            <th>0</th>
+            <th>1</th>
+            <th>2</th>
+            <th>3</th>
+            <th>4</th>
+            <th>5</th>
+            <th>6</th>
+            <th>7</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>+0</td>
+            <td>OPCODE<br>(uint8_t)</td>
+            <td>SERVER ID<br>(uint8_t)</td>
+            <td colspan="4">SESSION ID<br>(uint32_t)</td>
+            <td>CONTAMINANT ID<br>(uint8_t)</td>
+            <td colspan="1"></td>
+        </tr>
+    </tbody>
+</table>
+
+<br>
+
+<table>
+    <colgroup>
+        <col class="byte">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+    </colgroup>
+    <thead>
+        <tr>
+            <th colspan="9">RESPONSE</th>
+        </tr>
+        <tr>
+            <th>Byte</th>
+            <th>0</th>
+            <th>1</th>
+            <th>2</th>
+            <th>3</th>
+            <th>4</th>
+            <th>5</th>
+            <th>6</th>
+            <th>7</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>+0</td>
+            <td>REPCODE<br>(uint8_t)</td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- --------------------------------------------------------------------------------------------------------------- -->
+
+<br><b>Get Status</b><br><br>
+
+<style>
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    th,
+    td {
+        border: 1px solid black;
+        text-align: center;
+        padding: 8px;
+    }
+
+    thead {
+        background-color: white;
+        color: black;
+    }
+
+    tbody {
+        background-color: white;
+        color: black;
+    }
+
+    col.byte {
+        width: 10%;
+    }
+
+    col.standard {
+        width: 11.25%;
+    }
+</style>
+
+<table>
+    <colgroup>
+        <col class="byte">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+    </colgroup>
+    <thead>
+        <tr>
+            <th colspan="9">REQUEST</th>
+        </tr>
+        <tr>
+            <th>Byte</th>
+            <th>0</th>
+            <th>1</th>
+            <th>2</th>
+            <th>3</th>
+            <th>4</th>
+            <th>5</th>
+            <th>6</th>
+            <th>7</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>+0</td>
+            <td>OPCODE<br>(uint8_t)</td>
+            <td>SERVER ID<br>(uint8_t)</td>
+            <td colspan="4">SESSION ID<br>(uint32_t)</td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+        </tr>
+    </tbody>
+</table>
+
+<br>
+
+<table>
+    <colgroup>
+        <col class="byte">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+        <col class="standard">
+    </colgroup>
+    <thead>
+        <tr>
+            <th colspan="9">RESPONSE</th>
+        </tr>
+        <tr>
+            <th>Byte</th>
+            <th>0</th>
+            <th>1</th>
+            <th>2</th>
+            <th>3</th>
+            <th>4</th>
+            <th>5</th>
+            <th>6</th>
+            <th>7</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>+0</td>
+            <td>REPCODE<br>(uint8_t)</td>
+            <td>SERVER ID<br>(uint8_t)</td>
+            <td>WATER LEVEL<br>(uint8_t)</td>
+            <td>CONTAMINANT COUNT<br>(uint8_t)</td>
+            <td>ERROR FLAGS<br>(uint8_t)</td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+            <td colspan="1"></td>
+        </tr>
+    </tbody>
+</table>
