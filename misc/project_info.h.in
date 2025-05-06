@@ -1,0 +1,67 @@
+#ifndef PROJECT_INFO_H_IN
+#define PROJECT_INFO_H_IN
+
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+
+#define PROJECT_NAME          "@PROJECT_NAME@"
+#define PROJECT_VERSION       "@PROJECT_VERSION@"
+#define PROJECT_VERSION_MAJOR "@PROJECT_VERSION_MAJOR@"
+#define PROJECT_VERSION_MINOR "@PROJECT_VERSION_MINOR@"
+#define PROJECT_VERSION_PATCH "@PROJECT_VERSION_PATCH@"
+#define PROJECT_BUILD_TYPE    "@CMAKE_BUILD_TYPE@"
+#define ARCHITECTURE          "@CMAKE_SYSTEM_PROCESSOR@"
+#define GIT_SHA               "@GIT_SHA@"
+
+void print_project_info()
+{
+    const char * project_name       = PROJECT_NAME;
+    const char * project_version    = PROJECT_VERSION;
+    const char * project_build_type = PROJECT_BUILD_TYPE;
+    const char * architecture       = ARCHITECTURE;
+
+    // Calculate maximum text width dynamically
+    int max_label_length = 12; // length of "build type-" (longest label)
+    int max_value_length = (int)strlen(project_name);
+    if ((int)strlen(project_version) > max_value_length)
+        max_value_length = (int)strlen(project_version);
+    if ((int)strlen(project_build_type) > max_value_length)
+        max_value_length = (int)strlen(project_build_type);
+    if ((int)strlen(architecture) > max_value_length)
+        max_value_length = (int)strlen(architecture);
+
+    int box_width = max_label_length + max_value_length +
+                    4; // 4 accounts for padding and separator
+
+    // Print top border
+    for (int i = 0; i < box_width; i++)
+        printf("-");
+    printf("\n");
+
+    // Print title centered
+    printf("| %-*s |\n", box_width - 4, "Project Info");
+
+    // Print separator line
+    for (int i = 0; i < box_width; i++)
+        printf("-");
+    printf("\n");
+
+    // Print project information
+    printf("| %-10s: %-*s |\n", "project", max_value_length, project_name);
+    printf("| %-10s: %-*s |\n", "version", max_value_length, project_version);
+    printf("| %-10s: %-*s |\n",
+           "build type",
+           max_value_length,
+           project_build_type);
+    printf("| %-10s: %-*s |\n", "CPU arch", max_value_length, architecture);
+
+    // Print bottom border
+    for (int i = 0; i < box_width; i++)
+        printf("-");
+    printf("\n");
+}
+
+#endif /* PROJECT_CONFIG_H_IN */
+
+/*** end of file ***/
