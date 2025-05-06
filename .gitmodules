@@ -1,3 +1,6 @@
 [submodule "clib-core"]
-	path = clib-core
+	path = libs/clib-core
+	url = git@github.com:NickBarnes574/clib-core.git
+[submodule "libs/clib-core"]
+	path = libs/clib-core
 	url = git@github.com:NickBarnes574/clib-core.git
