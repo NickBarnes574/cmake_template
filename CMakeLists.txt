@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# BRIEF -- CMakeLists.txt for Build System
+# BRIEF -- CMakeLists.txt for [My-Project]
 # ----------------------------------------------------------------------------
 # Top-level CMake configuration (C, version 1.0.0).
 #
@@ -12,16 +12,15 @@
 # Usage:
 # - Configure and build using the provided Makefile
 # - Enable optional features using `-D<OPTION>=ON` flags
-#
-# TODO:
-# - Add options for clang-format and cmake-format
-# - Improve shared library installation and linking
 # ----------------------------------------------------------------------------
 
+# ----------------------------------------------------------------------------
+# CMake Project Setup
+# ----------------------------------------------------------------------------
 cmake_minimum_required(VERSION 3.31)
 
 project(
-  BUILD_SYSTEM
+  MY_PROJECT
   VERSION 1.0.0
   LANGUAGES C)
 
@@ -30,17 +29,12 @@ set(CMAKE_C_STANDARD          17)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS        OFF)
 
-# Create a library set of custom warnings that can be applied to multiple targets
-add_library(Warnings INTERFACE)
-target_compile_options(Warnings INTERFACE -Wall -Wextra -pedantic)
-
 # Configuration specific compile options
 set(CMAKE_C_FLAGS_DEBUG "-g -Werror -DDEBUG")
 set(CMAKE_C_FLAGS_RELEASE "-O3 -DNDEBUG")
 set(CMAKE_C_FLAGS_TEST "-g")
 
 # Feature Toggles
-option(COMPILE_EXECUTABLE "Compile the executable"            ON)
 option(ENABLE_CLANG_TIDY  "Enable clang-tidy static analysis" ON)
 option(ENABLE_WARN_AS_ERR "Treat all warnings as errors"      OFF)
 option(ENABLE_ADSAN       "Enable Address-Sanitizer"          OFF)
@@ -49,23 +43,48 @@ option(BUILD_SHARED_LIBS  "Build dynamic library (.so) files" OFF)
 
 enable_testing()
 
-# Include CMake modules
-include(cmake/adsan-config.cmake)
-include(cmake/build-type-config.cmake)
-include(cmake/clang-tidy-config.cmake)
-include(cmake/output-config.cmake)
-include(cmake/paths-config.cmake)
-include(cmake/project-config.cmake)
-include(cmake/testing-config.cmake)
-include(cmake/toolchain-config.cmake)
-include(cmake/warnings-config.cmake)
+# ----------------------------------------------------------------------------
+# Initialize CMake Modules
+# ----------------------------------------------------------------------------
+include(FetchContent)
 
-# Include project structure and libraries
+FetchContent_Declare(
+    cmake_modules
+    GIT_REPOSITORY  git@github.com:NickBarnes574/cmake-modules.git
+    GIT_TAG         main
+)
+
+FetchContent_MakeAvailable(cmake_modules)
+
+# Append the fetched modules directory to CMAKE_MODULE_PATH
+list(APPEND CMAKE_MODULE_PATH "${cmake_modules_SOURCE_DIR}/modules")
+
+# IMPORTANT: `paths-config` and `project-config` must come first
+include(paths-config)
+include(project-config)
+
+# Include other modules
+include(add-app)
+include(add-lib)
+include(adsan-config)
+include(build-type-config)
+include(clang-tidy-config)
+include(color-utils)
+include(fetch-library)
+include(output-config)
+include(testing-config)
+include(toolchain-config)
+include(warnings-config)
+
+# ----------------------------------------------------------------------------
+# Initialize Output Directory
+# ----------------------------------------------------------------------------
+set_project_output_paths(MyProject)
+
+# ----------------------------------------------------------------------------
+# Begin Build Process
+# ----------------------------------------------------------------------------
+add_subdirectory(dependencies)
 add_subdirectory(apps)
-add_subdirectory(libs)
-
-# configure_executable()
-
-message_color(STATUS "Building for ARCH: ${ARCH}, Mode: ${CMAKE_BUILD_TYPE}")
 
 # *** END OF FILE ***

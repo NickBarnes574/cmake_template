@@ -1,6 +1,4 @@
-include(${CMAKE_SOURCE_DIR}/cmake/add-localized-app.cmake)
-
-add_localized_app(
+add_app(
     PROJECT     salt_valt
     TARGET      sv_client
     SCOPE       local

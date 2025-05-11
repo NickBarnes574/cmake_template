@@ -1,6 +1,12 @@
-include(${CMAKE_SOURCE_DIR}/cmake/add-localized-app.cmake)
+# ----------------------------------------------------------------------------
+# BRIEF -- apps/salt_vault/server/CMakeLists.txt
+# ----------------------------------------------------------------------------
+# Builds the Salt Vault Server
+# ----------------------------------------------------------------------------
 
-add_localized_app(
+message_color(STATUS "Building Salt Vault Server for ARCH: ${ARCH}, Mode: ${CMAKE_BUILD_TYPE}")
+
+add_app(
     PROJECT     salt_valt
     TARGET      sv_server
     SCOPE       remote
@@ -12,7 +18,8 @@ add_localized_app(
 )
 
 # Link against libraries
-target_link_libraries(sv_server
-PUBLIC Core DSA Math Networking Threading
+target_link_libraries(
+    sv_server PUBLIC Core Math Networking TCPServer BlockingQueue ThreadPool
 )
 
+# *** END OF FILE ***
